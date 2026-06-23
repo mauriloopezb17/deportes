@@ -1,0 +1,12 @@
+# Ignorar dependencias en cualquier nivel del backend
+node_modules/
+**/node_modules/
+
+# Ignorar builds
+dist/
+**/dist/
+out-tsc/
+
+# Archivos de entorno
+.env
+**/.env
