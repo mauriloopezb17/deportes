@@ -10,7 +10,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./dataBase/init.sql:/docker-entrypoint-initdb.d/departamento_deportes_create.sql
+      - ./dataBase/departamento_deportes_create.sql:/docker-entrypoint-initdb.d/01-departamento_deportes_create.sql:ro
       - postgres_data:/var/lib/postgresql/data
 
 volumes:

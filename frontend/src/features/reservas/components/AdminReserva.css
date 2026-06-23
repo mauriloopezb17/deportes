@@ -1,0 +1,193 @@
+.reserva-admin-lms {
+  --res-navy: #052845;
+  --res-cyan: #009dc1;
+  --res-yellow: #fecc00;
+  --res-gray: #8b8b8b;
+  --res-border: rgba(5, 40, 69, 0.10);
+  --res-shadow: 0 18px 42px rgba(5, 40, 69, 0.09);
+}
+
+.reserva-admin-lms.two-column-layout {
+  grid-template-columns: minmax(330px, 390px) minmax(0, 1fr);
+}
+
+.reserva-admin-lms .panel-card {
+  border: 1px solid var(--res-border);
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: var(--res-shadow);
+}
+
+.reserva-admin-lms .side-panel {
+  border-top: 6px solid var(--res-yellow);
+}
+
+.reserva-admin-lms .section-label {
+  color: var(--res-cyan);
+  letter-spacing: 0.06em;
+}
+
+.reserva-admin-lms h2,
+.reserva-admin-lms .info-grid strong {
+  color: var(--res-navy);
+}
+
+.reserva-admin-lms .filters-grid {
+  background: #f8fafc;
+  border: 1px solid rgba(5, 40, 69, 0.06);
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.reserva-admin-lms .field span {
+  color: var(--res-gray);
+}
+
+.reserva-admin-lms .field input,
+.reserva-admin-lms .field select,
+.reserva-admin-lms .field textarea {
+  border-color: rgba(5, 40, 69, 0.14);
+  border-radius: 12px;
+  color: var(--res-navy);
+  background: #ffffff;
+}
+
+.reserva-admin-lms .field input:focus,
+.reserva-admin-lms .field select:focus,
+.reserva-admin-lms .field textarea:focus {
+  border-color: var(--res-cyan);
+  box-shadow: 0 0 0 3px rgba(0, 157, 193, 0.14);
+}
+
+.reserva-admin-lms .reserva-tabs button {
+  border: 1px solid rgba(5, 40, 69, 0.14);
+  background: #ffffff;
+  color: var(--res-navy);
+  box-shadow: none;
+}
+
+.reserva-admin-lms .reserva-tabs button.active {
+  background: var(--res-navy);
+  color: #ffffff;
+  border-color: var(--res-navy);
+}
+
+.reserva-admin-lms .reserva-tabs button span {
+  display: inline-flex;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  align-items: center;
+  justify-content: center;
+  background: rgba(254, 204, 0, 0.22);
+  color: inherit;
+  font-size: 0.78rem;
+}
+
+.reserva-admin-lms .list-stack {
+  gap: 12px;
+}
+
+.reserva-admin-lms .list-card {
+  border: 1px solid var(--res-border);
+  border-radius: 16px;
+  background: #ffffff;
+  color: var(--res-navy);
+  box-shadow: 0 8px 18px rgba(5, 40, 69, 0.05);
+}
+
+.reserva-admin-lms .list-card:hover {
+  border-color: var(--res-cyan);
+  transform: translateY(-1px);
+}
+
+.reserva-admin-lms .list-card.selected {
+  background: linear-gradient(135deg, #052845, #07375d);
+  color: #ffffff;
+  border-color: #052845;
+}
+
+.reserva-admin-lms .detail-panel {
+  border-top: 6px solid var(--res-cyan);
+}
+
+.reserva-admin-lms .detail-header {
+  border-bottom: 1px solid rgba(5, 40, 69, 0.09);
+  padding-bottom: 18px;
+}
+
+.reserva-admin-lms .detail-header p,
+.reserva-admin-lms .info-grid span {
+  color: var(--res-gray);
+}
+
+.reserva-admin-lms .info-grid div {
+  border-bottom-color: rgba(5, 40, 69, 0.09);
+}
+
+.reserva-admin-lms .btn-primary,
+.reserva-admin-lms .exportar-btn {
+  background: var(--res-navy);
+  border-radius: 13px;
+}
+
+.reserva-admin-lms .btn-primary:hover,
+.reserva-admin-lms .exportar-btn:hover {
+  background: var(--res-cyan);
+}
+
+.reserva-admin-lms .btn-outline {
+  border-color: var(--res-cyan);
+  color: var(--res-navy);
+}
+
+.reserva-admin-lms .btn-ghost:hover,
+.reserva-admin-lms .btn-outline:hover {
+  background: rgba(0, 157, 193, 0.08);
+}
+
+@media (max-width: 900px) {
+  .reserva-admin-lms.two-column-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.reservas-page-lms {
+  --res-navy: #052845;
+  --res-cyan: #009dc1;
+  --res-yellow: #fecc00;
+  --res-gray: #8b8b8b;
+  --res-border: rgba(5, 40, 69, 0.10);
+  --res-shadow: 0 18px 42px rgba(5, 40, 69, 0.09);
+}
+
+.reservas-page-lms .page-header {
+  background: #ffffff;
+  border: 1px solid var(--res-border);
+  border-left: 8px solid var(--res-cyan);
+  border-radius: 26px;
+  box-shadow: var(--res-shadow);
+}
+
+.reservas-page-lms .page-eyebrow {
+  color: var(--res-cyan);
+}
+
+.reservas-page-lms .page-header h1 {
+  color: var(--res-navy);
+}
+
+.reservas-page-lms .page-header p {
+  color: var(--res-gray);
+}
+
+.reservas-page-lms .page-header .btn-primary,
+.reservas-page-lms .page-header .exportar-btn {
+  background: var(--res-navy);
+  border-radius: 13px;
+}
+
+.reservas-page-lms .page-header .btn-primary:hover,
+.reservas-page-lms .page-header .exportar-btn:hover {
+  background: var(--res-cyan);
+}

@@ -1,122 +1,72 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+  useNavigate,
+} from "react-router-dom";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+import Sidebar from "./shared/components/Sidebar";
+import { ErrorBoundary } from "./shared/components/ErrorBoundary";
+import { ToastProvider } from "./shared/contexts/ToastContext";
+
+import DashboardAdminPage from "./features/dashboard/pages/DashboardAdminPage";
+import CalendarioPage from "./features/calendario/pages/CalendarioPage";
+import CalendarioEstudiantePage from "./features/calendario/pages/CalendarioEstudiantePage";
+import RegistroDeportistaPage from "./features/deportistas/pages/RegistroDeportistaPage";
+import PagosAcademiasPage from "./features/pagos/pages/PagosAcademiasPage";
+import GestionDisciplinasPage from "./features/disciplinas/pages/GestionDisciplinasPage";
+import AdminReserva from "./features/reservas/components/AdminReserva";
+import NuevaReservaPage from "./features/reservas/pages/NuevaReservaPage";
+import PerfilPage from "./features/auth/pages/PerfilPage";
+
+function ProtectedLayout() {
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    navigate("/dashboard", { replace: true });
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    <div className="app-shell">
+      <Sidebar onLogout={handleLogout} />
+      <div className="app-content">
+        <main className="app-main">
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
+        </main>
+      </div>
+    </div>
+  );
 }
 
-export default App
+function App() {
+  return (
+    <BrowserRouter>
+      <ToastProvider>
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+          
+        <Route element={<ProtectedLayout />}>
+        <Route path="/dashboard" element={<DashboardAdminPage />} />
+        <Route path="/calendario" element={<CalendarioPage />} />
+        <Route path="/calendario/consulta" element={<CalendarioEstudiantePage />} />
+        <Route path="/deportistas" element={<RegistroDeportistaPage />} />
+        <Route path="/pagos" element={<PagosAcademiasPage />} />
+        <Route path="/disciplinas" element={<GestionDisciplinasPage />} />
+        <Route path="/reservas" element={<AdminReserva />} />
+        <Route path="/reservas/nueva" element={<NuevaReservaPage />} />
+        <Route path="/perfil" element={<PerfilPage />} />
+      </Route>
+  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+</Routes>
+      </ToastProvider>
+    </BrowserRouter>
+  );
+}
+
+export default App;

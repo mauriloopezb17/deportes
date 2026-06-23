@@ -1,0 +1,232 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import PageHeader from "../../../shared/components/PageHeader";
+import StatCard from "../../../shared/components/StatCard";
+import { apiRequest } from "../../../shared/services/apiClient";
+import { listarDeportistas } from "../../deportistas/services/deportistaService";
+
+import { ExportarReporteButton } from "../../../shared/components/ExportarReporteButton";
+import "./DashboardAdminPage.css";
+
+type Stats = {
+  totalDeportistas: number;
+  pagosPendientes: number;
+  noAplica: number;
+  disciplinasActivas: number;
+};
+
+function DashboardAdminPage() {
+  const navigate = useNavigate();
+  const [stats, setStats] = useState<Stats>({
+    totalDeportistas: 0,
+    pagosPendientes: 0,
+    noAplica: 0,
+    disciplinasActivas: 0,
+  });
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    const cargarStats = async () => {
+      try {
+        const [deportistas, disciplinas] = await Promise.all([
+          listarDeportistas(),
+          apiRequest<{ id: number; activo: boolean }[]>(
+            "/api/disciplinas?activo=true",
+            { requiresAuth: true },
+          ),
+        ]);
+
+        setStats({
+          totalDeportistas: deportistas.length,
+          pagosPendientes: deportistas.filter(
+            (d) => d.estadoCuenta === "pendiente",
+          ).length,
+          noAplica: deportistas.filter((d) => d.estadoCuenta === "no_aplica")
+            .length,
+          disciplinasActivas: disciplinas.length,
+        });
+      } catch (e) {
+        console.error("Error cargando stats del dashboard", e);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    void cargarStats();
+  }, []);
+
+  const quickAccess: { label: string; helper: string; path: string }[] = [
+    {
+      label: "Registrar deportista",
+      helper: "Alta de nuevos deportistas",
+      path: "/deportistas",
+    },
+    {
+      label: "Verificar pagos",
+      helper: "Estado de pagos y cuentas",
+      path: "/pagos",
+    },
+    {
+      label: "Gestionar disciplinas",
+      helper: "CRUD y estados de disciplinas",
+      path: "/disciplinas",
+    },
+    {
+      label: "Calendario",
+      helper: "Vista admin y estudiante",
+      path: "/calendario",
+    },
+  ];
+
+  return (
+    <div className="page-stack dashboard-lms">
+      <PageHeader
+        eyebrow="Panel administrativo"
+        title="Departamento de Deportes"
+        description="Gestión de deportistas, pagos, disciplinas y calendario."
+      />
+
+      <section className="stats-grid">
+        <StatCard
+          label="Deportistas registrados"
+          value={cargando ? "..." : stats.totalDeportistas}
+          helper="en el sistema"
+        />
+        <StatCard
+          label="Pagos pendientes"
+          value={cargando ? "..." : stats.pagosPendientes}
+          tone="yellow"
+          helper="academia"
+        />
+        <StatCard
+          label="No aplica pago"
+          value={cargando ? "..." : stats.noAplica}
+          tone="green"
+          helper="UCB y competitivos"
+        />
+        <StatCard
+          label="Disciplinas activas"
+          value={cargando ? "..." : stats.disciplinasActivas}
+          tone="green"
+          helper="disciplinas"
+        />
+      </section>
+
+      <section className="panel-card" style={{ borderLeft: "4px solid var(--brand-blue, #002f6c)" }}>
+        <div className="section-heading">
+          <span>Módulo de reportes generales</span>
+          <h2>Exportar información global</h2>
+        </div>
+        
+        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", marginTop: "15px", padding: "10px 0" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <span style={{ fontSize: "12px", color: "gray", fontWeight: "600" }}>MÓDULO DEPORTISTAS</span>
+            <ExportarReporteButton 
+              endpoint="/deportistas/reporte" 
+              filtrosActuales={{ tipo: "todos" }} 
+              nombreArchivoBase="Reporte_General_Deportistas_UCB" 
+              filtrosConfig={[
+                { name: "tipo", label: "Tipo", type: "select", options: [
+                  { value: "todos", label: "Todos" },
+                  { value: "estudiante_ucb", label: "Estudiante UCB" },
+                  { value: "academia", label: "Academia" },
+                  { value: "competitivo", label: "Competitivo" },
+                  { value: "externo", label: "Externo" },
+                ]},
+              ]}
+            />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <span style={{ fontSize: "12px", color: "gray", fontWeight: "600" }}>MÓDULO PAGOS</span>
+            <ExportarReporteButton 
+              endpoint="/pagos/reporte" 
+              filtrosActuales={{ mes: "", anio: "" }} 
+              nombreArchivoBase="Reporte_General_Pagos_Academias" 
+              filtrosConfig={[
+                { name: "mes", label: "Mes", type: "select", options: [
+                  { value: "", label: "Todos" },
+                  { value: "enero", label: "Enero" },
+                  { value: "febrero", label: "Febrero" },
+                  { value: "marzo", label: "Marzo" },
+                  { value: "abril", label: "Abril" },
+                  { value: "mayo", label: "Mayo" },
+                  { value: "junio", label: "Junio" },
+                  { value: "julio", label: "Julio" },
+                  { value: "agosto", label: "Agosto" },
+                  { value: "septiembre", label: "Septiembre" },
+                  { value: "octubre", label: "Octubre" },
+                  { value: "noviembre", label: "Noviembre" },
+                  { value: "diciembre", label: "Diciembre" },
+                ]},
+                { name: "anio", label: "Año", type: "select", options: [
+                  { value: "", label: "Todos" },
+                  { value: "2024", label: "2024" },
+                  { value: "2025", label: "2025" },
+                  { value: "2026", label: "2026" },
+                  { value: "2027", label: "2027" },
+                ]},
+              ]}
+            />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <span style={{ fontSize: "12px", color: "gray", fontWeight: "600" }}>MÓDULO RESERVAS</span>
+            <ExportarReporteButton 
+              endpoint="/reservas/reporte" 
+              filtrosActuales={{ desde: "", hasta: "", estado: "todos" }} 
+              nombreArchivoBase="Reporte_General_Reservas_Espacios" 
+              filtrosConfig={[
+                { name: "desde", label: "Fecha inicio", type: "date" },
+                { name: "hasta", label: "Fecha fin", type: "date" },
+                { name: "estado", label: "Estado", type: "select", options: [
+                  { value: "todos", label: "Todos" },
+                  { value: "confirmada", label: "Confirmada" },
+                  { value: "cancelada", label: "Cancelada" },
+                ]},
+              ]}
+            />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <span style={{ fontSize: "12px", color: "gray", fontWeight: "600" }}>MÓDULO DISCIPLINAS</span>
+            <ExportarReporteButton 
+              endpoint="/disciplinas/reporte" 
+              filtrosActuales={{ estado: "todas" }} 
+              nombreArchivoBase="Reporte_General_Disciplinas_Deportivas" 
+              filtrosConfig={[
+                { name: "estado", label: "Estado", type: "select", options: [
+                  { value: "todas", label: "Todas" },
+                  { value: "activas", label: "Activas" },
+                  { value: "inactivas", label: "Inactivas" },
+                ]},
+              ]}
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="panel-card">
+        <div className="section-heading">
+          <span>Accesos rápidos</span>
+          <h2>Ir directamente a una pantalla</h2>
+        </div>
+
+        <div className="quick-grid">
+          {quickAccess.map((item) => (
+            <button
+              key={item.label}
+              className="quick-card"
+              onClick={() => navigate(item.path)}
+            >
+              <strong>{item.label}</strong>
+              <span>{item.helper}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export default DashboardAdminPage;

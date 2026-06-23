@@ -1,0 +1,127 @@
+.disciplinas-lms {
+  --dis-navy: #052845;
+  --dis-cyan: #009dc1;
+  --dis-yellow: #fecc00;
+  --dis-gray: #8b8b8b;
+  --dis-border: rgba(5, 40, 69, 0.10);
+  --dis-shadow: 0 18px 42px rgba(5, 40, 69, 0.09);
+  gap: 18px;
+}
+
+.disciplinas-lms .page-header {
+  background: #ffffff;
+  border: 1px solid var(--dis-border);
+  border-left: 8px solid var(--dis-yellow);
+  border-radius: 26px;
+  box-shadow: var(--dis-shadow);
+}
+
+.disciplinas-lms .page-eyebrow,
+.disciplinas-lms .section-label,
+.disciplinas-lms .section-heading span {
+  color: var(--dis-cyan);
+}
+
+.disciplinas-lms .page-header h1,
+.disciplinas-lms h2,
+.disciplinas-lms .data-table strong {
+  color: var(--dis-navy);
+}
+
+.disciplinas-lms .page-header p,
+.disciplinas-lms .panel-card p {
+  color: var(--dis-gray);
+}
+
+.disciplinas-lms .panel-card,
+.disciplinas-lms .table-card,
+.disciplinas-lms .modal-card {
+  border: 1px solid var(--dis-border);
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: var(--dis-shadow);
+}
+
+.disciplinas-lms .filters-grid {
+  align-items: end;
+}
+
+.disciplinas-lms .field span {
+  color: var(--dis-gray);
+}
+
+.disciplinas-lms .field input,
+.disciplinas-lms .field select {
+  border-color: rgba(5, 40, 69, 0.14);
+  border-radius: 12px;
+  color: var(--dis-navy);
+}
+
+.disciplinas-lms .field input:focus,
+.disciplinas-lms .field select:focus {
+  border-color: var(--dis-cyan);
+  box-shadow: 0 0 0 3px rgba(0, 157, 193, 0.14);
+}
+
+.disciplinas-lms .data-table {
+  border-radius: 24px;
+}
+
+.disciplinas-lms .data-table th {
+  color: var(--dis-cyan);
+  background: #f8fafc;
+  letter-spacing: 0.05em;
+}
+
+.disciplinas-lms .data-table td {
+  border-bottom-color: rgba(5, 40, 69, 0.08);
+}
+
+.disciplinas-lms .data-table tbody tr:hover {
+  background: rgba(254, 204, 0, 0.08);
+}
+
+.disciplinas-lms .btn-primary,
+.disciplinas-lms .exportar-btn {
+  background: var(--dis-navy);
+  border-radius: 13px;
+}
+
+.disciplinas-lms .btn-primary:hover,
+.disciplinas-lms .exportar-btn:hover {
+  background: var(--dis-cyan);
+}
+
+.disciplinas-lms .btn-outline {
+  border-color: var(--dis-cyan);
+  color: var(--dis-navy);
+}
+
+.disciplinas-lms .btn-ghost:hover,
+.disciplinas-lms .btn-outline:hover {
+  background: rgba(0, 157, 193, 0.08);
+}
+
+.disciplinas-lms .status-badge.success {
+  background: rgba(0, 157, 193, 0.12);
+  border-color: rgba(0, 157, 193, 0.24);
+  color: var(--dis-navy);
+}
+
+.disciplinas-lms .status-badge.muted {
+  background: rgba(139, 139, 139, 0.10);
+  border-color: rgba(139, 139, 139, 0.20);
+  color: #5f6670;
+}
+
+.disciplinas-lms .modal-backdrop {
+  background: rgba(5, 40, 69, 0.48);
+}
+
+.disciplinas-lms .modal-card {
+  border-top: 6px solid var(--dis-yellow);
+}
+
+.disciplinas-lms .modal-close {
+  color: var(--dis-navy);
+}

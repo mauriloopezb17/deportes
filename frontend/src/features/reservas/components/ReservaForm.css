@@ -1,0 +1,88 @@
+.reserva-form-lms {
+  --form-navy: #052845;
+  --form-cyan: #009dc1;
+  --form-yellow: #fecc00;
+  --form-gray: #8b8b8b;
+  --form-border: rgba(5, 40, 69, 0.10);
+  width: min(820px, 100%);
+  border: 1px solid var(--form-border);
+  border-top: 7px solid var(--form-yellow);
+  border-radius: 28px;
+  background: #ffffff;
+  box-shadow: 0 20px 48px rgba(5, 40, 69, 0.10);
+  text-align: left;
+}
+
+.reserva-form-lms h1 {
+  color: var(--form-navy);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.reserva-form-lms > p {
+  color: var(--form-gray);
+  text-align: center;
+}
+
+.reserva-form-lms .form-grid {
+  gap: 18px;
+}
+
+.reserva-form-lms .field span {
+  color: var(--form-gray);
+  letter-spacing: 0.04em;
+}
+
+.reserva-form-lms .field input,
+.reserva-form-lms .field select,
+.reserva-form-lms .field textarea {
+  border-color: rgba(5, 40, 69, 0.14);
+  border-radius: 12px;
+  background: #fdfefe;
+  color: var(--form-navy);
+}
+
+.reserva-form-lms .field input:focus,
+.reserva-form-lms .field select:focus,
+.reserva-form-lms .field textarea:focus {
+  border-color: var(--form-cyan);
+  box-shadow: 0 0 0 3px rgba(0, 157, 193, 0.14);
+}
+
+.reserva-form-lms .btn-primary {
+  background: var(--form-navy);
+  border-radius: 13px;
+}
+
+.reserva-form-lms .btn-primary:hover {
+  background: var(--form-cyan);
+}
+
+.reserva-form-lms .btn-ghost {
+  color: var(--form-navy);
+}
+
+.nueva-reserva-page .page-header {
+  background: #ffffff;
+  border: 1px solid rgba(5, 40, 69, 0.10);
+  border-left: 8px solid #fecc00;
+  border-radius: 26px;
+  box-shadow: 0 18px 42px rgba(5, 40, 69, 0.09);
+}
+
+.nueva-reserva-page .page-eyebrow {
+  color: #009dc1;
+}
+
+.nueva-reserva-page .page-header h1 {
+  color: #052845;
+}
+
+.nueva-reserva-page .page-header p {
+  color: #8b8b8b;
+}
+
+.nueva-reserva-page .page-header .btn-ghost {
+  border-color: rgba(5, 40, 69, 0.16);
+  color: #052845;
+}
