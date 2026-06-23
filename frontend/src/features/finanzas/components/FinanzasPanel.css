@@ -1,0 +1,68 @@
+/* Finanzas (deportista) placeholder panel — self-contained, scoped under
+   .finanzas-panel. */
+.finanzas-panel {
+  --ucb-blue: #052845;
+  --ucb-yellow: #fecc00;
+  --text-light: #8b8b8b;
+  --border-color: #e2e8ee;
+
+  min-height: calc(100vh - 80px);
+  background: #f4f7f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 5%;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+
+  .panel-placeholder {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(5, 40, 69, 0.06);
+    border-top: 4px solid var(--ucb-yellow);
+    padding: 48px 44px;
+    max-width: 460px;
+    text-align: center;
+  }
+
+  .panel-placeholder-icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 20px;
+    border-radius: 18px;
+    background: #e6f4f8;
+    color: var(--ucb-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .panel-placeholder h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 24px;
+    color: var(--ucb-blue);
+    margin: 0 0 10px;
+  }
+
+  .panel-placeholder p {
+    color: var(--text-light);
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 20px;
+  }
+
+  .panel-placeholder-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: var(--ucb-yellow);
+    color: var(--ucb-blue);
+  }
+}

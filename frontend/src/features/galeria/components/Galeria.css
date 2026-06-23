@@ -1,0 +1,268 @@
+/* Galería feature — self-contained, all selectors nested under .galeria-page,
+   all tokens scoped there (never :root). Masonry (Pinterest/Instagram style). */
+.galeria-page {
+  --ucb-blue: #052845;
+  --ucb-yellow: #fecc00;
+  --text-light: #8b8b8b;
+  --border-color: #e2e8ee;
+  --card-shadow: 0 4px 6px rgba(5, 40, 69, 0.06);
+
+  font-family: 'Inter', sans-serif;
+  color: #052845;
+
+  /* ── re-homed globals ── */
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 5%;
+  }
+
+  .page-header {
+    background-color: #ffffff;
+    padding: 3rem 5% 2rem;
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+    animation: galeria-fadeInUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .page-header h1 {
+    color: var(--ucb-blue);
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .page-header p {
+    color: var(--text-light);
+    font-size: 1.1rem;
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .galeria-container {
+    margin-top: 2.5rem;
+    margin-bottom: 3.5rem;
+  }
+
+  /* ── filter chips ── */
+  .galeria-filter {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 2.25rem;
+  }
+
+  .galeria-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1.5px solid var(--border-color);
+    background: #ffffff;
+    color: var(--text-light);
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 8px 20px;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+  .galeria-chip:not(.active):hover {
+    border-color: #009dc1;
+    color: #009dc1;
+  }
+  .galeria-chip.active {
+    background: var(--ucb-blue);
+    border-color: var(--ucb-blue);
+    color: #ffffff;
+  }
+  .galeria-chip-count {
+    font-size: 0.72rem;
+    color: var(--text-light);
+    background: var(--border-color);
+    border-radius: 10px;
+    padding: 1px 8px;
+  }
+  .galeria-chip.active .galeria-chip-count {
+    color: var(--ucb-blue);
+    background: var(--ucb-yellow);
+  }
+
+  /* ── masonry grid ── */
+  .masonry {
+    column-count: 4;
+    column-gap: 16px;
+  }
+
+  .masonry-item {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin: 0 0 16px;
+    padding: 0;
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--ucb-blue);
+    box-shadow: var(--card-shadow);
+    cursor: pointer;
+    break-inside: avoid;
+    font-family: inherit;
+  }
+
+  .masonry-media {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .masonry-item:hover .masonry-media {
+    transform: scale(1.05);
+  }
+
+  .masonry-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 30px 14px 12px;
+    color: #ffffff;
+    background: linear-gradient(to top, rgba(5, 40, 69, 0.88) 0%, rgba(5, 40, 69, 0) 100%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  .masonry-item:hover .masonry-overlay {
+    opacity: 1;
+  }
+  .masonry-type {
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+  .masonry-date {
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .masonry-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: rgba(5, 40, 69, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    pointer-events: none;
+    transition: background 0.25s ease;
+  }
+  .masonry-item:hover .masonry-play {
+    background: var(--ucb-yellow);
+  }
+  .masonry-item:hover .masonry-play svg {
+    fill: var(--ucb-blue);
+  }
+
+  .galeria-status {
+    text-align: center;
+    color: var(--text-light);
+    font-size: 1.05rem;
+    padding: 3rem 0;
+  }
+
+  /* ── lightbox ── */
+  .lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(5, 40, 69, 0.93);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5vh 5vw;
+    animation: galeria-fadeIn 0.2s ease;
+  }
+
+  .lightbox-content {
+    max-width: 1000px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .lightbox-media {
+    max-width: 100%;
+    max-height: 82vh;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    background: #000000;
+  }
+
+  .lightbox-date {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+  }
+
+  .lightbox-close {
+    position: fixed;
+    top: 22px;
+    right: 26px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+  }
+  .lightbox-close:hover {
+    background: var(--ucb-yellow);
+    color: var(--ucb-blue);
+  }
+
+  @media (max-width: 1100px) {
+    .masonry { column-count: 3; }
+  }
+  @media (max-width: 760px) {
+    .masonry { column-count: 2; }
+  }
+  @media (max-width: 460px) {
+    .masonry { column-count: 1; }
+  }
+}
+
+@keyframes galeria-fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes galeria-fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

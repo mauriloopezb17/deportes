@@ -1,0 +1,61 @@
+/* Global Footer — self-contained, tokens scoped to .ucb-footer (never :root). */
+.ucb-footer {
+  --ucb-blue: #052845;
+  --ucb-yellow: #fecc00;
+
+  background-color: var(--ucb-blue);
+  color: #ffffff;
+  padding: 3rem 5%;
+  margin-top: 2rem;
+  width: 100%;
+  border-top: 4px solid var(--ucb-yellow);
+  font-family: 'Inter', sans-serif;
+}
+
+.ucb-footer .footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.ucb-footer .footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.ucb-footer .footer-brand img {
+  height: 60px;
+}
+
+.ucb-footer .footer-brand h3 {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.ucb-footer .footer-brand p {
+  margin: 5px 0 0 0;
+  color: #c2d3df;
+  font-size: 0.9rem;
+}
+
+.ucb-footer .footer-copy {
+  text-align: right;
+}
+
+.ucb-footer .footer-copy .muted {
+  color: #c2d3df;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .ucb-footer .footer-inner {
+    justify-content: center;
+    text-align: center;
+  }
+  .ucb-footer .footer-copy {
+    text-align: center;
+  }
+}
