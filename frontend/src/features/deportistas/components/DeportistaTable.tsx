@@ -1,124 +1,103 @@
-import StatusBadge from "../../../shared/components/StatusBadge";
-import Spinner from "../../../shared/components/Spinner";
-import type { Deportista, EstadoCuenta } from "../types/deportista.types";
+import type { DeportistaRow, EstadoPago } from "../types/deportista.types";
 
-type Props = {
-  deportistas: Deportista[];
-  cargando?: boolean;
-  onVerCuenta: (deportista: Deportista) => void;
-  onEditar?: (deportista: Deportista) => void;
-};
-
-const estadoLabel: Record<EstadoCuenta, string> = {
-  al_dia: "✓ Al día",
-  pendiente: "Pendiente",
-  no_aplica: "No aplica",
-};
-
-const estadoTone: Record<EstadoCuenta, "success" | "warning" | "info"> = {
-  al_dia: "success",
-  pendiente: "warning",
-  no_aplica: "info",
-};
-
-function nombreCompleto(d: Deportista) {
-  return `${d.nombres ?? ""} ${d.apePaterno ?? ""} ${d.apeMaterno ?? ""}`.trim();
+interface DeportistaTableProps {
+  deportistas: DeportistaRow[];
+  search: string;
+  onSearch: (value: string) => void;
+  onVerCuenta: (deportista: DeportistaRow) => void;
 }
 
-function ciCompleto(d: Deportista) {
-  return d.complemento ? `${d.ci} ${d.complemento}` : d.ci;
+function estadoClass(estado: EstadoPago) {
+  if (estado === "Al día") return "success";
+  if (estado === "Moroso") return "danger";
+  return "warning";
 }
 
-function DeportistaTable({
+function estadoIcon(estado: EstadoPago) {
+  if (estado === "Al día") return "✓";
+  if (estado === "Moroso") return "⚠";
+  return "⏱";
+}
+
+export default function DeportistaTable({
   deportistas,
-  cargando,
+  search,
+  onSearch,
   onVerCuenta,
-  onEditar,
-}: Props) {
-  if (cargando) {
-    return <Spinner texto="Cargando deportistas..." tamanio="lg" />;
-  }
-
-  if (deportistas.length === 0) {
-    return (
-      <div
-        className="panel-card"
-        style={{ textAlign: "center", padding: "2rem" }}
-      >
-        No se encontraron deportistas.
-      </div>
-    );
-  }
-
+}: DeportistaTableProps) {
   return (
-    <div className="table-card">
+    <section className="table-card deportistas-table-card">
+      <div className="table-toolbar deportistas-table-toolbar">
+        <div>
+          <h2>Deportistas registrados</h2>
+          <p>Listado conectado a la estructura de personas, deportistas, inscripciones y pagos.</p>
+        </div>
+
+        <input
+          className="search-input"
+          value={search}
+          onChange={(event) => onSearch(event.target.value)}
+          placeholder="Buscar por nombre o CI"
+        />
+      </div>
+
       <table className="data-table">
         <thead>
           <tr>
             <th>Deportista</th>
             <th>CI</th>
             <th>Disciplina</th>
+            <th>Tipo</th>
             <th>Mes actual</th>
             <th>Estado</th>
             <th>Deuda</th>
-            <th>Acciones</th>
+            <th>Acción</th>
           </tr>
         </thead>
+
         <tbody>
-          {deportistas.map((item) => {
-            const inscripcionActiva = item.inscripciones?.find((i) => i.activo);
-            const disciplinaNombre =
-              inscripcionActiva?.disciplina?.nombre ?? "—";
-
-            const estado: EstadoCuenta = item.estadoCuenta ?? "pendiente";
-            const deuda = item.deuda ?? 0;
-
-            const mesActual = new Date().toLocaleString("es-BO", {
-              month: "long",
-            });
-
-            return (
-              <tr key={item.id}>
-                <td>
-                  <strong>{nombreCompleto(item)}</strong>
-                  {item.carrera && <span>{item.carrera}</span>}
-                </td>
-                <td>{ciCompleto(item)}</td>
-                <td>{disciplinaNombre}</td>
-                <td style={{ textTransform: "capitalize" }}>{mesActual}</td>
-                <td>
-                  <StatusBadge tone={estadoTone[estado]}>
-                    {estadoLabel[estado]}
-                  </StatusBadge>
-                </td>
-                <td>Bs. {deuda}</td>
-                <td>
-                  <div
-                    style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}
-                  >
-                    <button
-                      className="btn btn-outline small"
-                      onClick={() => onVerCuenta(item)}
-                    >
-                      Ver cuenta
-                    </button>
-                    {onEditar && (
-                      <button
-                        className="btn btn-primary small"
-                        onClick={() => onEditar(item)}
-                      >
-                        Editar
-                      </button>
-                    )}
+          {deportistas.length === 0 ? (
+            <tr>
+              <td colSpan={8}>
+                <div className="empty-state">
+                  <div>
+                    <strong>No se encontraron deportistas</strong>
+                    <p>Prueba con otro nombre, CI o registra un nuevo deportista.</p>
                   </div>
+                </div>
+              </td>
+            </tr>
+          ) : (
+            deportistas.map((deportista) => (
+              <tr key={deportista.id_deportista}>
+                <td>
+                  <strong>{deportista.nombre_completo}</strong>
+                  <span>{deportista.categoria}</span>
+                </td>
+                <td>{deportista.ci}{deportista.complemento ? `-${deportista.complemento}` : ""}</td>
+                <td>{deportista.disciplina}</td>
+                <td>{deportista.tipo_deportista}</td>
+                <td>{deportista.mes_actual}</td>
+                <td>
+                  <span className={`status-badge ${estadoClass(deportista.estado_pago)}`}>
+                    {estadoIcon(deportista.estado_pago)} {deportista.estado_pago}
+                  </span>
+                </td>
+                <td>Bs. {deportista.deuda}</td>
+                <td>
+                  <button
+                    className="btn btn-outline small"
+                    type="button"
+                    onClick={() => onVerCuenta(deportista)}
+                  >
+                    Ver cuenta
+                  </button>
                 </td>
               </tr>
-            );
-          })}
+            ))
+          )}
         </tbody>
       </table>
-    </div>
+    </section>
   );
 }
-
-export default DeportistaTable;

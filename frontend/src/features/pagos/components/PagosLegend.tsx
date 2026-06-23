@@ -1,16 +1,29 @@
-import StatusBadge from "../../../shared/components/StatusBadge";
-
-function PagosLegend() {
+export default function PagosLegend() {
   return (
-    <section className="panel-card legend-horizontal">
-      <div className="section-heading">
-        <span>Estados de cuenta</span>
+    <section className="panel-card pagos-legend-card">
+      <p className="section-label">Estados de pago</p>
+
+      <div className="pagos-legend-list">
+        <div>
+          <span>Al día</span>
+          <strong className="status-badge success">✓ Al día</strong>
+        </div>
+
+        <div>
+          <span>Pendiente</span>
+          <strong className="status-badge warning">⏱ Pendiente</strong>
+        </div>
+
+        <div>
+          <span>Moroso</span>
+          <strong className="status-badge danger">⚠ Moroso</strong>
+        </div>
+
+        <div>
+          <span>Exonerado/Beca</span>
+          <strong className="status-badge info">Exonerado/Beca</strong>
+        </div>
       </div>
-      <StatusBadge tone="success">✓ Al día</StatusBadge>
-      <StatusBadge tone="warning">⏰ Pendiente</StatusBadge>
-      <StatusBadge tone="info">— No aplica</StatusBadge>
     </section>
   );
 }
-
-export default PagosLegend;

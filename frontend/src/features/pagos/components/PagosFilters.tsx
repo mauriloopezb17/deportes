@@ -1,263 +1,99 @@
-import { useEffect, useState } from "react";
+import type { PagoFilters } from "../types/pago.types";
 
-import { apiRequest } from "../../../shared/services/apiClient";
+interface PagosFiltersProps {
+  filters: PagoFilters;
+  disciplinas: string[];
+  categorias: string[];
+  meses: string[];
+  tipos: string[];
+  onChange: (filters: PagoFilters) => void;
+}
 
-import type { PagoFiltro } from "../types/pago.types";
-
-type DisciplinaOpcion = {
-  id: number;
-  nombre: string;
-};
-
-type Props = {
-  filtros: PagoFiltro;
-
-  onChange: (
-    filtros: PagoFiltro
-  ) => void;
-};
-
-function PagosFilters({
-  filtros,
+export default function PagosFilters({
+  filters,
+  disciplinas,
+  categorias,
+  meses,
+  tipos,
   onChange,
-}: Props) {
-  const [disciplinas, setDisciplinas] =
-    useState<DisciplinaOpcion[]>([]);
-
-  useEffect(() => {
-    apiRequest<DisciplinaOpcion[]>(
-      "/api/disciplinas?activo=true",
-      {
-        requiresAuth: true,
-      }
-    )
-      .then(setDisciplinas)
-      .catch(() =>
-        setDisciplinas([])
-      );
-  }, []);
+}: PagosFiltersProps) {
+  function update<K extends keyof PagoFilters>(key: K, value: PagoFilters[K]) {
+    onChange({ ...filters, [key]: value });
+  }
 
   return (
-    <section className="panel-card">
+    <section className="panel-card pagos-filters-card">
+      <p className="section-label">Filtros</p>
 
-      {/* FILA PRINCIPAL */}
-      <div
-        style={{
-          display: "grid",
-
-          gridTemplateColumns:
-            "2fr 1fr 1fr",
-
-          gap: "16px",
-
-          marginBottom: "16px",
-        }}
-      >
-
-        {/* BUSQUEDA */}
+      <div className="filters-grid pagos-filters-grid">
         <label className="field">
-          <span>
-            Buscar por nombre o CI
-          </span>
-
+          <span>Buscar por nombre o CI</span>
           <input
-            value={filtros.busqueda}
-            onChange={(e) =>
-              onChange({
-                ...filtros,
-                busqueda:
-                  e.target.value,
-              })
-            }
+            value={filters.search}
+            onChange={(event) => update("search", event.target.value)}
             placeholder="Buscar..."
           />
         </label>
 
-        {/* DISCIPLINA */}
         <label className="field">
           <span>Disciplina</span>
-
-          <select
-            value={
-              filtros.disciplinaId
-            }
-            onChange={(e) =>
-              onChange({
-                ...filtros,
-
-                disciplinaId:
-                  e.target.value ===
-                  "todas"
-                    ? "todas"
-                    : Number(
-                        e.target
-                          .value
-                      ),
-              })
-            }
-          >
-            <option value="todas">
-              Todas
-            </option>
-
-            {disciplinas.map(
-              (d) => (
-                <option
-                  key={d.id}
-                  value={d.id}
-                >
-                  {d.nombre}
-                </option>
-              )
-            )}
+          <select value={filters.disciplina} onChange={(event) => update("disciplina", event.target.value)}>
+            <option value="">Todas</option>
+            {disciplinas.map((disciplina) => (
+              <option key={disciplina} value={disciplina}>
+                {disciplina}
+              </option>
+            ))}
           </select>
         </label>
 
-        {/* ESTADO */}
         <label className="field">
-          <span>Estado</span>
-
-          <select
-            value={filtros.estado}
-            onChange={(e) =>
-              onChange({
-                ...filtros,
-
-                estado:
-                  e.target
-                    .value as PagoFiltro["estado"],
-              })
-            }
-          >
-            <option value="todos">
-              Todos
-            </option>
-
-            <option value="al_dia">
-              Al día
-            </option>
-
-            <option value="pendiente">
-              Pendiente
-            </option>
+          <span>Categoría</span>
+          <select value={filters.categoria} onChange={(event) => update("categoria", event.target.value)}>
+            <option value="">Todas</option>
+            {categorias.map((categoria) => (
+              <option key={categoria} value={categoria}>
+                {categoria}
+              </option>
+            ))}
           </select>
         </label>
-      </div>
 
-      {/* FILA SECUNDARIA */}
-      <div
-        style={{
-          display: "grid",
-
-          gridTemplateColumns:
-            "1fr 1fr",
-
-          gap: "16px",
-
-          maxWidth: "420px",
-        }}
-      >
-
-        {/* MES */}
         <label className="field">
           <span>Mes</span>
-
-          <select
-            value={filtros.mes}
-            onChange={(e) =>
-              onChange({
-                ...filtros,
-                mes: e.target.value,
-              })
-            }
-          >
-            <option value="todos">
-              Todos
-            </option>
-
-            <option value="enero">
-              Enero
-            </option>
-
-            <option value="febrero">
-              Febrero
-            </option>
-
-            <option value="marzo">
-              Marzo
-            </option>
-
-            <option value="abril">
-              Abril
-            </option>
-
-            <option value="mayo">
-              Mayo
-            </option>
-
-            <option value="junio">
-              Junio
-            </option>
-
-            <option value="julio">
-              Julio
-            </option>
-
-            <option value="agosto">
-              Agosto
-            </option>
-
-            <option value="septiembre">
-              Septiembre
-            </option>
-
-            <option value="octubre">
-              Octubre
-            </option>
-
-            <option value="noviembre">
-              Noviembre
-            </option>
-
-            <option value="diciembre">
-              Diciembre
-            </option>
+          <select value={filters.mes} onChange={(event) => update("mes", event.target.value)}>
+            <option value="">Todos</option>
+            {meses.map((mes) => (
+              <option key={mes} value={mes}>
+                {mes}
+              </option>
+            ))}
           </select>
         </label>
 
-        {/* AÑO */}
         <label className="field">
-          <span>Año</span>
+          <span>Estado</span>
+          <select value={filters.estado} onChange={(event) => update("estado", event.target.value)}>
+            <option value="">Todos</option>
+            <option value="Al día">Al día</option>
+            <option value="Pendiente">Pendiente</option>
+            <option value="Moroso">Moroso</option>
+            <option value="Exonerado/Beca">Exonerado/Beca</option>
+          </select>
+        </label>
 
-          <select
-            value={filtros.anio}
-            onChange={(e) =>
-              onChange({
-                ...filtros,
-                anio: e.target.value,
-              })
-            }
-          >
-            <option value="todos">
-              Todos
-            </option>
-
-            <option value="2024">
-              2024
-            </option>
-
-            <option value="2025">
-              2025
-            </option>
-
-            <option value="2026">
-              2026
-            </option>
+        <label className="field">
+          <span>Tipo</span>
+          <select value={filters.tipo} onChange={(event) => update("tipo", event.target.value)}>
+            <option value="">Todos</option>
+            {tipos.map((tipo) => (
+              <option key={tipo} value={tipo}>
+                {tipo}
+              </option>
+            ))}
           </select>
         </label>
       </div>
     </section>
   );
 }
-
-export default PagosFilters;

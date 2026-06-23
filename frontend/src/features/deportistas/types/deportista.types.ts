@@ -1,142 +1,49 @@
-export type EstadoCuenta = "al_dia" | "pendiente" | "no_aplica";
+export type TipoDeportista = "Academia" | "Clase libre" | "Equipo competitivo";
 
-export type TipoDeportista = "estudiante_ucb" | "academia" | "competitivo" | "exonerado";
+export type EstadoInscripcion = "Activo" | "Pendiente" | "Baja";
 
-export type DisciplinaRaw = {
-  id: number;
-  nombre: string;
-  activo: boolean;
-};
+export type EstadoPago = "Al día" | "Pendiente" | "Moroso";
 
-export type InscripcionRaw = {
-  id: number;
-  deportista_id: number;
-  disciplina_id: number;
-  categoria?: string | null;
-  fecha_inscripcion: string;
-  estado: "activo" | "inactivo";
-  disciplina?: DisciplinaRaw | null;
-};
+export interface DisciplinaOption {
+  id_disciplina: number;
+  nombre_disciplina: string;
+}
 
-export type DeportistaRaw = {
-  id: number;
-  tipo: string;
-  nombres: string | null;
-  ape_paterno: string | null;
-  ape_materno: string | null;
-  ci: number;
-  complemento?: string | null;
-  celular: string;
-  fecha_nacimiento?: string | null;
-  email?: string | null;
-  talla_ropa?: string | null;
-  id_carrera?: number | null;
-  carrera?: string | null;
-  semestre?: number | null;
-  colegio_instituto?: string | null;
-  curso?: string | null;
-  activo: boolean;
-  inscripciones?: InscripcionRaw[];
-  estado_cuenta?: EstadoCuenta;
-  deuda?: number;
-};
+export interface CategoriaOption {
+  id_categoria: number;
+  nombre_categoria: string;
+}
 
-export type DeportistasRawResponse = {
-  data: DeportistaRaw[];
-  total: number;
-  page: number;
-  limit: number;
-};
+export interface EntrenadorOption {
+  id_entrenador: number;
+  nombre_completo: string;
+  disciplina: string;
+}
 
-export type Disciplina = {
-  id: number;
-  nombre: string;
-  activo: boolean;
-};
-
-export type Inscripcion = {
-  id: number;
-  deportistaId: number;
-  disciplinaId: number;
-  categoria?: string | null;
-  fechaInscripcion: string;
-  activo: boolean;
-  disciplina?: Disciplina | null;
-};
-
-export type Deportista = {
-  id: number;
-  tipo: TipoDeportista;
-  nombreCompleto: string;
-  nombres?: string | null;
-  apePaterno?: string | null;
-  apeMaterno?: string | null;
-  ci: string;
-  complemento?: string | null;
-  celular: string;
-  fechaNacimiento?: string | null;
-  email?: string | null;
-  tallaRopa?: string | null;
-  idCarrera?: number | null;
-  carrera?: string | null;
-  semestre?: number | null;
-  colegioInstituto?: string | null;
-  curso?: string | null;
-  activo: boolean;
-  inscripciones?: Inscripcion[];
-  estadoCuenta?: EstadoCuenta;
-  deuda?: number;
-};
-
-export type DeportistaFormData = {
+export interface DeportistaFormData {
   nombres: string;
   ape_paterno: string;
   ape_materno: string;
-  ci: string;
-  complemento?: string;
+  fecha_nacimiento: string;
   celular: string;
-  fechaNacimiento?: string;
-  email?: string;
-  tipo: TipoDeportista;
-  tallaRopa?: string;
-  idCarrera?: number;
-  carrera?: string;
-  semestre?: string;
-  colegioInstituto?: string;
-  curso?: string;
-  activo: boolean;
-  disciplinaId?: number;
-  categoria?: string;
-};
+  ci: string;
+  complemento: string;
+  tipo_deportista: TipoDeportista;
+  talla_ropa: string;
+  id_disciplina: number;
+  id_categoria: number;
+  id_entrenador?: number;
+  fecha_inscripcion: string;
+  estado_inscripcion: EstadoInscripcion;
+}
 
-export type PagoRaw = {
-  id: number;
-  deportista_id: number;
-  concepto_id: number;
-  monto: number | string;
-  mes: number | null;
-  anio: number | null;
-  fecha_pago: string;
-  comprobante: string | null;
-  origen: string;
-  estado: "confirmado" | "anulado";
-  observaciones: string | null;
-  concepto: {
-    id: number;
-    nombre: string;
-    monto: number | string;
-    periodicidad: string | null;
-  };
-};
-
-export type PagoHistorial = {
-  id: number;
-  mes: string;
-  anio: number;
-  concepto: string;
-  monto: number;
-  estado: "confirmado" | "anulado";
-  fechaPago?: string;
-  observaciones?: string;
-  anulado: boolean;
-};
+export interface DeportistaRow extends DeportistaFormData {
+  id_deportista: number;
+  nombre_completo: string;
+  disciplina: string;
+  categoria: string;
+  entrenador_asignado: string;
+  mes_actual: string;
+  estado_pago: EstadoPago;
+  deuda: number;
+}
