@@ -1,22 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateNoticiaDto } from './dto/create-noticia.dto';
 import { UpdateNoticiaDto } from './dto/update-noticia.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { OracleStorageService } from '../oracle-storage/oracle-storage.service';
 import { Prisma } from '@prisma/client';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class NoticiasService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly oracleStorage: OracleStorageService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache, // <-- 2. Usas la interfaz limpia
   ) {}
 
   async create(createNoticiaDto: CreateNoticiaDto, authorId: number) {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const fechaPublicacion = createNoticiaDto.publicado ? new Date() : null;
 
-      // 1. Crear la noticia inicialmente
       const noticia = await tx.noticias.create({
         data: {
           id_usuario_autor: authorId,
@@ -29,15 +31,12 @@ export class NoticiasService {
           fecha_publicacion: fechaPublicacion,
         },
       });
-
-      // 2. Procesar imágenes dentro del contenido JSON
       const contenidoFinal = await this.procesarImagenesContenido(
         createNoticiaDto.contenido,
         noticia.id_noticia,
         tx,
       );
 
-      // 3. Actualizar la noticia con el contenido final procesado
       await tx.noticias.update({
         where: { id_noticia: noticia.id_noticia },
         data: {
@@ -45,7 +44,6 @@ export class NoticiasService {
         },
       });
 
-      // 4. Crear imágenes adicionales explícitas
       if (createNoticiaDto.imagenes && createNoticiaDto.imagenes.length > 0) {
         for (const img of createNoticiaDto.imagenes) {
           await tx.noticias_imagenes.create({
@@ -60,9 +58,15 @@ export class NoticiasService {
 
       return { id_noticia: noticia.id_noticia, contenido: contenidoFinal };
     });
+
+    await this.cacheManager.del('todas_las_noticias');
+    return result;
   }
 
   async findAll(soloPublicados = false) {
+    console.log(
+      'alguien k me kiere mucho m trajo estas notisias de postgresql',
+    );
     const noticiasList = await this.prisma.noticias.findMany({
       where: soloPublicados ? { publicado: true } : {},
       orderBy: { fecha_creacion: 'desc' },
@@ -134,11 +138,13 @@ export class NoticiasService {
   }
 
   async update(id: number, updateNoticiaDto: UpdateNoticiaDto) {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const dataToUpdate: Prisma.noticiasUpdateInput = {};
 
-      if (updateNoticiaDto.titulo !== undefined) dataToUpdate.titulo = updateNoticiaDto.titulo;
-      if (updateNoticiaDto.resumen !== undefined) dataToUpdate.resumen = updateNoticiaDto.resumen;
+      if (updateNoticiaDto.titulo !== undefined)
+        dataToUpdate.titulo = updateNoticiaDto.titulo;
+      if (updateNoticiaDto.resumen !== undefined)
+        dataToUpdate.resumen = updateNoticiaDto.resumen;
       if (updateNoticiaDto.publicado !== undefined) {
         dataToUpdate.publicado = updateNoticiaDto.publicado;
         if (updateNoticiaDto.publicado) {
@@ -148,7 +154,9 @@ export class NoticiasService {
 
       if (updateNoticiaDto.id_categoria_noticia !== undefined) {
         dataToUpdate.categorias_noticia = {
-          connect: { id_categoria_noticia: updateNoticiaDto.id_categoria_noticia },
+          connect: {
+            id_categoria_noticia: updateNoticiaDto.id_categoria_noticia,
+          },
         };
       }
 
@@ -193,6 +201,10 @@ export class NoticiasService {
 
       return contenidoFinal;
     });
+
+    await this.cacheManager.del('todas_las_noticias');
+    await this.cacheManager.del(`/noticias/${id}`);
+    return result;
   }
 
   async remove(id: number) {
@@ -206,6 +218,8 @@ export class NoticiasService {
       await this.prisma.noticias.delete({
         where: { id_noticia: id },
       });
+      await this.cacheManager.del('todas_las_noticias');
+      await this.cacheManager.del(`/noticias/${id}`);
       return true;
     } catch (e) {
       return false;

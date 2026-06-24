@@ -10,7 +10,9 @@ import {
   UseGuards,
   Request,
   NotFoundException,
+  UseInterceptors,
 } from '@nestjs/common';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import { NoticiasService } from './noticias.service';
 import { CreateNoticiaDto } from './dto/create-noticia.dto';
 import { UpdateNoticiaDto } from './dto/update-noticia.dto';
@@ -19,10 +21,13 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 
 @Controller('noticias')
+@UseInterceptors(CacheInterceptor)
 export class NoticiasController {
   constructor(private readonly noticiasService: NoticiasService) {}
 
   @Get()
+  @CacheKey('todas_las_noticias')
+  @CacheTTL(60000)
   async getNoticias(@Query('publicado') publicado?: string) {
     const soloPublicados = publicado === 'true';
     return this.noticiasService.findAll(soloPublicados);
