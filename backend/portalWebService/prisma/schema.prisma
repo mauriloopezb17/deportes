@@ -1,0 +1,415 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model carreras {
+  id_carrera         Int                  @id(map: "carreras_pk") @default(autoincrement())
+  nombre             String               @db.VarChar(100)
+  sigla              String?              @db.VarChar(10)
+  activo             Boolean              @default(true)
+  delegados_carrera  delegados_carrera[]
+  deportistas_ucb    deportistas_ucb[]
+  equipos            equipos[]
+  galeria_multimedia galeria_multimedia[]
+  medallero_carreras medallero_carreras[]
+}
+
+model categorias {
+  id_categoria          Int                     @id(map: "categorias_pk") @default(autoincrement())
+  nombre_categoria      String                  @db.VarChar(50)
+  entrenador_asignacion entrenador_asignacion[]
+  inscripciones         inscripciones[]
+  registros_federacion  registros_federacion[]
+}
+
+model categorias_noticia {
+  id_categoria_noticia Int        @id(map: "categorias_noticia_pk") @default(autoincrement())
+  nombre               String     @db.VarChar(50)
+  noticias             noticias[]
+}
+
+model codigos_reset_password {
+  id        Int       @id @default(autoincrement())
+  email     String    @db.VarChar(255)
+  codigo    String    @db.VarChar(6)
+  expira_en DateTime  @db.Timestamp(6)
+  usado     Boolean?  @default(false)
+  creado_en DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([email, usado], map: "idx_reset_email")
+}
+
+model conceptos_pago {
+  id_concepto   Int          @id(map: "conceptos_pago_pk") @default(autoincrement())
+  id_disciplina Int?
+  codigo_caja   String       @db.VarChar(20)
+  nombre        String       @db.VarChar(100)
+  monto_actual  Decimal      @db.Decimal(10, 2)
+  activo        Boolean      @default(true)
+  disciplinas   disciplinas? @relation(fields: [id_disciplina], references: [id_disciplina], onDelete: NoAction, onUpdate: NoAction, map: "conceptos_pago_disciplinas")
+  pagos         pagos[]
+}
+
+model delegados_carrera {
+  id_delegado_carrera Int      @id(map: "delegados_carrera_pk") @default(autoincrement())
+  id_usuario          Int
+  id_carrera          Int
+  gestion             Int
+  activo              Boolean  @default(true)
+  carreras            carreras @relation(fields: [id_carrera], references: [id_carrera], onDelete: NoAction, onUpdate: NoAction, map: "delegados_carrera_carreras")
+  usuarios            usuarios @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "delegados_carrera_usuarios")
+}
+
+model deportistas {
+  id_deportista                                   Int                               @id(map: "deportistas_pk") @default(autoincrement())
+  id_persona                                      Int
+  id_persona_tutor                                Int?
+  tipo_deportista                                 String                            @db.VarChar(20)
+  talla_ropa                                      String?                           @db.VarChar(10)
+  url_foto                                        String?
+  personas_deportistas_id_personaTopersonas       personas                          @relation("deportistas_id_personaTopersonas", fields: [id_persona], references: [id_persona], onDelete: NoAction, onUpdate: NoAction, map: "deportistas_personas")
+  personas_deportistas_id_persona_tutorTopersonas personas?                         @relation("deportistas_id_persona_tutorTopersonas", fields: [id_persona_tutor], references: [id_persona], onDelete: NoAction, onUpdate: NoAction, map: "deportistas_personas_tutor")
+  deportistas_externos                            deportistas_externos[]
+  deportistas_ucb                                 deportistas_ucb[]
+  equipo_jugadores                                equipo_jugadores[]
+  estadisticas_partido_jugador                    estadisticas_partido_jugador[]
+  fichas_medicas                                  fichas_medicas[]
+  historial_experiencia_deportiva                 historial_experiencia_deportiva[]
+  inscripciones                                   inscripciones[]
+  pagos                                           pagos[]
+  registros_federacion                            registros_federacion[]
+}
+
+model deportistas_externos {
+  id_deportista_ext Int         @id(map: "deportistas_externos_pk") @default(autoincrement())
+  id_deportista     Int
+  colegio_instituto String?     @db.VarChar(150)
+  curso             String?     @db.VarChar(50)
+  deportistas       deportistas @relation(fields: [id_deportista], references: [id_deportista], onDelete: NoAction, onUpdate: NoAction, map: "deportistas_externos_deportistas")
+}
+
+model deportistas_ucb {
+  id_deportista_ucb Int         @id(map: "deportistas_ucb_pk") @default(autoincrement())
+  id_deportista     Int
+  id_carrera        Int
+  semestre          Int
+  est_regular       Boolean     @default(false)
+  carreras          carreras    @relation(fields: [id_carrera], references: [id_carrera], onDelete: NoAction, onUpdate: NoAction, map: "deportistas_ucb_carreras")
+  deportistas       deportistas @relation(fields: [id_deportista], references: [id_deportista], onDelete: NoAction, onUpdate: NoAction, map: "deportistas_ucb_deportistas")
+}
+
+model disciplinas {
+  id_disciplina            Int                        @id(map: "disciplinas_pk") @default(autoincrement())
+  nombre_disciplina        String                     @db.VarChar(50)
+  activo                   Boolean                    @default(true)
+  conceptos_pago           conceptos_pago[]
+  entrenador_asignacion    entrenador_asignacion[]
+  inscripciones            inscripciones[]
+  plantilla_horarios_fijos plantilla_horarios_fijos[]
+  registros_federacion     registros_federacion[]
+  torneos                  torneos[]
+}
+
+model entrenador_asignacion {
+  id_asignacion Int          @id(map: "entrenador_asignacion_pk") @default(autoincrement())
+  id_entrenador Int
+  id_disciplina Int
+  id_categoria  Int
+  categorias    categorias   @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "ea_categoria")
+  disciplinas   disciplinas  @relation(fields: [id_disciplina], references: [id_disciplina], onDelete: NoAction, onUpdate: NoAction, map: "ea_disciplina")
+  entrenadores  entrenadores @relation(fields: [id_entrenador], references: [id_entrenador], onDelete: NoAction, onUpdate: NoAction, map: "ea_entrenador")
+}
+
+model entrenadores {
+  id_entrenador            Int                        @id(map: "entrenadores_pk") @default(autoincrement())
+  id_usuario               Int
+  url_foto                 String?
+  entrenador_asignacion    entrenador_asignacion[]
+  usuarios                 usuarios                   @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "entrenadores_usuarios")
+  plantilla_horarios_fijos plantilla_horarios_fijos[]
+}
+
+model equipo_jugadores {
+  id_equipo_jugador Int         @id(map: "equipo_jugadores_pk") @default(autoincrement())
+  id_deportista     Int
+  id_equipo         Int
+  habilitado        Boolean     @default(true)
+  deportistas       deportistas @relation(fields: [id_deportista], references: [id_deportista], onDelete: NoAction, onUpdate: NoAction, map: "equipo_jugadores_deportistas")
+  equipos           equipos     @relation(fields: [id_equipo], references: [id_equipo], onDelete: NoAction, onUpdate: NoAction, map: "equipo_jugadores_equipos")
+}
+
+model equipos {
+  id_equipo                                      Int                @id(map: "equipos_pk") @default(autoincrement())
+  id_torneo                                      Int
+  id_persona                                     Int
+  id_carrera                                     Int
+  nombre_equipo                                  String             @db.VarChar(100)
+  grupo                                          String?            @db.VarChar(10)
+  equipo_jugadores                               equipo_jugadores[]
+  carreras                                       carreras           @relation(fields: [id_carrera], references: [id_carrera], onDelete: NoAction, onUpdate: NoAction, map: "equipos_carreras")
+  personas                                       personas           @relation(fields: [id_persona], references: [id_persona], onDelete: NoAction, onUpdate: NoAction, map: "equipos_personas")
+  torneos                                        torneos            @relation(fields: [id_torneo], references: [id_torneo], onDelete: NoAction, onUpdate: NoAction, map: "equipos_torneos")
+  partidos_partidos_id_equipo_localToequipos     partidos[]         @relation("partidos_id_equipo_localToequipos")
+  partidos_partidos_id_equipo_visitanteToequipos partidos[]         @relation("partidos_id_equipo_visitanteToequipos")
+}
+
+model espacios {
+  id_espacio               Int                        @id(map: "espacios_pk") @default(autoincrement())
+  nombre_espacio           String                     @db.VarChar(100)
+  hora_apertura            DateTime                   @db.Time(6)
+  activo                   Boolean                    @default(true)
+  galeria_multimedia       galeria_multimedia[]
+  partidos                 partidos[]
+  plantilla_horarios_fijos plantilla_horarios_fijos[]
+  reservas                 reservas[]
+}
+
+model estadisticas_partido_jugador {
+  id_estadistica            Int         @id(map: "estadisticas_partido_jugador_pk") @default(autoincrement())
+  id_partido                Int
+  id_deportista             Int
+  puntos_goles              Int         @default(0)
+  faltas_tarjetas_amarillas Int         @default(0)
+  faltas_tarjetas_rojas     Int         @default(0)
+  deportistas               deportistas @relation(fields: [id_deportista], references: [id_deportista], onDelete: NoAction, onUpdate: NoAction, map: "estadisticas_partido_jugador_deportistas")
+  partidos                  partidos    @relation(fields: [id_partido], references: [id_partido], onDelete: NoAction, onUpdate: NoAction, map: "estadisticas_partido_jugador_partidos")
+}
+
+model fichas_medicas {
+  id_ficha                     Int         @id(map: "fichas_medicas_pk") @default(autoincrement())
+  id_deportista                Int
+  tipo_sangre                  String      @db.VarChar(5)
+  seguro_medico                String?     @db.VarChar(100)
+  enfermedades_padecimientos   String?
+  contacto_emergencia_nombre   String      @db.VarChar(150)
+  contacto_emergencia_telefono String      @db.VarChar(50)
+  deportistas                  deportistas @relation(fields: [id_deportista], references: [id_deportista], onDelete: NoAction, onUpdate: NoAction, map: "fichas_medicas_deportistas")
+}
+
+model galeria_multimedia {
+  id_multimedia    Int       @id(map: "galeria_multimedia_pk") @default(autoincrement())
+  id_usuario_autor Int
+  url_archivo      String
+  tipo_archivo     String    @db.VarChar(20)
+  publicado        Boolean   @default(false)
+  id_torneo        Int?
+  id_partido       Int?
+  id_espacio       Int?
+  id_carrera       Int?
+  fecha_subida     DateTime  @default(now()) @db.Timestamp(6)
+  carreras         carreras? @relation(fields: [id_carrera], references: [id_carrera], onDelete: NoAction, onUpdate: NoAction, map: "galeria_carreras")
+  espacios         espacios? @relation(fields: [id_espacio], references: [id_espacio], onDelete: NoAction, onUpdate: NoAction, map: "galeria_espacios")
+  partidos         partidos? @relation(fields: [id_partido], references: [id_partido], onDelete: NoAction, onUpdate: NoAction, map: "galeria_partidos")
+  torneos          torneos?  @relation(fields: [id_torneo], references: [id_torneo], onDelete: NoAction, onUpdate: NoAction, map: "galeria_torneos")
+  usuarios         usuarios  @relation(fields: [id_usuario_autor], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "galeria_usuarios")
+}
+
+model historial_experiencia_deportiva {
+  id_historial       Int         @id(map: "historial_experiencia_deportiva_pk") @default(autoincrement())
+  id_deportista      Int
+  tipo_participacion String      @db.VarChar(50)
+  gestion            Int
+  club_sede          String      @db.VarChar(100)
+  categoria_jugada   String?     @db.VarChar(50)
+  deportistas        deportistas @relation(fields: [id_deportista], references: [id_deportista], onDelete: NoAction, onUpdate: NoAction, map: "historial_experiencia_deportiva_deportistas")
+}
+
+model inscripciones {
+  id_inscripcion    Int         @id(map: "inscripciones_pk") @default(autoincrement())
+  id_deportista     Int
+  id_disciplina     Int
+  id_categoria      Int
+  fecha_inscripcion DateTime    @db.Date
+  estado            String      @db.VarChar(20)
+  fecha_baja        DateTime?   @db.Date
+  motivo_baja       String?
+  categorias        categorias  @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_categorias")
+  deportistas       deportistas @relation(fields: [id_deportista], references: [id_deportista], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_deportistas")
+  disciplinas       disciplinas @relation(fields: [id_disciplina], references: [id_disciplina], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_disciplinas")
+}
+
+model medallero_carreras {
+  id_medallero   Int      @id(map: "medallero_carreras_pk") @default(autoincrement())
+  id_carrera     Int
+  gestion        Int
+  oro            Int      @default(0)
+  plata          Int      @default(0)
+  bronce         Int      @default(0)
+  puntos_totales Int      @default(0)
+  carreras       carreras @relation(fields: [id_carrera], references: [id_carrera], onDelete: NoAction, onUpdate: NoAction, map: "medallero_carreras_carreras")
+}
+
+model noticias {
+  id_noticia           Int                 @id(map: "noticias_pk") @default(autoincrement())
+  id_usuario_autor     Int
+  id_categoria_noticia Int
+  titulo               String              @db.VarChar(255)
+  contenido            Json
+  resumen              String?             @db.VarChar(500)
+  publicado            Boolean             @default(false)
+  fecha_creacion       DateTime            @default(now()) @db.Timestamp(6)
+  fecha_publicacion    DateTime?           @db.Timestamp(6)
+  categorias_noticia   categorias_noticia  @relation(fields: [id_categoria_noticia], references: [id_categoria_noticia], onDelete: NoAction, onUpdate: NoAction, map: "noticias_categorias_noticia")
+  usuarios             usuarios            @relation(fields: [id_usuario_autor], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "noticias_usuarios")
+  noticias_imagenes    noticias_imagenes[]
+}
+
+model noticias_imagenes {
+  id_imagen   Int      @id(map: "noticias_imagenes_pk") @default(autoincrement())
+  id_noticia  Int
+  url_storage String   @db.VarChar(500)
+  es_portada  Boolean  @default(false)
+  noticias    noticias @relation(fields: [id_noticia], references: [id_noticia], onDelete: NoAction, onUpdate: NoAction, map: "noticias_imagenes_noticias")
+}
+
+model pagos {
+  id_pago                    Int            @id(map: "pagos_pk") @default(autoincrement())
+  id_persona_pago            Int
+  id_deportista_beneficiario Int
+  id_concepto                Int
+  id_transaccion_caja        String         @db.VarChar(100)
+  monto_pagado               Decimal        @db.Decimal(10, 2)
+  fecha_pago                 DateTime       @db.Date
+  mes_correspondiente        Int
+  gestion                    Int
+  estado_factura             String         @default("Activa") @db.VarChar(20)
+  conceptos_pago             conceptos_pago @relation(fields: [id_concepto], references: [id_concepto], onDelete: NoAction, onUpdate: NoAction, map: "pagos_conceptos_pago")
+  deportistas                deportistas    @relation(fields: [id_deportista_beneficiario], references: [id_deportista], onDelete: NoAction, onUpdate: NoAction, map: "pagos_deportistas")
+  personas                   personas       @relation(fields: [id_persona_pago], references: [id_persona], onDelete: NoAction, onUpdate: NoAction, map: "pagos_personas")
+}
+
+model partidos {
+  id_partido                                    Int                            @id(map: "partidos_pk") @default(autoincrement())
+  id_torneo                                     Int
+  id_equipo_local                               Int
+  id_equipo_visitante                           Int
+  id_espacio                                    Int?
+  fase_torneo                                   String                         @db.VarChar(50)
+  fecha                                         DateTime                       @db.Date
+  hora_inicio                                   DateTime                       @db.Time(6)
+  hora_fin                                      DateTime                       @db.Time(6)
+  goles_local                                   Int                            @default(0)
+  goles_visitante                               Int                            @default(0)
+  estado                                        String                         @default("Programado") @db.VarChar(20)
+  estadisticas_partido_jugador                  estadisticas_partido_jugador[]
+  galeria_multimedia                            galeria_multimedia[]
+  equipos_partidos_id_equipo_localToequipos     equipos                        @relation("partidos_id_equipo_localToequipos", fields: [id_equipo_local], references: [id_equipo], onDelete: NoAction, onUpdate: NoAction, map: "fixture_equipos_local")
+  equipos_partidos_id_equipo_visitanteToequipos equipos                        @relation("partidos_id_equipo_visitanteToequipos", fields: [id_equipo_visitante], references: [id_equipo], onDelete: NoAction, onUpdate: NoAction, map: "fixture_equipos_visitantes")
+  espacios                                      espacios?                      @relation(fields: [id_espacio], references: [id_espacio], onDelete: NoAction, onUpdate: NoAction, map: "fixture_espacios")
+  torneos                                       torneos                        @relation(fields: [id_torneo], references: [id_torneo], onDelete: NoAction, onUpdate: NoAction, map: "fixture_torneos")
+}
+
+model personas {
+  id_persona                                         Int           @id(map: "personas_pk") @default(autoincrement())
+  nombres                                            String        @db.VarChar(100)
+  ape_paterno                                        String        @db.VarChar(50)
+  ape_materno                                        String        @db.VarChar(50)
+  fecha_nacimiento                                   DateTime      @db.Date
+  celular                                            String        @db.VarChar(20)
+  ci                                                 Int
+  complemento                                        String?       @db.VarChar(5)
+  deportistas_deportistas_id_personaTopersonas       deportistas[] @relation("deportistas_id_personaTopersonas")
+  deportistas_deportistas_id_persona_tutorTopersonas deportistas[] @relation("deportistas_id_persona_tutorTopersonas")
+  equipos                                            equipos[]
+  pagos                                              pagos[]
+  reservas                                           reservas[]
+  usuarios                                           usuarios[]
+}
+
+model plantilla_horarios_fijos {
+  id_plantilla    Int           @id(map: "plantilla_horarios_fijos_pk") @default(autoincrement())
+  id_espacio      Int
+  id_disciplina   Int?
+  dia_semana      Int
+  hora_inicio     DateTime      @db.Time(6)
+  hora_fin        DateTime      @db.Time(6)
+  id_tipo_bloqueo Int
+  id_entrenador   Int?
+  entrenadores    entrenadores? @relation(fields: [id_entrenador], references: [id_entrenador], onDelete: NoAction, onUpdate: NoAction, map: "phf_entrenadores")
+  tipos_bloqueo   tipos_bloqueo @relation(fields: [id_tipo_bloqueo], references: [id_tipo_bloqueo], onDelete: NoAction, onUpdate: NoAction, map: "phf_tipo_bloqueo")
+  disciplinas     disciplinas?  @relation(fields: [id_disciplina], references: [id_disciplina], onDelete: NoAction, onUpdate: NoAction, map: "plantilla_horarios_fijos_disciplinas")
+  espacios        espacios      @relation(fields: [id_espacio], references: [id_espacio], onDelete: NoAction, onUpdate: NoAction, map: "plantilla_horarios_fijos_espacios")
+}
+
+model registros_federacion {
+  id_registro_fed         Int         @id(map: "registros_federacion_pk") @default(autoincrement())
+  id_deportista           Int
+  id_disciplina           Int
+  nro_registro_federacion String?     @db.VarChar(100)
+  nro_registro_asociacion String?     @db.VarChar(100)
+  orc_nro                 String?     @db.VarChar(50)
+  libro                   String?     @db.VarChar(50)
+  partida                 String?     @db.VarChar(50)
+  club_origen             String      @default("U.C.B.") @db.VarChar(100)
+  id_categoria            Int?
+  categorias              categorias? @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "registros_federacion_categorias")
+  deportistas             deportistas @relation(fields: [id_deportista], references: [id_deportista], onDelete: NoAction, onUpdate: NoAction, map: "registros_federacion_deportistas")
+  disciplinas             disciplinas @relation(fields: [id_disciplina], references: [id_disciplina], onDelete: NoAction, onUpdate: NoAction, map: "registros_federacion_disciplinas")
+}
+
+model reservas {
+  id_reserva           Int      @id(map: "reservas_pk")
+  id_espacio           Int
+  id_persona_aprobador Int
+  fecha_reserva        DateTime @db.Date
+  hora_inicio          DateTime @db.Time(6)
+  hora_fin             DateTime @db.Time(6)
+  tipo_reserva         String   @db.VarChar(50)
+  motivo               String?  @db.VarChar(200)
+  estado               String   @default("Pendiente") @db.VarChar(20)
+  ruta_comprobante_pdf String?  @db.VarChar(255)
+  nombre_solicitante   String   @db.VarChar(255)
+  ci                   Int
+  complemento          String?  @db.VarChar(5)
+  correo_solicitante   String   @db.VarChar(150)
+  espacios             espacios @relation(fields: [id_espacio], references: [id_espacio], onDelete: NoAction, onUpdate: NoAction, map: "reservas_espacios")
+  personas             personas @relation(fields: [id_persona_aprobador], references: [id_persona], onDelete: NoAction, onUpdate: NoAction, map: "reservas_personas_aprobadores")
+}
+
+model roles {
+  id_rol      Int        @id(map: "roles_pk") @default(autoincrement())
+  nombre_rol  String     @db.VarChar(50)
+  descripcion String?    @db.VarChar(200)
+  usuarios    usuarios[]
+}
+
+model tipos_bloqueo {
+  id_tipo_bloqueo          Int                        @id(map: "tipos_bloqueo_pk") @default(autoincrement())
+  nombre_bloqueo           String                     @db.VarChar(50)
+  plantilla_horarios_fijos plantilla_horarios_fijos[]
+}
+
+model torneos {
+  id_torneo          Int                  @id(map: "torneos_pk") @default(autoincrement())
+  id_disciplina      Int?
+  nombre             String               @db.VarChar(100)
+  tipo_torneo        String?              @db.VarChar(50)
+  gestion            Int
+  estado             String               @default("Planificado") @db.VarChar(20)
+  fecha_inicio       DateTime?            @db.Date
+  fecha_fin          DateTime?            @db.Date
+  imagen             String?
+  equipos            equipos[]
+  galeria_multimedia galeria_multimedia[]
+  partidos           partidos[]
+  disciplinas        disciplinas?         @relation(fields: [id_disciplina], references: [id_disciplina], onDelete: NoAction, onUpdate: NoAction, map: "torneos_disciplinas")
+}
+
+model usuarios {
+  id_usuario         Int                  @id(map: "usuarios_pk") @default(autoincrement())
+  id_persona         Int
+  id_rol             Int
+  email              String               @db.VarChar(150)
+  hash_password      String               @db.VarChar(255)
+  activo             Boolean              @default(true)
+  delegados_carrera  delegados_carrera[]
+  entrenadores       entrenadores[]
+  galeria_multimedia galeria_multimedia[]
+  noticias           noticias[]
+  personas           personas             @relation(fields: [id_persona], references: [id_persona], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_personas")
+  roles              roles                @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_roles")
+}
