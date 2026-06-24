@@ -1,0 +1,233 @@
+openapi: 3.0.0
+info:
+  title: API Identidad y Usuarios - Deportes UCB
+  version: 1.0.0
+  description: Microservicio encargado de la autenticación, roles y gestión de usuarios del sistema de deportes.
+
+servers:
+  - url: http://localhost:3001
+    description: Servidor de desarrollo (Microservicio Identidad)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginBody:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          example: juan.perez@ucb.edu.bo
+        password:
+          type: string
+          example: miPassword123
+
+    RegisterBody:
+      type: object
+      required:
+        [
+          nombres,
+          ape_paterno,
+          fecha_nacimiento,
+          celular,
+          email,
+          password,
+          id_rol,
+        ]
+      properties:
+        nombres:
+          type: string
+        ape_paterno:
+          type: string
+        ape_materno:
+          type: string
+        fecha_nacimiento:
+          type: string
+          format: date
+        celular:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        id_rol:
+          type: integer
+
+    ForgotPasswordBody:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          example: juan.perez@ucb.edu.bo
+
+    VerifyCodeBody:
+      type: object
+      required: [email, codigo]
+      properties:
+        email:
+          type: string
+          example: juan.perez@ucb.edu.bo
+        codigo:
+          type: string
+          example: '123456'
+
+    ResetPasswordBody:
+      type: object
+      required: [reset_token, nueva_password]
+      properties:
+        reset_token:
+          type: string
+        nueva_password:
+          type: string
+          minLength: 8
+
+    CrearUsuarioBody:
+      type: object
+      required:
+        [nombres, ape_paterno, fecha_nacimiento, celular, ci, email, id_rol]
+      properties:
+        nombres:
+          type: string
+        ape_paterno:
+          type: string
+        fecha_nacimiento:
+          type: string
+          format: date
+        celular:
+          type: string
+        ci:
+          type: string
+        email:
+          type: string
+        id_rol:
+          type: integer
+          description: 1=Administrador, 3=Delegado, 4=Deportista
+        id_carrera:
+          type: integer
+          description: Obligatorio si id_rol = 3 (Delegado)
+        gestion:
+          type: integer
+          description: Obligatorio si id_rol = 3 (Delegado)
+
+tags:
+  - name: Auth
+    description: Autenticación, registro y recuperación de contraseñas
+  - name: Usuarios y Roles
+    description: Gestión administrativa de accesos y usuarios
+
+paths:
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Iniciar sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginBody'
+      responses:
+        200:
+          description: Login exitoso, devuelve token JWT
+        401:
+          description: Credenciales inválidas
+
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Registrar nuevo usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterBody'
+      responses:
+        201:
+          description: Usuario registrado exitosamente
+        400:
+          description: Faltan campos o el correo ya existe
+
+  /api/auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Solicitar código de recuperación de contraseña
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordBody'
+      responses:
+        200:
+          description: Si el correo existe, se envía el código OTP al correo vía Redis
+
+  /api/auth/verify-reset-code:
+    post:
+      tags: [Auth]
+      summary: Validar código de recuperación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyCodeBody'
+      responses:
+        200:
+          description: Código válido, devuelve reset_token temporal
+        400:
+          description: Código inválido o expirado
+
+  /api/auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Cambiar contraseña con el reset_token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordBody'
+      responses:
+        200:
+          description: Contraseña actualizada correctamente
+        400:
+          description: Token inválido o expirado
+
+  /api/admin/roles:
+    get:
+      tags: [Usuarios y Roles]
+      summary: Listar todos los roles del sistema
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Lista de roles
+        401:
+          description: No autorizado
+
+  /api/admin/usuarios/registrar:
+    post:
+      tags: [Usuarios y Roles]
+      summary: Registrar un usuario con rol específico desde el panel
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearUsuarioBody'
+      responses:
+        201:
+          description: Usuario registrado correctamente
+        400:
+          description: Faltan campos obligatorios o datos duplicados
+        401:
+          description: No autorizado

@@ -1,0 +1,107 @@
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { UsersService } from '../users/users.service';
+import { RedisService } from '../redis/redis.service';
+import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
+import * as nodemailer from 'nodemailer';
+
+@Injectable()
+export class AuthService {
+  private transporter: nodemailer.Transporter;
+
+  constructor(
+    private jwtService: JwtService,
+    private usersService: UsersService,
+    private redisService: RedisService,
+  ) {
+    this.transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: Number(process.env.EMAIL_PORT) || 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+  }
+
+  login(user: any) {
+    const payload = {
+      id_usuario: user.id_usuario,
+      email: user.email,
+      id_rol: user.id_rol,
+      nombre_rol: user.rol.nombre_rol,
+    };
+    return {
+      message: 'Inicio de sesión exitoso',
+      token: this.jwtService.sign(payload),
+      user: {
+        id_usuario: user.id_usuario,
+        email: user.email,
+        id_rol: user.id_rol,
+        nombre_rol: user.rol.nombre_rol,
+        nombres: user.persona.nombres,
+        ape_paterno: user.persona.ape_paterno,
+      },
+    };
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.usersService.findByEmail(email);
+    const responseMessage = {
+      message:
+        'Si el correo está registrado, recibirás un código en tu bandeja.',
+    };
+    if (!user) return responseMessage;
+    const codigo = crypto.randomInt(100000, 999999).toString();
+    await this.redisService.setWithExpiry(`reset_code:${email}`, codigo, 900);
+    await this.transporter.sendMail({
+      from: `"Deportes UCB" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Código para restablecer tu contraseña',
+      html: `
+        <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
+          <h2 style="color: #1a1a2e;">Restablecer contraseña</h2>
+          <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta.</p>
+          <p>Tu código de verificación es:</p>
+          <div style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #1a1a2e; margin: 24px 0;">
+            ${codigo}
+          </div>
+          <p style="color: #666;">Este código expira en <strong>15 minutos</strong>.</p>
+        </div>
+      `,
+    });
+
+    return responseMessage;
+  }
+
+  async verifyResetCode(email: string, codigo: string) {
+    const redisCode = await this.redisService.get(`reset_code:${email}`);
+
+    if (!redisCode || redisCode !== codigo) {
+      throw new BadRequestException('Código inválido o expirado');
+    }
+    await this.redisService.delete(`reset_code:${email}`);
+    const resetToken = this.jwtService.sign(
+      { email, purpose: 'password_reset' },
+      { expiresIn: '10m' },
+    );
+    return { valid: true, reset_token: resetToken };
+  }
+
+  async resetPassword(resetToken: string, nueva_password: string) {
+    let payload: any;
+    try {
+      payload = this.jwtService.verify(resetToken);
+    } catch {
+      throw new BadRequestException('Token inválido o expirado');
+    }
+    if (payload.purpose !== 'password_reset') {
+      throw new BadRequestException('Token no válido para esta acción');
+    }
+    const hash = await bcrypt.hash(nueva_password, 10);
+    await this.usersService.updatePassword(payload.email, hash);
+    return { message: 'Contraseña actualizada correctamente' };
+  }
+}

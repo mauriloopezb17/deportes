@@ -1,0 +1,791 @@
+-- Created by Redgate Data Modeler (https://datamodeler.redgate-platform.com)
+-- Last modification date: 2026-06-17 23:56:02.235
+
+-- tables
+-- Table: CARRERAS
+CREATE TABLE CARRERAS (
+    id_carrera serial  NOT NULL,
+    nombre varchar(100)  NOT NULL,
+    sigla varchar(10)  NULL,
+    activo boolean  NOT NULL DEFAULT TRUE,
+    CONSTRAINT CARRERAS_pk PRIMARY KEY (id_carrera)
+);
+
+-- Table: CATEGORIAS
+CREATE TABLE CATEGORIAS (
+    id_categoria serial  NOT NULL,
+    nombre_categoria varchar(50)  NOT NULL,
+    CONSTRAINT CATEGORIAS_pk PRIMARY KEY (id_categoria)
+);
+
+-- Table: CATEGORIAS_NOTICIA
+CREATE TABLE CATEGORIAS_NOTICIA (
+    id_categoria_noticia serial  NOT NULL,
+    nombre varchar(50)  NOT NULL,
+    CONSTRAINT CATEGORIAS_NOTICIA_pk PRIMARY KEY (id_categoria_noticia)
+);
+
+-- Table: CODIGOS_RESET_PASSWORD
+CREATE TABLE CODIGOS_RESET_PASSWORD (
+    id serial  NOT NULL,
+    email varchar(255)  NOT NULL,
+    codigo varchar(6)  NOT NULL,
+    expira_en timestamp  NOT NULL,
+    usado boolean  NOT NULL,
+    creado_en timestamp  NOT NULL,
+    CONSTRAINT CODIGOS_RESET_PASSWORD_pk PRIMARY KEY (id)
+);
+
+-- Table: CONCEPTOS_PAGO
+CREATE TABLE CONCEPTOS_PAGO (
+    id_concepto serial  NOT NULL,
+    id_disciplina int  NULL,
+    codigo_caja varchar(20)  NOT NULL,
+    nombre varchar(100)  NOT NULL,
+    monto_actual decimal(10,2)  NOT NULL,
+    activo boolean  NOT NULL DEFAULT TRUE,
+    CONSTRAINT CONCEPTOS_PAGO_pk PRIMARY KEY (id_concepto)
+);
+
+-- Table: DELEGADOS_CARRERA
+CREATE TABLE DELEGADOS_CARRERA (
+    id_delegado_carrera serial  NOT NULL,
+    id_usuario int  NOT NULL,
+    id_carrera int  NOT NULL,
+    gestion int  NOT NULL,
+    activo boolean  NOT NULL DEFAULT TRUE,
+    CONSTRAINT DELEGADOS_CARRERA_pk PRIMARY KEY (id_delegado_carrera)
+);
+
+-- Table: DEPORTISTAS
+CREATE TABLE DEPORTISTAS (
+    id_deportista serial  NOT NULL,
+    id_persona int  NOT NULL,
+    id_persona_tutor int  NULL,
+    tipo_deportista varchar(20)  NOT NULL,
+    talla_ropa varchar(10)  NULL,
+    url_foto text  NULL,
+    CONSTRAINT DEPORTISTAS_pk PRIMARY KEY (id_deportista)
+);
+
+-- Table: DEPORTISTAS_EXTERNOS
+CREATE TABLE DEPORTISTAS_EXTERNOS (
+    id_deportista_ext serial  NOT NULL,
+    id_deportista int  NOT NULL,
+    colegio_instituto varchar(150)  NULL,
+    curso varchar(50)  NULL,
+    CONSTRAINT DEPORTISTAS_EXTERNOS_pk PRIMARY KEY (id_deportista_ext)
+);
+
+-- Table: DEPORTISTAS_UCB
+CREATE TABLE DEPORTISTAS_UCB (
+    id_deportista_ucb serial  NOT NULL,
+    id_deportista int  NOT NULL,
+    id_carrera int  NOT NULL,
+    semestre int  NOT NULL,
+    est_regular boolean  NOT NULL DEFAULT FALSE,
+    CONSTRAINT DEPORTISTAS_UCB_pk PRIMARY KEY (id_deportista_ucb)
+);
+
+-- Table: DISCIPLINAS
+CREATE TABLE DISCIPLINAS (
+    id_disciplina serial  NOT NULL,
+    nombre_disciplina varchar(50)  NOT NULL,
+    activo boolean  NOT NULL DEFAULT TRUE,
+    CONSTRAINT DISCIPLINAS_pk PRIMARY KEY (id_disciplina)
+);
+
+-- Table: ENTRENADORES
+CREATE TABLE ENTRENADORES (
+    id_entrenador serial  NOT NULL,
+    id_usuario int  NULL,
+    url_foto text  NULL,
+    CONSTRAINT ENTRENADORES_pk PRIMARY KEY (id_entrenador)
+);
+
+-- Table: ENTRENADOR_ASIGNACION
+CREATE TABLE ENTRENADOR_ASIGNACION (
+    id_asignacion serial  NOT NULL,
+    id_entrenador int  NOT NULL,
+    id_categoria int  NOT NULL,
+    id_disciplina int  NOT NULL,
+    CONSTRAINT ENTRENADOR_ASIGNACION_pk PRIMARY KEY (id_asignacion)
+);
+
+-- Table: EQUIPOS
+CREATE TABLE EQUIPOS (
+    id_equipo serial  NOT NULL,
+    id_torneo int  NOT NULL,
+    id_persona int  NOT NULL,
+    id_carrera int  NOT NULL,
+    nombre_equipo varchar(100)  NOT NULL,
+    grupo varchar(10)  NULL,
+    CONSTRAINT EQUIPOS_pk PRIMARY KEY (id_equipo)
+);
+
+-- Table: EQUIPO_JUGADORES
+CREATE TABLE EQUIPO_JUGADORES (
+    id_equipo_jugador serial  NOT NULL,
+    id_deportista int  NOT NULL,
+    id_equipo int  NOT NULL,
+    habilitado boolean  NOT NULL DEFAULT TRUE,
+    CONSTRAINT EQUIPO_JUGADORES_pk PRIMARY KEY (id_equipo_jugador)
+);
+
+-- Table: ESPACIOS
+CREATE TABLE ESPACIOS (
+    id_espacio serial  NOT NULL,
+    nombre_espacio varchar(100)  NOT NULL,
+    hora_apertura time  NOT NULL,
+    activo boolean  NOT NULL DEFAULT TRUE,
+    CONSTRAINT ESPACIOS_pk PRIMARY KEY (id_espacio)
+);
+
+-- Table: ESTADISTICAS_PARTIDO_JUGADOR
+CREATE TABLE ESTADISTICAS_PARTIDO_JUGADOR (
+    id_estadistica serial  NOT NULL,
+    id_partido int  NOT NULL,
+    id_deportista int  NOT NULL,
+    puntos_goles int  NOT NULL DEFAULT 0,
+    faltas_tarjetas_amarillas int  NOT NULL DEFAULT 0,
+    faltas_tarjetas_rojas int  NOT NULL DEFAULT 0,
+    CONSTRAINT ESTADISTICAS_PARTIDO_JUGADOR_pk PRIMARY KEY (id_estadistica)
+);
+
+-- Table: FICHAS_MEDICAS
+CREATE TABLE FICHAS_MEDICAS (
+    id_ficha serial  NOT NULL,
+    id_deportista int  NOT NULL,
+    tipo_sangre varchar(5)  NOT NULL,
+    seguro_medico varchar(100)  NULL,
+    enfermedades_padecimientos TEXT  NULL,
+    contacto_emergencia_nombre varchar(150)  NOT NULL,
+    contacto_emergencia_telefono varchar(50)  NOT NULL,
+    CONSTRAINT FICHAS_MEDICAS_pk PRIMARY KEY (id_ficha)
+);
+
+-- Table: GALERIA_MULTIMEDIA
+CREATE TABLE GALERIA_MULTIMEDIA (
+    id_multimedia serial  NOT NULL,
+    id_usuario_autor int  NOT NULL,
+    url_archivo text  NOT NULL,
+    tipo_archivo varchar(20)  NOT NULL,
+    publicado boolean  NOT NULL DEFAULT FALSE,
+    id_torneo int  NULL,
+    id_partido int  NULL,
+    id_espacio int  NULL,
+    id_carrera int  NULL,
+    fecha_subida timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT GALERIA_MULTIMEDIA_pk PRIMARY KEY (id_multimedia)
+);
+
+-- Table: HISTORIAL_EXPERIENCIA_DEPORTIVA
+CREATE TABLE HISTORIAL_EXPERIENCIA_DEPORTIVA (
+    id_historial serial  NOT NULL,
+    id_deportista int  NOT NULL,
+    tipo_participacion varchar(50)  NOT NULL,
+    gestion int  NOT NULL,
+    club_sede varchar(100)  NOT NULL,
+    categoria_jugada varchar(50)  NULL,
+    CONSTRAINT HISTORIAL_EXPERIENCIA_DEPORTIVA_pk PRIMARY KEY (id_historial)
+);
+
+-- Table: INSCRIPCIONES
+CREATE TABLE INSCRIPCIONES (
+    id_inscripcion serial  NOT NULL,
+    id_deportista int  NOT NULL,
+    id_disciplina int  NOT NULL,
+    id_categoria int  NOT NULL,
+    fecha_inscripcion date  NOT NULL,
+    estado varchar(20)  NOT NULL,
+    fecha_baja date  NULL,
+    motivo_baja text  NULL,
+    CONSTRAINT INSCRIPCIONES_pk PRIMARY KEY (id_inscripcion)
+);
+
+-- Table: MEDALLERO_CARRERAS
+CREATE TABLE MEDALLERO_CARRERAS (
+    id_medallero serial  NOT NULL,
+    id_carrera int  NOT NULL,
+    gestion int  NOT NULL,
+    oro int  NOT NULL DEFAULT 0,
+    plata int  NOT NULL DEFAULT 0,
+    bronce int  NOT NULL DEFAULT 0,
+    puntos_totales int  NOT NULL DEFAULT 0,
+    CONSTRAINT MEDALLERO_CARRERAS_pk PRIMARY KEY (id_medallero)
+);
+
+-- Table: NOTICIAS
+CREATE TABLE NOTICIAS (
+    id_noticia serial  NOT NULL,
+    id_usuario_autor int  NOT NULL,
+    id_categoria_noticia int  NOT NULL,
+    titulo varchar(255)  NOT NULL,
+    contenido JSONB  NOT NULL,
+    resumen varchar(500)  NULL,
+    publicado boolean  NOT NULL DEFAULT FALSE,
+    fecha_creacion timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_publicacion timestamp  NULL,
+    CONSTRAINT NOTICIAS_pk PRIMARY KEY (id_noticia)
+);
+
+-- Table: NOTICIAS_IMAGENES
+CREATE TABLE NOTICIAS_IMAGENES (
+    id_imagen serial  NOT NULL,
+    id_noticia int  NOT NULL,
+    url_storage varchar(500)  NOT NULL,
+    es_portada boolean  NOT NULL DEFAULT FALSE,
+    CONSTRAINT NOTICIAS_IMAGENES_pk PRIMARY KEY (id_imagen)
+);
+
+-- Table: PAGOS
+CREATE TABLE PAGOS (
+    id_pago serial  NOT NULL,
+    id_persona_pago int  NOT NULL,
+    id_deportista_beneficiario int  NOT NULL,
+    id_concepto int  NOT NULL,
+    id_transaccion_caja varchar(100)  NOT NULL,
+    monto_pagado decimal(10,2)  NOT NULL,
+    fecha_pago date  NOT NULL,
+    mes_correspondiente int  NOT NULL,
+    gestion int  NOT NULL,
+    estado_factura varchar(20)  NOT NULL DEFAULT 'Activa',
+    CONSTRAINT PAGOS_pk PRIMARY KEY (id_pago)
+);
+
+-- Table: PARTIDOS
+CREATE TABLE PARTIDOS (
+    id_partido serial  NOT NULL,
+    id_torneo int  NOT NULL,
+    id_equipo_local int  NOT NULL,
+    id_equipo_visitante int  NOT NULL,
+    id_espacio int  NULL,
+    fase_torneo varchar(50)  NOT NULL,
+    fecha date  NOT NULL,
+    hora_inicio time  NOT NULL,
+    hora_fin time  NOT NULL,
+    goles_local int  NOT NULL DEFAULT 0,
+    goles_visitante int  NOT NULL DEFAULT 0,
+    estado varchar(20)  NOT NULL DEFAULT 'Programado',
+    CONSTRAINT PARTIDOS_pk PRIMARY KEY (id_partido)
+);
+
+-- Table: PERSONAS
+CREATE TABLE PERSONAS (
+    id_persona serial  NOT NULL,
+    nombres varchar(100)  NOT NULL,
+    ape_paterno varchar(50)  NOT NULL,
+    ape_materno varchar(50)  NOT NULL,
+    fecha_nacimiento date  NOT NULL,
+    celular varchar(20)  NOT NULL,
+    ci int  NOT NULL,
+    complemento varchar(5)  NULL,
+    CONSTRAINT PERSONAS_pk PRIMARY KEY (id_persona)
+);
+
+-- Table: PLANTILLA_HORARIOS_FIJOS
+CREATE TABLE PLANTILLA_HORARIOS_FIJOS (
+    id_plantilla serial  NOT NULL,
+    id_espacio int  NOT NULL,
+    id_disciplina int  NULL,
+    dia_semana int  NOT NULL,
+    hora_inicio time  NOT NULL,
+    hora_fin time  NOT NULL,
+    id_tipo_bloqueo int  NOT NULL,
+    id_entrenador int  NULL,
+    CONSTRAINT PLANTILLA_HORARIOS_FIJOS_pk PRIMARY KEY (id_plantilla)
+);
+
+-- Table: REGISTROS_FEDERACION
+CREATE TABLE REGISTROS_FEDERACION (
+    id_registro_fed serial  NOT NULL,
+    id_deportista int  NOT NULL,
+    id_disciplina int  NOT NULL,
+    id_categoria int  NULL,
+    nro_registro_federacion varchar(100)  NULL,
+    nro_registro_asociacion varchar(100)  NULL,
+    orc_nro varchar(50)  NULL,
+    libro varchar(50)  NULL,
+    partida varchar(50)  NULL,
+    club_origen varchar(100)  NOT NULL DEFAULT 'U.C.B.',
+    CONSTRAINT REGISTROS_FEDERACION_pk PRIMARY KEY (id_registro_fed)
+);
+
+-- Table: RESERVAS
+CREATE TABLE RESERVAS (
+    id_reserva int  NOT NULL,
+    id_espacio int  NOT NULL,
+    id_persona_aprobador int  NOT NULL,
+    fecha_reserva date  NOT NULL,
+    hora_inicio time  NOT NULL,
+    hora_fin time  NOT NULL,
+    tipo_reserva varchar(50)  NOT NULL,
+    motivo varchar(200)  NULL,
+    estado varchar(20)  NOT NULL DEFAULT 'Pendiente',
+    ruta_comprobante_pdf varchar(255)  NULL,
+    nombre_solicitante varchar(255)  NOT NULL,
+    ci int  NOT NULL,
+    complemento varchar(5)  NULL,
+    correo_solicitante varchar(150)  NOT NULL,
+    CONSTRAINT RESERVAS_pk PRIMARY KEY (id_reserva)
+);
+
+-- Table: ROLES
+CREATE TABLE ROLES (
+    id_rol serial  NOT NULL,
+    nombre_rol varchar(50)  NOT NULL,
+    descripcion varchar(200)  NULL,
+    CONSTRAINT ROLES_pk PRIMARY KEY (id_rol)
+);
+
+-- Table: TIPOS_BLOQUEO
+CREATE TABLE TIPOS_BLOQUEO (
+    id_tipo_bloqueo serial  NOT NULL,
+    nombre_bloqueo varchar(50)  NOT NULL,
+    CONSTRAINT TIPOS_BLOQUEO_pk PRIMARY KEY (id_tipo_bloqueo)
+);
+
+-- Table: TORNEOS
+CREATE TABLE TORNEOS (
+    id_torneo serial  NOT NULL,
+    id_disciplina int  NULL,
+    nombre varchar(100)  NOT NULL,
+    tipo_torneo varchar(50)  NULL,
+    gestion int  NOT NULL,
+    estado varchar(20)  NOT NULL DEFAULT 'Planificado',
+    fecha_inicio date  NULL,
+    fecha_fin date  NULL,
+    imagen text  NULL,
+    CONSTRAINT TORNEOS_pk PRIMARY KEY (id_torneo)
+);
+
+-- Table: USUARIOS
+CREATE TABLE USUARIOS (
+    id_usuario serial  NOT NULL,
+    id_persona int  NOT NULL,
+    id_rol int  NOT NULL,
+    email varchar(150)  NOT NULL,
+    hash_password varchar(255)  NOT NULL,
+    activo boolean  NOT NULL DEFAULT TRUE,
+    CONSTRAINT USUARIOS_pk PRIMARY KEY (id_usuario)
+);
+
+-- foreign keys
+-- Reference: CONCEPTOS_PAGO_DISCIPLINAS (table: CONCEPTOS_PAGO)
+ALTER TABLE CONCEPTOS_PAGO ADD CONSTRAINT CONCEPTOS_PAGO_DISCIPLINAS
+    FOREIGN KEY (id_disciplina)
+    REFERENCES DISCIPLINAS (id_disciplina)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: DELEGADOS_CARRERA_CARRERAS (table: DELEGADOS_CARRERA)
+ALTER TABLE DELEGADOS_CARRERA ADD CONSTRAINT DELEGADOS_CARRERA_CARRERAS
+    FOREIGN KEY (id_carrera)
+    REFERENCES CARRERAS (id_carrera)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: DELEGADOS_CARRERA_USUARIOS (table: DELEGADOS_CARRERA)
+ALTER TABLE DELEGADOS_CARRERA ADD CONSTRAINT DELEGADOS_CARRERA_USUARIOS
+    FOREIGN KEY (id_usuario)
+    REFERENCES USUARIOS (id_usuario)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: DEPORTISTAS_EXTERNOS_DEPORTISTAS (table: DEPORTISTAS_EXTERNOS)
+ALTER TABLE DEPORTISTAS_EXTERNOS ADD CONSTRAINT DEPORTISTAS_EXTERNOS_DEPORTISTAS
+    FOREIGN KEY (id_deportista)
+    REFERENCES DEPORTISTAS (id_deportista)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: DEPORTISTAS_PERSONAS (table: DEPORTISTAS)
+ALTER TABLE DEPORTISTAS ADD CONSTRAINT DEPORTISTAS_PERSONAS
+    FOREIGN KEY (id_persona)
+    REFERENCES PERSONAS (id_persona)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: DEPORTISTAS_PERSONAS_TUTOR (table: DEPORTISTAS)
+ALTER TABLE DEPORTISTAS ADD CONSTRAINT DEPORTISTAS_PERSONAS_TUTOR
+    FOREIGN KEY (id_persona_tutor)
+    REFERENCES PERSONAS (id_persona)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: DEPORTISTAS_UCB_DEPORTISTAS (table: DEPORTISTAS_UCB)
+ALTER TABLE DEPORTISTAS_UCB ADD CONSTRAINT DEPORTISTAS_UCB_DEPORTISTAS
+    FOREIGN KEY (id_deportista)
+    REFERENCES DEPORTISTAS (id_deportista)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: ENTRENADORES_USUARIOS (table: ENTRENADORES)
+ALTER TABLE ENTRENADORES ADD CONSTRAINT ENTRENADORES_USUARIOS
+    FOREIGN KEY (id_usuario)
+    REFERENCES USUARIOS (id_usuario)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: ENTRENADOR_ASIGNACION_CATEGORIAS (table: ENTRENADOR_ASIGNACION)
+ALTER TABLE ENTRENADOR_ASIGNACION ADD CONSTRAINT ENTRENADOR_ASIGNACION_CATEGORIAS
+    FOREIGN KEY (id_categoria)
+    REFERENCES CATEGORIAS (id_categoria)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: ENTRENADOR_ASIGNACION_DISCIPLINAS (table: ENTRENADOR_ASIGNACION)
+ALTER TABLE ENTRENADOR_ASIGNACION ADD CONSTRAINT ENTRENADOR_ASIGNACION_DISCIPLINAS
+    FOREIGN KEY (id_disciplina)
+    REFERENCES DISCIPLINAS (id_disciplina)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: ENTRENADOR_ASIGNACION_ENTRENADORES (table: ENTRENADOR_ASIGNACION)
+ALTER TABLE ENTRENADOR_ASIGNACION ADD CONSTRAINT ENTRENADOR_ASIGNACION_ENTRENADORES
+    FOREIGN KEY (id_entrenador)
+    REFERENCES ENTRENADORES (id_entrenador)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: EQUIPOS_CARRERAS (table: EQUIPOS)
+ALTER TABLE EQUIPOS ADD CONSTRAINT EQUIPOS_CARRERAS
+    FOREIGN KEY (id_carrera)
+    REFERENCES CARRERAS (id_carrera)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: EQUIPOS_PERSONAS (table: EQUIPOS)
+ALTER TABLE EQUIPOS ADD CONSTRAINT EQUIPOS_PERSONAS
+    FOREIGN KEY (id_persona)
+    REFERENCES PERSONAS (id_persona)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: EQUIPOS_TORNEOS (table: EQUIPOS)
+ALTER TABLE EQUIPOS ADD CONSTRAINT EQUIPOS_TORNEOS
+    FOREIGN KEY (id_torneo)
+    REFERENCES TORNEOS (id_torneo)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: EQUIPO_JUGADORES_DEPORTISTAS (table: EQUIPO_JUGADORES)
+ALTER TABLE EQUIPO_JUGADORES ADD CONSTRAINT EQUIPO_JUGADORES_DEPORTISTAS
+    FOREIGN KEY (id_deportista)
+    REFERENCES DEPORTISTAS (id_deportista)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: EQUIPO_JUGADORES_EQUIPOS (table: EQUIPO_JUGADORES)
+ALTER TABLE EQUIPO_JUGADORES ADD CONSTRAINT EQUIPO_JUGADORES_EQUIPOS
+    FOREIGN KEY (id_equipo)
+    REFERENCES EQUIPOS (id_equipo)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: ESTADISTICAS_PARTIDO_JUGADOR_DEPORTISTAS (table: ESTADISTICAS_PARTIDO_JUGADOR)
+ALTER TABLE ESTADISTICAS_PARTIDO_JUGADOR ADD CONSTRAINT ESTADISTICAS_PARTIDO_JUGADOR_DEPORTISTAS
+    FOREIGN KEY (id_deportista)
+    REFERENCES DEPORTISTAS (id_deportista)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: ESTADISTICAS_PARTIDO_JUGADOR_PARTIDOS (table: ESTADISTICAS_PARTIDO_JUGADOR)
+ALTER TABLE ESTADISTICAS_PARTIDO_JUGADOR ADD CONSTRAINT ESTADISTICAS_PARTIDO_JUGADOR_PARTIDOS
+    FOREIGN KEY (id_partido)
+    REFERENCES PARTIDOS (id_partido)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: FICHAS_MEDICAS_DEPORTISTAS (table: FICHAS_MEDICAS)
+ALTER TABLE FICHAS_MEDICAS ADD CONSTRAINT FICHAS_MEDICAS_DEPORTISTAS
+    FOREIGN KEY (id_deportista)
+    REFERENCES DEPORTISTAS (id_deportista)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: FIXTURE_EQUIPOS_LOCAL (table: PARTIDOS)
+ALTER TABLE PARTIDOS ADD CONSTRAINT FIXTURE_EQUIPOS_LOCAL
+    FOREIGN KEY (id_equipo_local)
+    REFERENCES EQUIPOS (id_equipo)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: FIXTURE_EQUIPOS_VISITANTES (table: PARTIDOS)
+ALTER TABLE PARTIDOS ADD CONSTRAINT FIXTURE_EQUIPOS_VISITANTES
+    FOREIGN KEY (id_equipo_visitante)
+    REFERENCES EQUIPOS (id_equipo)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: FIXTURE_ESPACIOS (table: PARTIDOS)
+ALTER TABLE PARTIDOS ADD CONSTRAINT FIXTURE_ESPACIOS
+    FOREIGN KEY (id_espacio)
+    REFERENCES ESPACIOS (id_espacio)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: FIXTURE_TORNEOS (table: PARTIDOS)
+ALTER TABLE PARTIDOS ADD CONSTRAINT FIXTURE_TORNEOS
+    FOREIGN KEY (id_torneo)
+    REFERENCES TORNEOS (id_torneo)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: GALERIA_MULTIMEDIA_CARRERAS (table: GALERIA_MULTIMEDIA)
+ALTER TABLE GALERIA_MULTIMEDIA ADD CONSTRAINT GALERIA_MULTIMEDIA_CARRERAS
+    FOREIGN KEY (id_carrera)
+    REFERENCES CARRERAS (id_carrera)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: GALERIA_MULTIMEDIA_ESPACIOS (table: GALERIA_MULTIMEDIA)
+ALTER TABLE GALERIA_MULTIMEDIA ADD CONSTRAINT GALERIA_MULTIMEDIA_ESPACIOS
+    FOREIGN KEY (id_espacio)
+    REFERENCES ESPACIOS (id_espacio)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: GALERIA_MULTIMEDIA_PARTIDOS (table: GALERIA_MULTIMEDIA)
+ALTER TABLE GALERIA_MULTIMEDIA ADD CONSTRAINT GALERIA_MULTIMEDIA_PARTIDOS
+    FOREIGN KEY (id_partido)
+    REFERENCES PARTIDOS (id_partido)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: GALERIA_MULTIMEDIA_TORNEOS (table: GALERIA_MULTIMEDIA)
+ALTER TABLE GALERIA_MULTIMEDIA ADD CONSTRAINT GALERIA_MULTIMEDIA_TORNEOS
+    FOREIGN KEY (id_torneo)
+    REFERENCES TORNEOS (id_torneo)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: GALERIA_MULTIMEDIA_USUARIOS (table: GALERIA_MULTIMEDIA)
+ALTER TABLE GALERIA_MULTIMEDIA ADD CONSTRAINT GALERIA_MULTIMEDIA_USUARIOS
+    FOREIGN KEY (id_usuario_autor)
+    REFERENCES USUARIOS (id_usuario)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: HISTORIAL_EXPERIENCIA_DEPORTIVA_DEPORTISTAS (table: HISTORIAL_EXPERIENCIA_DEPORTIVA)
+ALTER TABLE HISTORIAL_EXPERIENCIA_DEPORTIVA ADD CONSTRAINT HISTORIAL_EXPERIENCIA_DEPORTIVA_DEPORTISTAS
+    FOREIGN KEY (id_deportista)
+    REFERENCES DEPORTISTAS (id_deportista)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: INSCRIPCIONES_CATEGORIAS (table: INSCRIPCIONES)
+ALTER TABLE INSCRIPCIONES ADD CONSTRAINT INSCRIPCIONES_CATEGORIAS
+    FOREIGN KEY (id_categoria)
+    REFERENCES CATEGORIAS (id_categoria)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: INSCRIPCIONES_DEPORTISTAS (table: INSCRIPCIONES)
+ALTER TABLE INSCRIPCIONES ADD CONSTRAINT INSCRIPCIONES_DEPORTISTAS
+    FOREIGN KEY (id_deportista)
+    REFERENCES DEPORTISTAS (id_deportista)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: INSCRIPCIONES_DISCIPLINAS (table: INSCRIPCIONES)
+ALTER TABLE INSCRIPCIONES ADD CONSTRAINT INSCRIPCIONES_DISCIPLINAS
+    FOREIGN KEY (id_disciplina)
+    REFERENCES DISCIPLINAS (id_disciplina)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: MEDALLERO_CARRERAS_CARRERAS (table: MEDALLERO_CARRERAS)
+ALTER TABLE MEDALLERO_CARRERAS ADD CONSTRAINT MEDALLERO_CARRERAS_CARRERAS
+    FOREIGN KEY (id_carrera)
+    REFERENCES CARRERAS (id_carrera)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: NOTICIAS_CATEGORIAS_NOTICIA (table: NOTICIAS)
+ALTER TABLE NOTICIAS ADD CONSTRAINT NOTICIAS_CATEGORIAS_NOTICIA
+    FOREIGN KEY (id_categoria_noticia)
+    REFERENCES CATEGORIAS_NOTICIA (id_categoria_noticia)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: NOTICIAS_IMAGENES_NOTICIAS (table: NOTICIAS_IMAGENES)
+ALTER TABLE NOTICIAS_IMAGENES ADD CONSTRAINT NOTICIAS_IMAGENES_NOTICIAS
+    FOREIGN KEY (id_noticia)
+    REFERENCES NOTICIAS (id_noticia)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: NOTICIAS_USUARIOS (table: NOTICIAS)
+ALTER TABLE NOTICIAS ADD CONSTRAINT NOTICIAS_USUARIOS
+    FOREIGN KEY (id_usuario_autor)
+    REFERENCES USUARIOS (id_usuario)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: PAGOS_CONCEPTOS_PAGO (table: PAGOS)
+ALTER TABLE PAGOS ADD CONSTRAINT PAGOS_CONCEPTOS_PAGO
+    FOREIGN KEY (id_concepto)
+    REFERENCES CONCEPTOS_PAGO (id_concepto)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: PAGOS_DEPORTISTAS (table: PAGOS)
+ALTER TABLE PAGOS ADD CONSTRAINT PAGOS_DEPORTISTAS
+    FOREIGN KEY (id_deportista_beneficiario)
+    REFERENCES DEPORTISTAS (id_deportista)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: PAGOS_PERSONAS (table: PAGOS)
+ALTER TABLE PAGOS ADD CONSTRAINT PAGOS_PERSONAS
+    FOREIGN KEY (id_persona_pago)
+    REFERENCES PERSONAS (id_persona)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: PLANTILLA_HORARIOS_FIJOS_DISCIPLINAS (table: PLANTILLA_HORARIOS_FIJOS)
+ALTER TABLE PLANTILLA_HORARIOS_FIJOS ADD CONSTRAINT PLANTILLA_HORARIOS_FIJOS_DISCIPLINAS
+    FOREIGN KEY (id_disciplina)
+    REFERENCES DISCIPLINAS (id_disciplina)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: PLANTILLA_HORARIOS_FIJOS_ENTRENADORES (table: PLANTILLA_HORARIOS_FIJOS)
+ALTER TABLE PLANTILLA_HORARIOS_FIJOS ADD CONSTRAINT PLANTILLA_HORARIOS_FIJOS_ENTRENADORES
+    FOREIGN KEY (id_entrenador)
+    REFERENCES ENTRENADORES (id_entrenador)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: PLANTILLA_HORARIOS_FIJOS_ESPACIOS (table: PLANTILLA_HORARIOS_FIJOS)
+ALTER TABLE PLANTILLA_HORARIOS_FIJOS ADD CONSTRAINT PLANTILLA_HORARIOS_FIJOS_ESPACIOS
+    FOREIGN KEY (id_espacio)
+    REFERENCES ESPACIOS (id_espacio)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: PLANTILLA_HORARIOS_FIJOS_TIPOS_BLOQUEO (table: PLANTILLA_HORARIOS_FIJOS)
+ALTER TABLE PLANTILLA_HORARIOS_FIJOS ADD CONSTRAINT PLANTILLA_HORARIOS_FIJOS_TIPOS_BLOQUEO
+    FOREIGN KEY (id_tipo_bloqueo)
+    REFERENCES TIPOS_BLOQUEO (id_tipo_bloqueo)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: REGISTROS_FEDERACION_CATEGORIAS (table: REGISTROS_FEDERACION)
+ALTER TABLE REGISTROS_FEDERACION ADD CONSTRAINT REGISTROS_FEDERACION_CATEGORIAS
+    FOREIGN KEY (id_categoria)
+    REFERENCES CATEGORIAS (id_categoria)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: REGISTROS_FEDERACION_DEPORTISTAS (table: REGISTROS_FEDERACION)
+ALTER TABLE REGISTROS_FEDERACION ADD CONSTRAINT REGISTROS_FEDERACION_DEPORTISTAS
+    FOREIGN KEY (id_deportista)
+    REFERENCES DEPORTISTAS (id_deportista)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: REGISTROS_FEDERACION_DISCIPLINAS (table: REGISTROS_FEDERACION)
+ALTER TABLE REGISTROS_FEDERACION ADD CONSTRAINT REGISTROS_FEDERACION_DISCIPLINAS
+    FOREIGN KEY (id_disciplina)
+    REFERENCES DISCIPLINAS (id_disciplina)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: RESERVAS_ESPACIOS (table: RESERVAS)
+ALTER TABLE RESERVAS ADD CONSTRAINT RESERVAS_ESPACIOS
+    FOREIGN KEY (id_espacio)
+    REFERENCES ESPACIOS (id_espacio)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: RESERVAS_PERSONAS_APROBADORES (table: RESERVAS)
+ALTER TABLE RESERVAS ADD CONSTRAINT RESERVAS_PERSONAS_APROBADORES
+    FOREIGN KEY (id_persona_aprobador)
+    REFERENCES PERSONAS (id_persona)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: TORNEOS_DISCIPLINAS (table: TORNEOS)
+ALTER TABLE TORNEOS ADD CONSTRAINT TORNEOS_DISCIPLINAS
+    FOREIGN KEY (id_disciplina)
+    REFERENCES DISCIPLINAS (id_disciplina)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: USUARIOS_PERSONAS (table: USUARIOS)
+ALTER TABLE USUARIOS ADD CONSTRAINT USUARIOS_PERSONAS
+    FOREIGN KEY (id_persona)
+    REFERENCES PERSONAS (id_persona)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: USUARIOS_ROLES (table: USUARIOS)
+ALTER TABLE USUARIOS ADD CONSTRAINT USUARIOS_ROLES
+    FOREIGN KEY (id_rol)
+    REFERENCES ROLES (id_rol)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- Reference: deportistas_ucb_CARRERAS (table: DEPORTISTAS_UCB)
+ALTER TABLE DEPORTISTAS_UCB ADD CONSTRAINT deportistas_ucb_CARRERAS
+    FOREIGN KEY (id_carrera)
+    REFERENCES CARRERAS (id_carrera)  
+    NOT DEFERRABLE 
+    INITIALLY IMMEDIATE
+;
+
+-- End of file.
+

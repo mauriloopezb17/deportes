@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Persona {
+  id_persona       Int       @id @default(autoincrement())
+  nombres          String    @db.VarChar(100)
+  ape_paterno      String    @db.VarChar(50)
+  ape_materno      String    @db.VarChar(50)
+  fecha_nacimiento DateTime  @db.Date
+  celular          String    @db.VarChar(20)
+  ci               Int
+  complemento      String?   @db.VarChar(5)
+  usuarios         Usuario[]
+
+  @@map("personas")
+}
+
+model Rol {
+  id_rol      Int       @id @default(autoincrement())
+  nombre_rol  String    @db.VarChar(50)
+  descripcion String?   @db.VarChar(200)
+  usuarios    Usuario[]
+
+  @@map("roles")
+}
+
+model Usuario {
+  id_usuario    Int     @id @default(autoincrement())
+  id_persona    Int
+  id_rol        Int
+  email         String  @unique @db.VarChar(150)
+  hash_password String  @db.VarChar(255)
+  activo        Boolean @default(true)
+
+  persona Persona @relation(fields: [id_persona], references: [id_persona])
+  rol     Rol     @relation(fields: [id_rol], references: [id_rol])
+
+  delegados DelegadoCarrera[]
+
+  @@map("usuarios")
+}
+
+model CodigoResetPassword {
+  id        Int      @id @default(autoincrement())
+  email     String   @db.VarChar(255)
+  codigo    String   @db.VarChar(6)
+  expira_en DateTime @db.Timestamp(6)
+  usado     Boolean  @default(false)
+  creado_en DateTime @default(now()) @db.Timestamp(6)
+
+  @@map("codigos_reset_password")
+}
+
+model DelegadoCarrera {
+  id_delegado_carrera Int     @id @default(autoincrement())
+  id_usuario          Int
+  id_carrera          Int
+  gestion             Int
+  activo              Boolean @default(true)
+
+  usuario Usuario @relation(fields: [id_usuario], references: [id_usuario])
+
+  @@map("delegados_carrera")
+}
+
