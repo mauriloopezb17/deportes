@@ -21,6 +21,7 @@ import AdminTorneo from './features/admin/components/AdminTorneo'
 import FinanzasPanel from './features/finanzas/components/FinanzasPanel'
 import DelegadoPanel from './features/delegado/components/DelegadoPanel'
 import EntrenadorPanel from './features/entrenador/components/EntrenadorPanel'
+import ApiDocsView from './views/Documentacion/ApiDocsView'
 // News editor / CMS module — pending migration by the team (src/pages not yet in repo).
 // TODO: restore these imports and the two routes below once the CMS is added.
 // import AdminNoticias from './pages/AdminNoticias'
@@ -42,6 +43,7 @@ function App() {
             <Route path="/noticias/:id" element={<NoticiaDetalle />} />
             <Route path="/inscribete" element={<Inscribete />} />
             <Route path="/admin" element={<AdminHub />} />
+            <Route path="/docs" element={<ApiDocsView />} />
             <Route path="/panel-finanzas" element={<FinanzasPanel />} />
             <Route path="/panel-delegado" element={<DelegadoPanel />} />
             <Route path="/panel-entrenador" element={<EntrenadorPanel />} />

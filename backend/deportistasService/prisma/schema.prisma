@@ -1,0 +1,204 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Carrera {
+  id_carrera        Int                 @id @default(autoincrement())
+  nombre            String              @db.VarChar(100)
+  sigla             String?             @db.VarChar(10)
+  activo            Boolean             @default(true)
+  
+  delegados         DelegadoCarrera[]
+  deportistas_ucb   DeportistaUcb[]
+
+  @@map("carreras")
+}
+
+model Categoria {
+  id_categoria         Int                    @id @default(autoincrement())
+  nombre_categoria     String                 @db.VarChar(50)
+  
+  inscripciones        Inscripcion[]
+  registros_federacion RegistroFederacion[]
+
+  @@map("categorias")
+}
+
+model DelegadoCarrera {
+  id_delegado_carrera Int     @id @default(autoincrement())
+  id_usuario          Int
+  id_carrera          Int
+  gestion             Int
+  activo              Boolean @default(true)
+
+  usuario             Usuario @relation(fields: [id_usuario], references: [id_usuario])
+  carrera             Carrera @relation(fields: [id_carrera], references: [id_carrera])
+
+  @@map("delegados_carrera")
+}
+
+model Deportista {
+  id_deportista      Int      @id @default(autoincrement())
+  id_persona         Int
+  id_persona_tutor   Int?
+  tipo_deportista    String   @db.VarChar(20)
+  talla_ropa         String?  @db.VarChar(10)
+  url_foto           String?  @db.Text
+
+  persona            Persona  @relation("PersonaDeportista", fields: [id_persona], references: [id_persona])
+  tutor              Persona? @relation("PersonaTutor", fields: [id_persona_tutor], references: [id_persona])
+  
+  externo            DeportistaExterno[]
+  ucb                DeportistaUcb[]
+  fichas_medicas     FichaMedica[]
+  inscripciones      Inscripcion[]
+  experiencias       HistorialExperienciaDeportiva[]
+  registros_federados RegistroFederacion[]
+
+  @@map("deportistas")
+}
+
+model DeportistaExterno {
+  id_deportista_ext Int        @id @default(autoincrement())
+  id_deportista     Int
+  colegio_instituto String?    @db.VarChar(150)
+  curso             String?    @db.VarChar(50)
+
+  deportista        Deportista @relation(fields: [id_deportista], references: [id_deportista])
+
+  @@map("deportistas_externos")
+}
+
+model DeportistaUcb {
+  id_deportista_ucb Int        @id @default(autoincrement())
+  id_deportista     Int
+  id_carrera        Int
+  semestre          Int
+  est_regular       Boolean    @default(false)
+
+  deportista        Deportista @relation(fields: [id_deportista], references: [id_deportista])
+  carrera           Carrera    @relation(fields: [id_carrera], references: [id_carrera])
+
+  @@map("deportistas_ucb")
+}
+
+model Disciplina {
+  id_disciplina        Int                    @id @default(autoincrement())
+  nombre_disciplina    String                 @db.VarChar(50)
+  activo               Boolean                @default(true)
+
+  inscripciones        Inscripcion[]
+  registros_federacion RegistroFederacion[]
+
+  @@map("disciplinas")
+}
+
+model FichaMedica {
+  id_ficha                     Int        @id @default(autoincrement())
+  id_deportista                Int
+  tipo_sangre                  String     @db.VarChar(5)
+  seguro_medico                String?    @db.VarChar(100)
+  enfermedades_padecimientos   String?    @db.Text
+  contacto_emergencia_nombre   String     @db.VarChar(150)
+  contacto_emergencia_telefono String     @db.VarChar(50)
+
+  deportista                   Deportista @relation(fields: [id_deportista], references: [id_deportista])
+
+  @@map("fichas_medicas")
+}
+
+model HistorialExperienciaDeportiva {
+  id_historial       Int        @id @default(autoincrement())
+  id_deportista      Int
+  tipo_participacion String     @db.VarChar(50)
+  gestion            Int
+  club_sede          String     @db.VarChar(100)
+  categoria_jugada   String?    @db.VarChar(50)
+
+  deportista         Deportista @relation(fields: [id_deportista], references: [id_deportista])
+
+  @@map("historial_experiencia_deportiva")
+}
+
+model Inscripcion {
+  id_inscripcion    Int        @id @default(autoincrement())
+  id_deportista     Int
+  id_disciplina     Int
+  id_categoria      Int
+  fecha_inscripcion DateTime   @db.Date
+  estado            String     @db.VarChar(20)
+  fecha_baja        DateTime?  @db.Date
+  motivo_baja       String?    @db.Text
+
+  deportista        Deportista @relation(fields: [id_deportista], references: [id_deportista])
+  disciplina        Disciplina @relation(fields: [id_disciplina], references: [id_disciplina])
+  categoria         Categoria  @relation(fields: [id_categoria], references: [id_categoria])
+
+  @@map("inscripciones")
+}
+
+model Persona {
+  id_persona       Int          @id @default(autoincrement())
+  nombres          String       @db.VarChar(100)
+  ape_paterno      String       @db.VarChar(50)
+  ape_materno      String       @db.VarChar(50)
+  fecha_nacimiento DateTime     @db.Date
+  celular          String       @db.VarChar(20)
+  ci               Int
+  complemento      String?      @db.VarChar(5)
+
+  usuarios         Usuario[]
+  deportistas      Deportista[] @relation("PersonaDeportista")
+  tutorados        Deportista[] @relation("PersonaTutor")
+
+  @@map("personas")
+}
+
+model RegistroFederacion {
+  id_registro_fed         Int        @id @default(autoincrement())
+  id_deportista           Int
+  id_disciplina           Int
+  id_categoria            Int?
+  nro_registro_federacion String?    @db.VarChar(100)
+  nro_registro_asociacion String?    @db.VarChar(100)
+  orc_nro                 String?    @db.VarChar(50)
+  libro                   String?    @db.VarChar(50)
+  partida                 String?    @db.VarChar(50)
+  club_origen             String     @default("U.C.B.") @db.VarChar(100)
+
+  deportista              Deportista @relation(fields: [id_deportista], references: [id_deportista])
+  disciplina              Disciplina @relation(fields: [id_disciplina], references: [id_disciplina])
+  categoria               Categoria? @relation(fields: [id_categoria], references: [id_categoria])
+
+  @@map("registros_federacion")
+}
+
+model Rol {
+  id_rol       Int       @id @default(autoincrement())
+  nombre_rol   String    @db.VarChar(50)
+  descripcion  String?   @db.VarChar(200)
+  
+  usuarios     Usuario[]
+
+  @@map("roles")
+}
+
+model Usuario {
+  id_usuario    Int               @id @default(autoincrement())
+  id_persona    Int
+  id_rol        Int
+  email         String            @db.VarChar(150)
+  hash_password String            @db.VarChar(255)
+  activo        Boolean           @default(true)
+
+  persona       Persona           @relation(fields: [id_persona], references: [id_persona])
+  rol           Rol               @relation(fields: [id_rol], references: [id_rol])
+  delegados     DelegadoCarrera[]
+
+  @@map("usuarios")
+}
