@@ -27,7 +27,8 @@
 }
 
 .ucb-footer .footer-brand img {
-  height: 60px;
+  width: 240px;
+  height: auto;
 }
 
 .ucb-footer .footer-brand h3 {

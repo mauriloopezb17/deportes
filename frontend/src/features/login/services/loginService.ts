@@ -1,6 +1,6 @@
 /* Login feature — own isolated network layer. No imports from other modules.
    Auth *state* is shared (contexts/AuthContext); the network calls are not. */
-export const API_BASE = 'https://deportes.62344037.xyz'
+export const API_BASE = import.meta.env.VITE_API_BASE ?? ''
 
 async function apiPost<T>(path: string, body: unknown): Promise<T> {
   const token = localStorage.getItem('ucb_token')

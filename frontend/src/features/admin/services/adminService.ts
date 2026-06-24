@@ -1,6 +1,6 @@
 /* Admin module — its own isolated network layer (a private copy of the fetch
    helper). No imports from other feature modules. */
-export const API_BASE = 'https://deportes.62344037.xyz'
+export const API_BASE = import.meta.env.VITE_API_BASE ?? ''
 
 export function getToken(): string | null {
   return localStorage.getItem('ucb_token')

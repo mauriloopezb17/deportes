@@ -1,4 +1,4 @@
-export const API_BASE = 'https://deportes.62344037.xyz'
+export const API_BASE = import.meta.env.VITE_API_BASE ?? ''
 
 export function getToken(): string | null {
   return localStorage.getItem('ucb_token')

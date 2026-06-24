@@ -1,7 +1,7 @@
 /* Noticias (public view) feature — own isolated network layer.
    No imports from other modules. This is read-only public consumption; the news
    editor/CMS is a separate, untouched module. */
-const API_BASE = 'https://deportes.62344037.xyz'
+const API_BASE = import.meta.env.VITE_API_BASE ?? ''
 
 async function apiGet<T>(path: string): Promise<T> {
   const token = localStorage.getItem('ucb_token')

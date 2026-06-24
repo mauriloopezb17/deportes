@@ -21,9 +21,10 @@ import AdminTorneo from './features/admin/components/AdminTorneo'
 import FinanzasPanel from './features/finanzas/components/FinanzasPanel'
 import DelegadoPanel from './features/delegado/components/DelegadoPanel'
 import EntrenadorPanel from './features/entrenador/components/EntrenadorPanel'
-// Excluded news editor / CMS — left untouched
-import AdminNoticias from './pages/AdminNoticias'
-import MisNoticias from './pages/admin/MisNoticias'
+// News editor / CMS module — pending migration by the team (src/pages not yet in repo).
+// TODO: restore these imports and the two routes below once the CMS is added.
+// import AdminNoticias from './pages/AdminNoticias'
+// import MisNoticias from './pages/admin/MisNoticias'
 
 function App() {
   return (
@@ -44,7 +45,7 @@ function App() {
             <Route path="/panel-finanzas" element={<FinanzasPanel />} />
             <Route path="/panel-delegado" element={<DelegadoPanel />} />
             <Route path="/panel-entrenador" element={<EntrenadorPanel />} />
-            <Route path="/admin/mis-noticias" element={<MisNoticias />} />
+            {/* TODO: restore once CMS migrated — <Route path="/admin/mis-noticias" element={<MisNoticias />} /> */}
             <Route path="/admin/registrar-usuario" element={<RegistrarUsuario />} />
             <Route path="/admin/deportistas" element={<AdminDeportistas />} />
             <Route path="/admin/galeria" element={<AdminGaleria />} />
@@ -54,7 +55,7 @@ function App() {
             <Route path="/admin/partidos" element={<AdminPartidos />} />
             <Route path="/admin/torneo" element={<AdminTorneo />} />
           </Route>
-          <Route path="/noticiasAdmin" element={<AdminNoticias />} />
+          {/* TODO: restore once CMS migrated — <Route path="/noticiasAdmin" element={<AdminNoticias />} /> */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

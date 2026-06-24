@@ -1,5 +1,5 @@
 /* Torneos feature — own isolated network layer. No imports from other modules. */
-const API_BASE = 'https://deportes.62344037.xyz'
+const API_BASE = import.meta.env.VITE_API_BASE ?? ''
 
 async function apiGet<T>(path: string): Promise<T> {
   const token = localStorage.getItem('ucb_token')
