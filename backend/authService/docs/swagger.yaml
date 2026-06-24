@@ -5,7 +5,7 @@ info:
   description: Microservicio encargado de la autenticación, roles y gestión de usuarios del sistema de deportes.
 
 servers:
-  - url: http://localhost:3001
+  - url: /
     description: Servidor de desarrollo (Microservicio Identidad)
 
 components:
