@@ -17,6 +17,9 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, swaggerDocument, {
     customSiteTitle: 'Portal Web - API Docs',
   });
+  app.getHttpAdapter().get('/api/noticias/swagger.yaml', (req, res) => {
+    res.sendFile(yamlPath);
+  });
 
   const port = process.env.PORT || 3002;
 
