@@ -6,6 +6,7 @@ import {
   BarChart3,
   Calendar,
   CalendarDays,
+  ImagePlus,
   ClipboardList,
   Home,
   Trophy,
@@ -47,6 +48,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       icon: UserPlus,
       label: "Anadir usuario",
       href: "/admin",
+      roles: [UserRole.ADMIN],
+    },
+    {
+      icon: ImagePlus,
+      label: "Subir a galeria",
+      href: "/cms",
       roles: [UserRole.ADMIN],
     },
     {

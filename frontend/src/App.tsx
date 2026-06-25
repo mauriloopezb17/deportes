@@ -10,6 +10,7 @@ import { useAuthStore } from "@/features/auth/stores/authStore";
 import { ProtectedRoute } from "@/features/auth/components";
 import {
   LoginPage,
+  PortalPage,
   RegisterPage,
   Dashboard,
   TeamsPage,
@@ -204,7 +205,7 @@ const App: React.FC = () => {
         />
 
         <Route path="/404" element={<NotFoundPage />} />
-        <Route path="/" element={<Navigate to="/panel-admin" replace />} />
+        <Route path="/" element={<PortalPage />} />
         <Route path="*" element={<Navigate to="/404" replace />} />
       </Routes>
     </Router>
