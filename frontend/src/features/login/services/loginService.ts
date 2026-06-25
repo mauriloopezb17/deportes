@@ -37,13 +37,17 @@ export const resetPassword = (reset_token: string, nueva_password: string) =>
 export const googleAuthUrl = () => `${API_BASE}/api/auth/google`
 
 /* Where to land a user right after authenticating, based on their role.
-   Role ids (per backend): 1=Administrador, 2=Entrenador, 3=Delegado, 4=Deportista.
-   Matches on id_rol with a nombre_rol fallback so it stays correct even if ids shift. */
+   Roles in the backend `roles` table: 1=admin, 2=entrenador, 3=delegado, 4=jugador,
+   5=marketing (CMS). The marketing role + its /noticiasAdmin route are pending
+   migration, so that redirect stays dormant until both land.
+   Matches on nombre_rol first (the stable contract with the backend) and falls back
+   to id_rol, so it keeps working even if ids shift. */
 export function panelPathForUser(u: { id_rol?: number; nombre_rol?: string | null }): string {
   const rol = (u.nombre_rol ?? '').toLowerCase()
-  if (u.id_rol === 1 || rol.includes('admin')) return '/admin'
-  if (u.id_rol === 4 || rol.includes('deportista')) return '/panel-finanzas'
-  if (u.id_rol === 3 || rol.includes('delegado')) return '/panel-delegado'
-  if (u.id_rol === 2 || rol.includes('entrenador')) return '/panel-entrenador'
+  if (rol.includes('admin') || u.id_rol === 1) return '/panel-admin'
+  if (rol.includes('entrenador') || u.id_rol === 2) return '/panel-entrenador'
+  if (rol.includes('delegado') || u.id_rol === 3) return '/panel-delegado'
+  if (rol.includes('jugador') || u.id_rol === 4) return '/panel-finanzas'
+  if (rol.includes('marketing') || u.id_rol === 5) return '/noticiasAdmin' // CMS (pendiente de migración)
   return '/'
 }
