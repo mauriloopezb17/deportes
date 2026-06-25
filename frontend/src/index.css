@@ -1,0 +1,230 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Variables de color del proyecto */
+:root {
+  --color-white: #ffffff;
+  --color-yellow: #fec000;
+  --color-cyan: #009dcd;
+  --color-navy: #052845;
+  --color-gray: #8b8b8b;
+}
+
+/* Utility overrides: map common Tailwind-like classes to project palette */
+.text-gray-900,
+.text-slate-900,
+.text-gray-950 {
+  color: var(--color-navy) !important;
+}
+
+.text-gray-600,
+.text-gray-500,
+.text-gray-400,
+.text-slate-700 {
+  color: var(--color-gray) !important;
+}
+
+.bg-white,
+.bg-slate-50 {
+  background: var(--color-white) !important;
+}
+
+.bg-gray-50 {
+  background: rgba(0, 157, 205, 0.055) !important;
+}
+
+.bg-gray-100 {
+  background: rgba(254, 192, 0, 0.16) !important;
+}
+
+.bg-gray-950 {
+  background: var(--color-navy) !important;
+  color: var(--color-white) !important;
+}
+
+.border-gray-200,
+.border-slate-200 {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+.bg-slate-100 {
+  background: rgba(0, 157, 205, 0.08) !important;
+}
+
+.bg-blue-50,
+.bg-sky-50,
+.bg-indigo-50 {
+  background: rgba(0, 157, 205, 0.1) !important;
+}
+
+.text-blue-700,
+.text-sky-700,
+.text-indigo-700 {
+  color: var(--color-cyan) !important;
+}
+
+.border-blue-100,
+.border-sky-100,
+.border-indigo-100 {
+  border-color: rgba(0, 157, 205, 0.28) !important;
+}
+
+.bg-amber-50,
+.bg-yellow-50 {
+  background: rgba(254, 192, 0, 0.18) !important;
+}
+
+.text-amber-700,
+.text-amber-800,
+.text-yellow-700 {
+  color: var(--color-navy) !important;
+}
+
+.border-amber-100,
+.border-yellow-100 {
+  border-color: rgba(254, 192, 0, 0.45) !important;
+}
+
+::selection {
+  background: var(--color-yellow);
+  color: var(--color-navy);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Inter", system-ui, sans-serif;
+  background-color: var(--color-white);
+  color: var(--color-navy);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 157, 205, 0.04);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-gray);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 157, 205, 0.18);
+}
+
+/* Loading spinner */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* Responsive images */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Utility classes */
+.truncate-lines-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.truncate-lines-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.reservation-calendar {
+  width: 100%;
+  border: 0;
+  font-family: inherit;
+}
+
+.reservation-calendar .react-calendar__navigation {
+  height: 44px;
+  margin-bottom: 12px;
+}
+
+.reservation-calendar .react-calendar__navigation button {
+  border-radius: 8px;
+  color: var(--color-navy);
+  font-weight: 700;
+}
+
+.reservation-calendar .react-calendar__navigation button:enabled:hover,
+.reservation-calendar .react-calendar__navigation button:enabled:focus {
+  background: rgba(0, 157, 205, 0.08);
+}
+
+.reservation-calendar .react-calendar__month-view__weekdays {
+  color: var(--color-gray);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.reservation-calendar .react-calendar__month-view__weekdays abbr {
+  text-decoration: none;
+}
+
+.reservation-calendar .react-calendar__tile {
+  min-height: 72px;
+  border-radius: 8px;
+  color: var(--color-navy);
+}
+
+.reservation-calendar .react-calendar__tile:enabled:hover,
+.reservation-calendar .react-calendar__tile:enabled:focus {
+  background: rgba(0, 157, 205, 0.06);
+}
+
+.reservation-calendar .react-calendar__tile--now {
+  background: var(--color-yellow);
+}
+
+.reservation-calendar .react-calendar__tile--active,
+.reservation-calendar__selected {
+  background: var(--color-cyan) !important;
+  color: var(--color-white) !important;
+}
