@@ -4,12 +4,21 @@ import { Alert, Button, Input, Select, Modal, Card, Table } from "@components/co
 import { Equipo } from "@types";
 import { Plus, Edit2, Trash2 } from "lucide-react";
 import { carreraService, disciplinaService } from "@/features/disciplines/services/disciplinaService";
+import { useAuthStore } from "@/features/auth/stores/authStore";
+import { UserRole } from "@types";
 
 const EquipoList: React.FC = () => {
   const { equipos, isLoading, obtenerEquipos, obtenerEquipo, eliminarEquipo } =
     useEquipoStore();
+  const { usuario, hasRole } = useAuthStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const isDelegado = hasRole(UserRole.DELEGADO) && !hasRole(UserRole.ADMIN);
+  const delegadoCarreraId = usuario?.carrera_id;
+  const equiposVisibles =
+    isDelegado && delegadoCarreraId
+      ? equipos.filter((equipo) => equipo.carrera_id === delegadoCarreraId)
+      : equipos;
 
   useEffect(() => {
     obtenerEquipos();
@@ -55,32 +64,36 @@ const EquipoList: React.FC = () => {
       key: "cantidad_jugadores",
       title: "Jugadores",
     },
-    {
-      key: "acciones",
-      title: "Acciones",
-      render: (_value: unknown, record: Equipo) => (
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={async () => {
-              await obtenerEquipo(record.id);
-              setEditingId(record.id);
-              setIsModalOpen(true);
-            }}
-          >
-            <Edit2 size={16} />
-          </Button>
-          <Button
-            size="sm"
-            variant="danger"
-            onClick={() => handleDelete(record.id)}
-          >
-            <Trash2 size={16} />
-          </Button>
-        </div>
-      ),
-    },
+    ...(!isDelegado
+      ? [
+          {
+            key: "acciones",
+            title: "Acciones",
+            render: (_value: unknown, record: Equipo) => (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={async () => {
+                    await obtenerEquipo(record.id);
+                    setEditingId(record.id);
+                    setIsModalOpen(true);
+                  }}
+                >
+                  <Edit2 size={16} />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="danger"
+                  onClick={() => handleDelete(record.id)}
+                >
+                  <Trash2 size={16} />
+                </Button>
+              </div>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -101,7 +114,7 @@ const EquipoList: React.FC = () => {
       </div>
 
       <Card>
-        <Table columns={columns} data={equipos} isLoading={isLoading} />
+        <Table columns={columns} data={equiposVisibles} isLoading={isLoading} />
       </Card>
 
       <EquipoFormModal
@@ -126,6 +139,9 @@ const EquipoFormModal: React.FC<EquipoFormModalProps> = ({
 }) => {
   const { crearEquipo, actualizarEquipo, equipo, isLoading, error, setError } =
     useEquipoStore();
+  const { usuario, hasRole } = useAuthStore();
+  const isDelegado = hasRole(UserRole.DELEGADO) && !hasRole(UserRole.ADMIN);
+  const delegadoCarreraId = usuario?.carrera_id;
   const [nombre, setNombre] = useState("");
   const [categoria, setCategoria] = useState("");
   const [carreraId, setCarreraId] = useState("");
@@ -144,11 +160,19 @@ const EquipoFormModal: React.FC<EquipoFormModalProps> = ({
         carreraService.obtenerCarreras(),
         disciplinaService.obtenerDisciplinas(),
       ]);
-      setCarreras(carrerasResponse.data);
+      const carrerasDisponibles =
+        isDelegado && delegadoCarreraId
+          ? carrerasResponse.data.filter(
+              (carrera) => carrera.id === delegadoCarreraId,
+            )
+          : carrerasResponse.data;
+      setCarreras(carrerasDisponibles);
       setDisciplinas(disciplinasResponse.data);
       setCarreraId((current) =>
-        current || carrerasResponse.data[0]?.id
-          ? String(current || carrerasResponse.data[0].id)
+        isDelegado && delegadoCarreraId
+          ? String(delegadoCarreraId)
+          : current || carrerasDisponibles[0]?.id
+            ? String(current || carrerasDisponibles[0].id)
           : "",
       );
       setDisciplinaId((current) =>
@@ -163,21 +187,27 @@ const EquipoFormModal: React.FC<EquipoFormModalProps> = ({
       setError(null);
       loadOptions();
     }
-  }, [isOpen, setError]);
+  }, [delegadoCarreraId, isDelegado, isOpen, setError]);
 
   useEffect(() => {
     if (editingId && equipo) {
       setNombre(equipo.nombre);
       setCategoria(equipo.categoria);
-      setCarreraId(String((equipo as any).carrera_id ?? ""));
+      setCarreraId(
+        String(
+          isDelegado && delegadoCarreraId
+            ? delegadoCarreraId
+            : (equipo as any).carrera_id ?? "",
+        ),
+      );
       setDisciplinaId(String((equipo as any).disciplina_id ?? ""));
     } else {
       setNombre("");
       setCategoria("");
-      setCarreraId("");
+      setCarreraId(isDelegado && delegadoCarreraId ? String(delegadoCarreraId) : "");
       setDisciplinaId("");
     }
-  }, [editingId, equipo]);
+  }, [delegadoCarreraId, editingId, equipo, isDelegado]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -191,6 +221,11 @@ const EquipoFormModal: React.FC<EquipoFormModalProps> = ({
 
     if (!carreraId || !disciplinaId) {
       setFormError("Selecciona carrera y disciplina antes de crear el equipo.");
+      return;
+    }
+
+    if (isDelegado && Number(carreraId) !== delegadoCarreraId) {
+      setFormError("Solo puedes crear equipos de tu propia carrera.");
       return;
     }
 
@@ -255,6 +290,7 @@ const EquipoFormModal: React.FC<EquipoFormModalProps> = ({
             value: carrera.id,
             label: carrera.nombre,
           }))}
+          disabled={isDelegado}
           fullWidth
           required
         />

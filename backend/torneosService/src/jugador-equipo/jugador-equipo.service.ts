@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateJugadorEquipoDto } from "./dto/create-jugador-equipo.dto";
@@ -9,10 +9,7 @@ export class JugadorEquipoService {
   constructor(private prisma: PrismaService) {}
 
   @ApiOperation({ summary: "Agregar un jugador a un equipo" })
-  async create(createJugadorEquipoDto: CreateJugadorEquipoDto) {
-    const deportista = await this.findOrCreateDeportista(
-      createJugadorEquipoDto.jugador_id,
-    );
+  async create(createJugadorEquipoDto: CreateJugadorEquipoDto, currentUser?: any) {
     const newEquipo = await this.prisma.equipos.findUnique({
       where: { id_equipo: createJugadorEquipoDto.equipo_id },
     });
@@ -20,6 +17,27 @@ export class JugadorEquipoService {
     if (!newEquipo) {
       throw new BadRequestException("Equipo no encontrado");
     }
+
+    const deportista = await this.findOrCreateDeportistaUcb(
+      createJugadorEquipoDto.jugador_id,
+      newEquipo.id_carrera,
+      currentUser,
+    );
+    const carreraDeportista = deportista.deportistas_ucb[0]?.id_carrera;
+
+    if (!carreraDeportista) {
+      throw new BadRequestException(
+        "El jugador debe estar registrado en deportistas UCB",
+      );
+    }
+
+    if (newEquipo.id_carrera !== carreraDeportista) {
+      throw new BadRequestException(
+        "Solo puedes agregar jugadores de la misma carrera del equipo",
+      );
+    }
+
+    this.ensureDelegadoCanUseCarrera(newEquipo.id_carrera, currentUser);
 
     const existing = await this.prisma.equipo_jugadores.findFirst({
       where: { id_deportista: deportista.id_deportista },
@@ -96,21 +114,66 @@ export class JugadorEquipoService {
     });
   }
 
-  private async findOrCreateDeportista(personaId: number) {
+  private async findOrCreateDeportistaUcb(
+    personaId: number,
+    carreraId: number,
+    currentUser?: any,
+  ) {
     const existing = await this.prisma.deportistas.findFirst({
       where: { id_persona: personaId },
+      include: { deportistas_ucb: true },
     });
 
-    if (existing) {
+    if (existing?.deportistas_ucb.length) {
       return existing;
     }
 
-    return this.prisma.deportistas.create({
-      data: {
-        id_persona: personaId,
-        tipo_deportista: "UCB",
-      },
+    const isDelegado = currentUser?.roles?.includes("DELEGADO");
+    if (isDelegado) {
+      throw new BadRequestException(
+        "El jugador debe estar registrado en deportistas UCB",
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const deportista =
+        existing ??
+        (await tx.deportistas.create({
+          data: {
+            id_persona: personaId,
+            tipo_deportista: "UCB",
+          },
+        }));
+
+      await tx.deportistas_ucb.create({
+        data: {
+          id_deportista: deportista.id_deportista,
+          id_carrera: carreraId,
+          semestre: 1,
+          est_regular: true,
+        },
+      });
+
+      return tx.deportistas.findFirstOrThrow({
+        where: { id_deportista: deportista.id_deportista },
+        include: { deportistas_ucb: true },
+      });
     });
+  }
+
+  private ensureDelegadoCanUseCarrera(carreraId: number, currentUser?: any) {
+    const isDelegado = currentUser?.roles?.includes("DELEGADO");
+
+    if (!isDelegado) {
+      return;
+    }
+
+    const delegadoCarreraId = Number(currentUser.carrera_id);
+    if (!delegadoCarreraId || delegadoCarreraId !== carreraId) {
+      throw new ForbiddenException(
+        "Solo puedes agregar jugadores de tu propia carrera",
+      );
+    }
   }
 
   private includeRelations() {

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateEquipoDto } from "./dto/create-equipo.dto";
@@ -10,7 +10,10 @@ export class EquipoService {
   constructor(private prisma: PrismaService) {}
 
   @ApiOperation({ summary: "Crear un nuevo equipo" })
-  async create(createEquipoDto: CreateEquipoDto) {
+  async create(createEquipoDto: CreateEquipoDto, currentUser?: any) {
+    const carreraId = this.resolveCarreraId(createEquipoDto.carrera_id, currentUser);
+    await this.ensureEquipoDisponible(carreraId, createEquipoDto.disciplina_id);
+
     const torneo = await this.findTorneoForEquipo(createEquipoDto.disciplina_id);
     const responsable = await this.prisma.personas.findFirst({
       orderBy: { id_persona: "asc" },
@@ -26,7 +29,7 @@ export class EquipoService {
       data: {
         id_torneo: torneo.id_torneo,
         id_persona: responsable.id_persona,
-        id_carrera: createEquipoDto.carrera_id,
+        id_carrera: carreraId,
         nombre_equipo: createEquipoDto.nombre_equipo,
       },
       include: this.includeRelations(),
@@ -69,20 +72,84 @@ export class EquipoService {
   }
 
   @ApiOperation({ summary: "Actualizar un equipo" })
-  async update(id: number, updateEquipoDto: UpdateEquipoDto) {
+  async update(id: number, updateEquipoDto: UpdateEquipoDto, currentUser?: any) {
+    const currentEquipo = await this.prisma.equipos.findUnique({
+      where: { id_equipo: id },
+      include: { torneos: true },
+    });
+
+    if (!currentEquipo) {
+      throw new BadRequestException("Equipo no encontrado");
+    }
+
+    const disciplinaId =
+      updateEquipoDto.disciplina_id ?? currentEquipo.torneos?.id_disciplina;
+    const carreraId = this.resolveCarreraId(
+      updateEquipoDto.carrera_id ?? currentEquipo.id_carrera,
+      currentUser,
+    );
+
+    if (disciplinaId) {
+      await this.ensureEquipoDisponible(carreraId, disciplinaId, id);
+    }
+
+    const torneo = updateEquipoDto.disciplina_id
+      ? await this.findTorneoForEquipo(updateEquipoDto.disciplina_id)
+      : null;
+
     const equipo = await this.prisma.equipos.update({
       where: { id_equipo: id },
       data: {
         ...(updateEquipoDto.nombre_equipo
           ? { nombre_equipo: updateEquipoDto.nombre_equipo }
           : {}),
-        ...(updateEquipoDto.carrera_id
-          ? { id_carrera: updateEquipoDto.carrera_id }
-          : {}),
+        id_carrera: carreraId,
+        ...(torneo ? { id_torneo: torneo.id_torneo } : {}),
       },
       include: this.includeRelations(),
     });
     return this.toLegacyEquipo(equipo);
+  }
+
+  private resolveCarreraId(requestedCarreraId: number, currentUser?: any) {
+    const isDelegado = currentUser?.roles?.includes("DELEGADO");
+
+    if (!isDelegado) {
+      return requestedCarreraId;
+    }
+
+    const delegadoCarreraId = Number(currentUser.carrera_id);
+    if (!delegadoCarreraId) {
+      throw new ForbiddenException("El delegado no tiene una carrera asignada");
+    }
+
+    if (requestedCarreraId && requestedCarreraId !== delegadoCarreraId) {
+      throw new ForbiddenException(
+        "Solo puedes gestionar equipos de tu propia carrera",
+      );
+    }
+
+    return delegadoCarreraId;
+  }
+
+  private async ensureEquipoDisponible(
+    carreraId: number,
+    disciplinaId: number,
+    excludeEquipoId?: number,
+  ) {
+    const existing = await this.prisma.equipos.findFirst({
+      where: {
+        id_carrera: carreraId,
+        torneos: { id_disciplina: disciplinaId },
+        ...(excludeEquipoId ? { id_equipo: { not: excludeEquipoId } } : {}),
+      },
+    });
+
+    if (existing) {
+      throw new BadRequestException(
+        "Ya existe un equipo para esta carrera y disciplina",
+      );
+    }
   }
 
   @ApiOperation({ summary: "Eliminar un equipo" })

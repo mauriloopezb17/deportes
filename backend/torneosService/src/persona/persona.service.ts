@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+} from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import * as bcrypt from "bcrypt";
 import { PrismaService } from "../prisma/prisma.service";
@@ -11,8 +16,19 @@ export class PersonaService {
   constructor(private prisma: PrismaService) {}
 
   @ApiOperation({ summary: "Crear una nueva persona" })
-  async create(createPersonaDto: CreatePersonaDto) {
+  async create(createPersonaDto: CreatePersonaDto, currentUser?: any) {
     const data = this.normalizePersonaData(createPersonaDto);
+    const isDelegado = currentUser?.roles?.includes("DELEGADO");
+    const delegadoCarreraId = Number(currentUser?.carrera_id);
+
+    if (isDelegado && !delegadoCarreraId) {
+      throw new ForbiddenException("El delegado no tiene una carrera asignada");
+    }
+
+    if (isDelegado && !data.email?.endsWith("@ucb.edu.bo")) {
+      throw new BadRequestException("El correo debe terminar en @ucb.edu.bo");
+    }
+
     const ci = this.parseCarnet(data.carnet);
     await this.ensureUniquePersona(data.email, ci);
     const jugadorRole = await this.findRole("JUGADOR");
@@ -30,7 +46,7 @@ export class PersonaService {
           },
         });
 
-        return tx.usuarios.create({
+        const usuario = await tx.usuarios.create({
           data: {
             id_persona: persona.id_persona,
             id_rol: jugadorRole?.id_rol || 1,
@@ -40,6 +56,26 @@ export class PersonaService {
           },
           include: { personas: true, roles: true },
         });
+
+        if (isDelegado) {
+          const deportista = await tx.deportistas.create({
+            data: {
+              id_persona: persona.id_persona,
+              tipo_deportista: "UCB",
+            },
+          });
+
+          await tx.deportistas_ucb.create({
+            data: {
+              id_deportista: deportista.id_deportista,
+              id_carrera: delegadoCarreraId,
+              semestre: 1,
+              est_regular: true,
+            },
+          });
+        }
+
+        return usuario;
       });
 
       return this.toLegacyPersona(usuario);
@@ -52,7 +88,12 @@ export class PersonaService {
   @ApiOperation({ summary: "Obtener todas las personas" })
   async findAll() {
     const personas = await this.prisma.personas.findMany({
-      include: { usuarios: { include: { roles: true } } },
+      include: {
+        usuarios: { include: { roles: true } },
+        deportistas_deportistas_id_personaTopersonas: {
+          include: { deportistas_ucb: { include: { carreras: true } } },
+        },
+      },
       orderBy: { id_persona: "asc" },
     });
 
@@ -63,7 +104,12 @@ export class PersonaService {
   async findOne(id: number) {
     const persona = await this.prisma.personas.findUnique({
       where: { id_persona: id },
-      include: { usuarios: { include: { roles: true } } },
+      include: {
+        usuarios: { include: { roles: true } },
+        deportistas_deportistas_id_personaTopersonas: {
+          include: { deportistas_ucb: { include: { carreras: true } } },
+        },
+      },
     });
 
     return persona ? this.toLegacyPersonaFromPersona(persona) : null;
@@ -117,6 +163,9 @@ export class PersonaService {
 
   private toLegacyPersonaFromPersona(persona: any) {
     const usuario = persona.usuarios?.[0];
+    const deportistaUcb =
+      persona.deportistas_deportistas_id_personaTopersonas?.[0]
+        ?.deportistas_ucb?.[0];
 
     return {
       id: persona.id_persona,
@@ -128,6 +177,13 @@ export class PersonaService {
       roles: usuario?.roles
         ? [{ rol: { id: usuario.roles.id_rol, nombre: usuario.roles.nombre_rol } }]
         : [],
+      carrera_id: deportistaUcb?.id_carrera,
+      carrera: deportistaUcb?.carreras
+        ? {
+            id: deportistaUcb.carreras.id_carrera,
+            nombre: deportistaUcb.carreras.nombre,
+          }
+        : undefined,
     };
   }
 

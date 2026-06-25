@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Partido } from "@types";
+import { Partido, UserRole } from "@types";
 import { useTournamentStore } from "@/features/tournaments/stores/tournamentStore";
 import { Button, Input, Modal, Card, Table, Select } from "@components/common";
 import { CalendarDays, Download, Edit2, Plus, Shuffle, Trash2 } from "lucide-react";
 import { equipoService } from "@/features/teams/services/equipoService";
 import { torneoService } from "@/features/tournaments/services/tournamentService";
 import { disciplinaService } from "@/features/disciplines/services/disciplinaService";
+import { useAuthStore } from "@/features/auth/stores/authStore";
 import logoSrc from "../../../components/images/Logo color - azul (1).png";
 
 const escapeHtml = (value: unknown) =>
@@ -63,6 +64,15 @@ const getTournamentName = (partido: Partido) =>
 
 const getTeamName = (team: any, fallback: string) =>
   team?.nombre || team?.nombre_equipo || fallback;
+
+const matchHasCarrera = (partido: Partido, carreraId?: number) => {
+  if (!carreraId) return true;
+
+  return (
+    (partido.equipo_local as any)?.carrera_id === carreraId ||
+    (partido.equipo_visitante as any)?.carrera_id === carreraId
+  );
+};
 
 const toDateKey = (date: Date) => {
   const year = date.getFullYear();
@@ -565,6 +575,9 @@ const exportFixturePdf = (partidos: Partido[]) => {
 const MatchResultsList: React.FC = () => {
   const { partidos, isLoading, obtenerPartidos, registrarResultado } =
     useTournamentStore();
+  const { usuario, hasRole } = useAuthStore();
+  const isDelegado = hasRole(UserRole.DELEGADO) && !hasRole(UserRole.ADMIN);
+  const delegadoCarreraId = usuario?.carrera_id;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Partido | null>(null);
 
@@ -572,10 +585,14 @@ const MatchResultsList: React.FC = () => {
     obtenerPartidos();
   }, [obtenerPartidos]);
 
-  const finishedMatches = partidos.filter(
+  const visiblePartidos = partidos.filter((partido) =>
+    isDelegado ? matchHasCarrera(partido, delegadoCarreraId) : true,
+  );
+
+  const finishedMatches = visiblePartidos.filter(
     (partido) => partido.estado === "finalizado" || partido.resultado,
   );
-  const pendingMatches = partidos.filter(
+  const pendingMatches = visiblePartidos.filter(
     (partido) => partido.estado !== "finalizado" && !partido.resultado,
   );
 
@@ -638,22 +655,26 @@ const MatchResultsList: React.FC = () => {
         </span>
       ),
     },
-    {
-      key: "acciones",
-      title: "Acciones",
-      render: (_value: unknown, record: Partido) => (
-        <Button
-          size="sm"
-          variant={record.estado === "finalizado" ? "secondary" : "primary"}
-          onClick={() => {
-            setSelectedMatch(record);
-            setIsModalOpen(true);
-          }}
-        >
-          {record.estado === "finalizado" ? "Editar resultado" : "Registrar"}
-        </Button>
-      ),
-    },
+    ...(!isDelegado
+      ? [
+          {
+            key: "acciones",
+            title: "Acciones",
+            render: (_value: unknown, record: Partido) => (
+              <Button
+                size="sm"
+                variant={record.estado === "finalizado" ? "secondary" : "primary"}
+                onClick={() => {
+                  setSelectedMatch(record);
+                  setIsModalOpen(true);
+                }}
+              >
+                {record.estado === "finalizado" ? "Editar resultado" : "Registrar"}
+              </Button>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -662,7 +683,9 @@ const MatchResultsList: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Resultados</h1>
           <p className="text-gray-600">
-            Registra marcadores y revisa los partidos finalizados.
+            {isDelegado
+              ? "Consulta los resultados de partidos de tu carrera."
+              : "Registra marcadores y revisa los partidos finalizados."}
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:flex">
@@ -686,24 +709,26 @@ const MatchResultsList: React.FC = () => {
       </div>
 
       <Card>
-        <Table columns={columns} data={partidos} isLoading={isLoading} />
+        <Table columns={columns} data={visiblePartidos} isLoading={isLoading} />
       </Card>
 
-      <ResultadoModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedMatch(null);
-        }}
-        partido={selectedMatch}
-        onSubmit={async (datos) => {
-          if (selectedMatch) {
-            await registrarResultado(selectedMatch.id, datos);
+      {!isDelegado && (
+        <ResultadoModal
+          isOpen={isModalOpen}
+          onClose={() => {
             setIsModalOpen(false);
-            obtenerPartidos();
-          }
-        }}
-      />
+            setSelectedMatch(null);
+          }}
+          partido={selectedMatch}
+          onSubmit={async (datos) => {
+            if (selectedMatch) {
+              await registrarResultado(selectedMatch.id, datos);
+              setIsModalOpen(false);
+              obtenerPartidos();
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

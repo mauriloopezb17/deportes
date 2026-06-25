@@ -586,6 +586,8 @@ export class FixtureService {
       equipoLocal: partido.equipos_partidos_id_equipo_localToequipos
         ? {
             id: partido.equipos_partidos_id_equipo_localToequipos.id_equipo,
+            carrera_id:
+              partido.equipos_partidos_id_equipo_localToequipos.id_carrera,
             nombre_equipo:
               partido.equipos_partidos_id_equipo_localToequipos.nombre_equipo,
           }
@@ -593,6 +595,8 @@ export class FixtureService {
       equipoVisitante: partido.equipos_partidos_id_equipo_visitanteToequipos
         ? {
             id: partido.equipos_partidos_id_equipo_visitanteToequipos.id_equipo,
+            carrera_id:
+              partido.equipos_partidos_id_equipo_visitanteToequipos.id_carrera,
             nombre_equipo:
               partido.equipos_partidos_id_equipo_visitanteToequipos.nombre_equipo,
           }
