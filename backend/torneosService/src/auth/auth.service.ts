@@ -23,7 +23,7 @@ export class AuthService {
     const normalizedEmail = email.trim().toLowerCase();
     const usuario = await this.prisma.usuarios.findFirst({
       where: { email: { equals: normalizedEmail, mode: "insensitive" } },
-      include: { personas: true, roles: true },
+      include: { personas: true, roles: true, delegados_carrera: true },
     });
 
     if (!usuario?.hash_password || !usuario.activo) {
@@ -51,6 +51,7 @@ export class AuthService {
       sub: user.id,
       persona_id: user.persona_id,
       roles: user.roles,
+      carrera_id: user.carrera_id,
     };
 
     const usuario = {
@@ -60,6 +61,7 @@ export class AuthService {
       apellido: user.apellido,
       email: user.email,
       roles: user.roles,
+      carrera_id: user.carrera_id,
     };
 
     return {
@@ -194,6 +196,8 @@ export class AuthService {
       email: usuario.email,
       celular: persona?.celular,
       roles,
+      carrera_id: usuario.delegados_carrera?.find((delegado: any) => delegado.activo)
+        ?.id_carrera,
     };
   }
 

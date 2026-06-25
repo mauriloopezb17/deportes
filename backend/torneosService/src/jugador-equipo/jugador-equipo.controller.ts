@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Param, Delete } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
 import { JugadorEquipoService } from "./jugador-equipo.service";
 import { CreateJugadorEquipoDto } from "./dto/create-jugador-equipo.dto";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 
 @ApiTags("Jugadores-Equipos")
 @Controller("jugador-equipo")
@@ -9,10 +19,11 @@ export class JugadorEquipoController {
   constructor(private readonly jugadorEquipoService: JugadorEquipoService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: "Agregar jugador a equipo" })
   @ApiResponse({ status: 201, description: "Jugador agregado al equipo" })
-  create(@Body() createJugadorEquipoDto: CreateJugadorEquipoDto) {
-    return this.jugadorEquipoService.create(createJugadorEquipoDto);
+  create(@Body() createJugadorEquipoDto: CreateJugadorEquipoDto, @Req() req: any) {
+    return this.jugadorEquipoService.create(createJugadorEquipoDto, req.user);
   }
 
   @Get()

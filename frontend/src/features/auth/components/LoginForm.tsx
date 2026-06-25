@@ -6,7 +6,6 @@ import {
   CalendarDays,
   ClipboardList,
   Settings,
-  ShieldCheck,
   Trophy,
   UserCog,
   Users,
@@ -69,12 +68,6 @@ const previewLinks = [
     path: "/resultados",
     icon: BarChart3,
     roles: [UserRole.ADMIN, UserRole.DELEGADO],
-  },
-  {
-    label: "Disciplinas",
-    path: "/disciplinas",
-    icon: ShieldCheck,
-    roles: [UserRole.ADMIN],
   },
   {
     label: "Administracion",

@@ -4,13 +4,12 @@ import { useAuthStore } from "@/features/auth/stores/authStore";
 import { UserRole } from "@types";
 import {
   BarChart3,
-  Briefcase,
   Calendar,
   CalendarDays,
   ClipboardList,
   Home,
-  ListChecks,
   Trophy,
+  UserPlus,
   Users,
   X,
 } from "lucide-react";
@@ -23,6 +22,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const location = useLocation();
   const { hasRole } = useAuthStore();
+  const isDelegateOnly = hasRole(UserRole.DELEGADO) && !hasRole(UserRole.ADMIN);
   const homeHref = hasRole(UserRole.ADMIN)
     ? "/panel-admin"
     : hasRole(UserRole.DELEGADO)
@@ -42,6 +42,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         UserRole.ENTRENADOR,
         UserRole.JUGADOR,
       ],
+    },
+    {
+      icon: UserPlus,
+      label: "Anadir usuario",
+      href: "/admin",
+      roles: [UserRole.ADMIN],
     },
     {
       icon: ClipboardList,
@@ -85,21 +91,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       href: "/resultados",
       roles: [UserRole.ADMIN, UserRole.DELEGADO],
     },
-    {
-      icon: ListChecks,
-      label: "Categorias",
-      href: "/categorias",
-      roles: [UserRole.ADMIN, UserRole.DELEGADO, UserRole.ENTRENADOR],
-    },
-    {
-      icon: Briefcase,
-      label: "Gestión de Disciplinas",
-      href: "/disciplinas",
-      roles: [UserRole.ADMIN],
-    },
   ];
 
-  const filteredMenuItems = menuItems.filter((item) => hasRole(item.roles));
+  const filteredMenuItems = menuItems.filter((item) => {
+    if (isDelegateOnly) {
+      return ["/equipos", "/jugadores", "/resultados"].includes(item.href);
+    }
+
+    return hasRole(item.roles);
+  });
   const isActive = (href: string) => location.pathname === href;
 
   return (
@@ -165,3 +165,4 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 };
 
 export default Sidebar;
+

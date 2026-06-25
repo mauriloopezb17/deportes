@@ -9,10 +9,12 @@ export enum UserRole {
 
 export interface Usuario {
   id: number;
+  persona_id?: number;
   nombre: string;
   apellido: string;
   email: string;
   roles: UserRole[];
+  carrera_id?: number;
   academia?: Academia;
 }
 
@@ -40,6 +42,8 @@ export interface Equipo {
   id: number;
   nombre: string;
   categoria: string;
+  carrera_id?: number;
+  disciplina_id?: number;
   disciplina: Disciplina;
   academia: Academia;
   delegado: Usuario;
@@ -65,6 +69,11 @@ export interface Persona {
   email: string;
   telefono: string;
   genero: string;
+  carrera_id?: number;
+  carrera?: {
+    id: number;
+    nombre: string;
+  };
   roles?: UserRole[];
 }
 

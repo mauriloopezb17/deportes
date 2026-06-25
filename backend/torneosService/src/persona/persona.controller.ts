@@ -6,11 +6,14 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
+  UseGuards,
 } from "@nestjs/common";
 import { PersonaService } from "./persona.service";
 import { CreatePersonaDto } from "./dto/create-persona.dto";
 import { UpdatePersonaDto } from "./dto/update-persona.dto";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 
 @ApiTags("Personas")
 @Controller("persona")
@@ -18,10 +21,11 @@ export class PersonaController {
   constructor(private readonly personaService: PersonaService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: "Crear persona" })
   @ApiResponse({ status: 201, description: "Persona creada exitosamente" })
-  create(@Body() createPersonaDto: CreatePersonaDto) {
-    return this.personaService.create(createPersonaDto);
+  create(@Body() createPersonaDto: CreatePersonaDto, @Req() req: any) {
+    return this.personaService.create(createPersonaDto, req.user);
   }
 
   @Get()

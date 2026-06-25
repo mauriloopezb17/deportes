@@ -5,6 +5,7 @@ import {
   HistorialClub,
   PaginatedResponse,
 } from "@types";
+import { apiClient } from "@/services/api";
 
 const emptyPage = <T>(): PaginatedResponse<T> => ({
   success: true,
@@ -106,5 +107,25 @@ export const historialService = {
     data: Partial<HistorialClub>,
   ): Promise<HistorialClub> {
     return { id: Date.now(), titulo: "", descripcion: "", fecha: new Date().toISOString(), tipo: "", ...data } as HistorialClub;
+  },
+};
+
+export const deportistaAdminService = {
+  async obtenerCatalogosInscripcion(): Promise<{
+    disciplinas: Array<{ id_disciplina: number; nombre_disciplina: string }>;
+    categorias: Array<{ id_categoria: number; nombre_categoria: string }>;
+  }> {
+    const response = await apiClient.get<any>("/admin/catalogos/inscripcion");
+    return response.data || { disciplinas: [], categorias: [] };
+  },
+
+  async listarDeportistas(): Promise<any[]> {
+    const response = await apiClient.get<any[]>("/admin/deportistas");
+    return response.data || [];
+  },
+
+  async inscribirDeportista(data: any): Promise<any> {
+    const response = await apiClient.post<any>("/admin/deportistas/inscribir", data);
+    return response.data;
   },
 };
