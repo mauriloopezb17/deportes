@@ -6,6 +6,7 @@ import {
   Req,
   Res,
   Body,
+  Injectable,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
@@ -13,6 +14,9 @@ import { UsersService } from '../users/users.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { Request } from 'express';
 import type { Response } from 'express';
+
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {}
 
 interface RequestWithUser extends Request {
   user: any;
@@ -74,5 +78,12 @@ export class AuthController {
     @Body('nueva_password') nuevaPassword: string,
   ) {
     return this.authService.resetPassword(resetToken, nuevaPassword);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/generar')
+  async generar2FA(@Req() req: RequestWithUser) {
+    const { id_usuario, email } = req.user;
+    return this.authService.generarCodigoQR(id_usuario, email);
   }
 }

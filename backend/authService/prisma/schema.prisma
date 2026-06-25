@@ -15,6 +15,7 @@ model Persona {
   celular          String    @db.VarChar(20)
   ci               Int
   complemento      String?   @db.VarChar(5)
+  
   usuarios         Usuario[]
 
   @@map("personas")
@@ -24,6 +25,7 @@ model Rol {
   id_rol      Int       @id @default(autoincrement())
   nombre_rol  String    @db.VarChar(50)
   descripcion String?   @db.VarChar(200)
+  
   usuarios    Usuario[]
 
   @@map("roles")
@@ -37,9 +39,12 @@ model Usuario {
   hash_password String  @db.VarChar(255)
   activo        Boolean @default(true)
 
-  persona Persona @relation(fields: [id_persona], references: [id_persona])
-  rol     Rol     @relation(fields: [id_rol], references: [id_rol])
 
+  dos_fa_secret String? @db.VarChar(255)
+  dos_fa_activo Boolean @default(false)
+
+  persona   Persona           @relation(fields: [id_persona], references: [id_persona])
+  rol       Rol               @relation(fields: [id_rol], references: [id_rol])
   delegados DelegadoCarrera[]
 
   @@map("usuarios")
@@ -67,4 +72,3 @@ model DelegadoCarrera {
 
   @@map("delegados_carrera")
 }
-

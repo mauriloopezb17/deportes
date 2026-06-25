@@ -5,6 +5,9 @@ import { RedisService } from '../redis/redis.service';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import * as nodemailer from 'nodemailer';
+import { generateSecret, generateURI } from 'otplib';
+import * as qrcode from 'qrcode';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +17,7 @@ export class AuthService {
     private jwtService: JwtService,
     private usersService: UsersService,
     private redisService: RedisService,
+    private prisma: PrismaService,
   ) {
     this.transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
@@ -103,5 +107,47 @@ export class AuthService {
     const hash = await bcrypt.hash(nueva_password, 10);
     await this.usersService.updatePassword(payload.email, hash);
     return { message: 'Contraseña actualizada correctamente' };
+  }
+
+  async generarCodigoQR(id_usuario: number, email: string) {
+    const user = await this.prisma.usuario.findUnique({
+      where: { id_usuario },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Usuario no encontrado');
+    }
+
+    // Validación Anti-Google
+    if (!user.hash_password || user.hash_password === '') {
+      throw new BadRequestException(
+        'Debes configurar tu 2FA directamente desde tu cuenta de Google.',
+      );
+    }
+
+    // Generar secreto TOTP
+    const secret = generateSecret();
+
+    // Generar URL del autenticador
+    const otpauthUrl = generateURI({
+      issuer: 'DeportesUCB',
+      label: email,
+      secret: secret,
+    });
+
+    // Actualizar la base de datos
+    await this.prisma.usuario.update({
+      where: { id_usuario },
+      data: { dos_fa_secret: secret },
+    });
+
+    // Convertir la URL en imagen Base64
+    const qrCodeImage = await qrcode.toDataURL(otpauthUrl);
+
+    return {
+      success: true,
+      message: 'Código QR generado con éxito',
+      qrCode: qrCodeImage,
+    };
   }
 }
