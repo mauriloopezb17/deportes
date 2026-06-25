@@ -1,73 +1,130 @@
-# React + TypeScript + Vite
+# Frontend - Gestión Deportiva
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend moderno construido con React 18, TypeScript, Tailwind CSS y Zustand para el sistema de administración de eventos deportivos.
 
-Currently, two official plugins are available:
+## Características
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- ✅ **Autenticación**: Login con JWT
+- ✅ **Control de Roles**: ADMIN, DELEGADO, ENTRENADOR, JUGADOR
+- ✅ **Gestión de Equipos**: Crear, editar y eliminar equipos
+- ✅ **Inscripción de Jugadores**: Gestión de jugadores y equipos
+- ✅ **Reserva de Canchas**: Calendario dinámico con disponibilidad
+- ✅ **Torneos**: Gestión de torneos y competencias
+- ✅ **Resultados**: Registro de resultados de partidos
+- ✅ **Panel Administrativo**: Para academias y gestión general
+- ✅ **Diseño Responsivo**: Optimizado para móvil, tablet y desktop
+- ✅ **Tailwind CSS**: Diseño moderno y consistente
 
-## React Compiler
+## Stack Tecnológico
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **React 18**: Librería UI
+- **TypeScript**: Tipado estático
+- **Vite**: Build tool rápido
+- **Tailwind CSS**: Utilidades CSS
+- **Zustand**: State management
+- **React Router v6**: Enrutamiento
+- **Axios**: Cliente HTTP
+- **Lucide React**: Iconos
 
-## Expanding the ESLint configuration
+## Instalación
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd Frontend
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Desarrollo
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+Accede a `http://localhost:5173`
+
+## Build para Producción
+
+```bash
+npm run build
+npm run preview
+```
+
+## Estructura del Proyecto
+
+```
+src/
+├── components/          # Componentes React
+│   ├── auth/           # Autenticación
+│   ├── common/         # Componentes reutilizables
+│   ├── layout/         # Layout principal
+│   ├── team/           # Componentes de equipos
+│   ├── fields/         # Componentes de canchas
+│   ├── tournament/     # Componentes de torneos
+│   ├── player/         # Componentes de jugadores
+│   └── admin/          # Panel administrativo
+├── pages/              # Páginas de la aplicación
+├── services/           # Servicios de API
+├── store/              # Zustand stores
+├── types/              # Tipos TypeScript
+├── utils/              # Utilidades
+├── hooks/              # Custom hooks
+├── App.tsx             # Componente principal
+└── main.tsx            # Punto de entrada
+
+```
+
+## Variables de Entorno
+
+Crea un archivo `.env` en la raíz:
+
+```env
+VITE_API_URL=http://localhost:3005
+```
+
+## Roles y Permisos
+
+- **ADMIN**: Acceso total
+- **DELEGADO**: Gestión de equipos y jugadores
+- **ENTRENADOR**: Gestión de equipos y jugadores
+- **JUGADOR/ESTUDIANTE**: Visualización limitada
+
+## Características por Módulo
+
+### Equipos
+
+- Registro de equipos para intercarreras
+- Inscripción de jugadores
+- Estados: registrado, confirmado, descalificado
+
+### Reservas
+
+- Calendario dinámico
+- Visualización de disponibilidad
+- Confirmación de reservas
+
+### Torneos
+
+- Gestión de torneos
+- Inscripción de equipos
+- Registro de resultados
+
+### Panel Administrativo
+
+- Gestión de academias
+- Verificación de pagos
+- Comunicados y historial
+- Reportes y estadísticas
+
+## Autenticación
+
+El sistema utiliza JWT para autenticación. Los tokens se almacenan en localStorage.
+
+## Desarrollo Futuro
+
+- [ ] Módulo completo de jugadores
+- [ ] Disciplinas (CRUD)
+- [ ] Integración con Google OAuth
+- [ ] Notificaciones en tiempo real
+- [ ] Exportación de reportes (PDF/Excel)
+- [ ] Gráficos estadísticos avanzados
+- [ ] Búsqueda y filtrado avanzado
+- [ ] Dark mode
