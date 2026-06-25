@@ -128,14 +128,15 @@ const TournamentList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-lg bg-gray-950 text-white shadow-sm">
+      <section className="overflow-hidden rounded-lg bg-[var(--color-navy)] text-white shadow-sm">
+        <div className="h-1.5 bg-[var(--color-yellow)]" />
         <div className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
-            <p className="text-sm font-bold uppercase tracking-wide text-sky-200">
+            <p className="text-sm font-black uppercase tracking-wide text-[var(--color-yellow)]">
               Gestion competitiva
             </p>
-            <h1 className="mt-2 text-3xl font-bold">Gestion de Torneos</h1>
-            <p className="mt-2 max-w-2xl text-gray-300">
+            <h1 className="mt-2 text-3xl font-bold text-white">Gestion de Torneos</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80">
               Administra torneos por disciplina, estado, fechas y tipo de
               competencia desde una vista preparada para seguimiento.
             </p>

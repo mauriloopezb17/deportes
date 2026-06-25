@@ -166,14 +166,15 @@ const ReservationCalendar: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="overflow-hidden rounded-lg bg-gray-900 text-white shadow-sm">
+      <div className="overflow-hidden rounded-lg bg-[var(--color-navy)] text-white shadow-sm">
+        <div className="h-1.5 bg-[var(--color-yellow)]" />
         <div className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-primary-200">
-              Gestión de espacios deportivos
+            <p className="text-sm font-black uppercase tracking-wide text-[var(--color-yellow)]">
+              Gestion de espacios deportivos
             </p>
-            <h1 className="mt-2 text-3xl font-bold">Reserva de Canchas</h1>
-            <p className="mt-2 max-w-2xl text-gray-300">
+            <h1 className="mt-2 text-3xl font-bold text-white">Reserva de Canchas</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80">
               Consulta disponibilidad por fecha, organiza horarios y administra
               solicitudes de reserva desde un calendario mensual.
             </p>
@@ -257,10 +258,6 @@ const ReservationCalendar: React.FC = () => {
                 {dayReservations.length === 1 ? "" : "s"}
               </p>
             </div>
-            <Button variant="secondary" onClick={openCreate} className="gap-2">
-              <Plus size={18} />
-              Agendar
-            </Button>
           </div>
 
           {isLoading ? (
@@ -274,7 +271,7 @@ const ReservationCalendar: React.FC = () => {
                 No hay reservas para este día
               </p>
               <p className="text-sm text-gray-500">
-                Puedes crear una reserva usando el botón Agendar.
+                Puedes crear una reserva usando el boton Nueva Reserva.
               </p>
             </div>
           ) : (

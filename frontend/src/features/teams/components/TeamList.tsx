@@ -25,7 +25,7 @@ const EquipoList: React.FC = () => {
   }, [obtenerEquipos]);
 
   const handleDelete = async (id: number) => {
-    if (window.confirm("¿Estás seguro de que deseas eliminar este equipo?")) {
+    if (window.confirm("Estas seguro de que deseas eliminar este equipo?")) {
       try {
         await eliminarEquipo(id);
       } catch (error) {
@@ -41,7 +41,7 @@ const EquipoList: React.FC = () => {
     },
     {
       key: "categoria",
-      title: "Categoría",
+      title: "Categoria",
     },
     {
       key: "estado",
@@ -98,19 +98,34 @@ const EquipoList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Gestión de Equipos</h1>
-        <Button
-          variant="primary"
-          onClick={() => {
-            setEditingId(null);
-            setIsModalOpen(true);
-          }}
-          className="gap-2"
-        >
-          <Plus size={20} />
-          Nuevo Equipo
-        </Button>
+      <div className="overflow-hidden rounded-lg bg-[var(--color-navy)] text-white shadow-sm">
+        <div className="h-1.5 bg-[var(--color-yellow)]" />
+        <div className="flex flex-col gap-4 p-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-sm font-black uppercase tracking-wide text-[var(--color-yellow)]">
+              Gestion de equipos
+            </p>
+            <h1 className="mt-2 text-3xl font-bold text-white">
+              Equipos registrados
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80">
+              Administra equipos por carrera, disciplina y estado de registro.
+            </p>
+          </div>
+          {!isDelegado && (
+            <Button
+              variant="primary"
+              onClick={() => {
+                setEditingId(null);
+                setIsModalOpen(true);
+              }}
+              className="gap-2"
+            >
+              <Plus size={20} />
+              Nuevo Equipo
+            </Button>
+          )}
+        </div>
       </div>
 
       <Card>
@@ -275,7 +290,7 @@ const EquipoFormModal: React.FC<EquipoFormModalProps> = ({
         />
 
         <Input
-          label="Categoría"
+          label="Categoria"
           value={categoria}
           onChange={(e) => setCategoria(e.target.value)}
           fullWidth

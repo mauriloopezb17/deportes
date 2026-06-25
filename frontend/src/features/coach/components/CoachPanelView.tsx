@@ -264,19 +264,25 @@ const CoachPanelView: React.FC = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Panel de entrenador
-            </h1>
-            <p className="text-gray-600">
-              Horarios, categorias y registro de partidos pendientes.
-            </p>
+        <div className="overflow-hidden rounded-lg bg-[var(--color-navy)] text-white shadow-sm">
+          <div className="h-1.5 bg-[var(--color-yellow)]" />
+          <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-black uppercase tracking-wide text-[var(--color-yellow)]">
+                Cuerpo tecnico
+              </p>
+              <h1 className="mt-2 text-3xl font-bold text-white">
+                Panel de entrenador
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80">
+                Horarios, categorias y registro de partidos pendientes.
+              </p>
+            </div>
+            <Button onClick={loadData} variant="secondary" isLoading={isLoading}>
+              <CalendarDays size={18} />
+              Actualizar
+            </Button>
           </div>
-          <Button onClick={loadData} variant="secondary" isLoading={isLoading}>
-            <CalendarDays size={18} />
-            Actualizar
-          </Button>
         </div>
 
         {error && <Alert type="error" message={error} onClose={() => setError("")} />}

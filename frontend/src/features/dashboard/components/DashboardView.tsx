@@ -758,16 +758,19 @@ interface HeroProps {
 }
 
 const Hero: React.FC<HeroProps> = ({ eyebrow, title, description, aside }) => (
-  <div className="overflow-hidden rounded-lg border border-primary-100 bg-white shadow-sm">
+  <div className="overflow-hidden rounded-lg bg-[var(--color-navy)] text-white shadow-sm">
+    <div className="h-1.5 bg-[var(--color-yellow)]" />
     <div className="grid gap-6 p-6 lg:grid-cols-[1fr_320px] lg:items-center">
       <div>
-        <p className="text-sm font-bold uppercase tracking-wide text-primary-700">
+        <p className="text-sm font-black uppercase tracking-wide text-[var(--color-yellow)]">
           {eyebrow}
         </p>
-        <h1 className="mt-2 text-4xl font-bold text-gray-950">{title}</h1>
-        <p className="mt-3 max-w-2xl text-gray-600">{description}</p>
+        <h1 className="mt-2 text-4xl font-bold text-white">{title}</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/80">
+          {description}
+        </p>
       </div>
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <div className="rounded-lg border border-white/20 bg-white/95 p-4 text-gray-950">
         {aside}
       </div>
     </div>

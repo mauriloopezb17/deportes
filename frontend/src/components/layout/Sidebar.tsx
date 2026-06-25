@@ -7,6 +7,8 @@ import {
   Calendar,
   CalendarDays,
   ClipboardList,
+  PanelLeftClose,
+  PanelLeftOpen,
   Home,
   Trophy,
   UserPlus,
@@ -16,10 +18,17 @@ import {
 
 interface SidebarProps {
   isOpen: boolean;
+  isCollapsed?: boolean;
   onClose?: () => void;
+  onToggleCollapse?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  isOpen,
+  isCollapsed = false,
+  onClose,
+  onToggleCollapse,
+}) => {
   const location = useLocation();
   const { hasRole } = useAuthStore();
   const isDelegateOnly = hasRole(UserRole.DELEGADO) && !hasRole(UserRole.ADMIN);
@@ -113,8 +122,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
       <aside
         className={`
-          fixed left-0 top-16 h-[calc(100vh-4rem)] w-72 transform border-r border-primary-600 bg-[var(--color-navy)] text-white shadow-xl transition-transform
-          z-40 lg:relative lg:top-0 lg:h-screen lg:transform-none
+          fixed left-0 top-16 h-[calc(100vh-4rem)] w-72 transform border-r border-primary-600 bg-[var(--color-navy)] text-white shadow-xl transition-all duration-200
+          z-40 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:shrink-0 lg:transform-none
+          ${isCollapsed ? "lg:w-20" : "lg:w-72"}
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
@@ -124,7 +134,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <div className="mx-4 mt-4 rounded-lg border border-white/20 bg-primary-600 p-4 shadow-sm">
+        <div className={`hidden px-4 pt-4 lg:flex ${isCollapsed ? "justify-center" : "justify-end"}`}>
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            className="rounded-lg border border-white/15 p-2 text-white/85 transition hover:bg-white/10 hover:text-white"
+            aria-label={isCollapsed ? "Expandir menu" : "Contraer menu"}
+            title={isCollapsed ? "Expandir menu" : "Contraer menu"}
+          >
+            {isCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
+          </button>
+        </div>
+
+        <div className="hidden">
           <p className="text-xs font-bold uppercase tracking-wide text-white">
             Gestión deportiva
           </p>
@@ -134,7 +156,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           <div className="mt-3 h-1.5 w-24 rounded-full bg-accent-500" />
         </div>
 
-        <nav className="p-4 space-y-1">
+        <nav className="space-y-1 p-4 pt-4">
           {filteredMenuItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
@@ -145,7 +167,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 to={item.href}
                 onClick={onClose}
                 className={`
-                  flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all
+                  flex items-center gap-3 rounded-lg px-4 py-2.5 transition-all
+                  ${isCollapsed ? "lg:justify-center lg:px-3" : ""}
                   ${
                     active
                       ? "bg-accent-500 text-gray-950 shadow-sm"
@@ -154,7 +177,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 `}
               >
                 <Icon size={20} />
-                <span className="font-medium">{item.label}</span>
+                <span className={`font-medium ${isCollapsed ? "lg:hidden" : ""}`}>
+                  {item.label}
+                </span>
               </Link>
             );
           })}

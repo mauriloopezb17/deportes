@@ -12,21 +12,39 @@
 
 .fixture-header {
   align-items: flex-start;
+  background: #052845;
+  border-radius: 8px;
+  border-top: 6px solid #fec000;
+  box-shadow: 0 14px 34px rgba(5, 40, 69, 0.12);
   display: flex;
   gap: 16px;
   justify-content: space-between;
+  padding: 24px;
 }
 
-.fixture-title h1 {
-  color: #111827;
+.fixture-header .fixture-title h1 {
+  color: white;
   font-size: 30px;
   font-weight: 800;
   letter-spacing: 0;
   margin: 0;
 }
 
-.fixture-title p {
-  color: #64748b;
+.fixture-header .fixture-title p {
+  color: rgba(255, 255, 255, 0.78);
+  margin: 6px 0 0;
+}
+
+.fixture-card .fixture-title h1 {
+  color: #052845;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.fixture-card .fixture-title p {
+  color: #6b7280;
   margin: 6px 0 0;
 }
 
@@ -57,7 +75,8 @@
 }
 
 .fixture-button.secondary {
-  background: #0f766e;
+  background: #009dcd;
+  border-color: #009dcd;
   color: white;
 }
 

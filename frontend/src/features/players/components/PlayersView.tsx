@@ -171,9 +171,9 @@ const PlayersPage: React.FC = () => {
   }, [delegadoCarreraId, isDelegado]);
 
   useEffect(() => {
-    if (isDelegado) return;
-
     const loadCatalogosInscripcion = async () => {
+      if (isDelegado) return;
+
       const catalogos = await deportistaAdminService.obtenerCatalogosInscripcion();
       setDisciplinasInscripcion(
         (catalogos.disciplinas || []).map((disciplina) => ({
@@ -238,22 +238,20 @@ const PlayersPage: React.FC = () => {
   const playersWithoutTeam = Math.max(personas.length - playersWithTeam, 0);
 
   const openCreate = () => {
-    if (!isDelegado) {
-      setAthleteForm(emptyAthleteForm);
-      setExperiences([{ ...emptyExperience }]);
-      setFormError(null);
-      setPageMessage(null);
-      setIsExternalFormOpen(true);
+    setEditingId(null);
+    setFormError(null);
+    setPageMessage(null);
+
+    if (isDelegado) {
+      setFormData(emptyForm);
+      setDelegateModalMode("create");
+      setIsModalOpen(true);
       return;
     }
 
-    setEditingId(null);
-    setFormData(emptyForm);
-    setSelectedJugadorId("");
-    setSelectedDisciplinaId("");
-    setDelegateModalMode("create");
-    setFormError(null);
-    setIsModalOpen(true);
+    setAthleteForm(emptyAthleteForm);
+    setExperiences([{ ...emptyExperience }]);
+    setIsExternalFormOpen(true);
   };
 
   const openAssign = () => {
@@ -607,10 +605,33 @@ const PlayersPage: React.FC = () => {
       return;
     }
 
+    if (isDelegado && !athleteForm.email.trim().toLowerCase().endsWith("@ucb.edu.bo")) {
+      setFormError("El correo debe terminar en @ucb.edu.bo.");
+      return;
+    }
+
     setIsSubmittingAthlete(true);
     try {
-      await deportistaAdminService.inscribirDeportista(buildAthletePayload());
-      setPageMessage("Jugador inscrito correctamente.");
+      if (isDelegado) {
+        await personaService.crearPersona({
+          nombre: athleteForm.nombres.trim(),
+          apellido: [athleteForm.ape_paterno, athleteForm.ape_materno]
+            .filter(Boolean)
+            .join(" ")
+            .trim(),
+          carnet: athleteForm.ci.trim(),
+          email: athleteForm.email.trim().toLowerCase(),
+          celular: athleteForm.celular.trim(),
+        } as any);
+      } else {
+        await deportistaAdminService.inscribirDeportista(buildAthletePayload());
+      }
+
+      setPageMessage(
+        isDelegado
+          ? "Deportista UCB registrado correctamente."
+          : "Jugador inscrito correctamente.",
+      );
       setAthleteForm(emptyAthleteForm);
       setExperiences([{ ...emptyExperience }]);
       setIsExternalFormOpen(false);
@@ -627,24 +648,34 @@ const PlayersPage: React.FC = () => {
   if (isExternalFormOpen && !isDelegado) {
     return (
       <Layout>
-        <div className="space-y-6">
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-primary-700 hover:text-primary-800"
-            onClick={() => {
-              setIsExternalFormOpen(false);
-              setFormError(null);
-            }}
-          >
-            Volver a gestion de jugadores
-          </button>
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-primary-700">
-              Gestion de Jugadores
-            </p>
-            <h1 className="mt-1 text-3xl font-bold text-gray-900">
-              Nuevo jugador
-            </h1>
+        <div className="mx-auto max-w-5xl space-y-6">
+          <div className="overflow-hidden rounded-lg bg-[var(--color-navy)] text-white shadow-sm">
+            <div className="h-1.5 bg-[var(--color-yellow)]" />
+            <div className="flex flex-col gap-4 p-6 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className="text-sm font-black uppercase tracking-wide text-[var(--color-yellow)]">
+                  Gestion de Jugadores
+                </p>
+                <h1 className="mt-2 text-3xl font-bold text-white">
+                  {isDelegado ? "Nuevo deportista UCB" : "Nuevo jugador"}
+                </h1>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80">
+                  {isDelegado
+                    ? "Registra un deportista UCB con datos completos. El correo debe terminar en @ucb.edu.bo."
+                    : "Registra un deportista externo y vincula su inscripcion con torneo, disciplina y categoria correspondiente."}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setIsExternalFormOpen(false);
+                  setFormError(null);
+                }}
+              >
+                Volver a jugadores
+              </Button>
+            </div>
           </div>
           {formError && (
             <Alert
@@ -664,6 +695,7 @@ const PlayersPage: React.FC = () => {
             setExperiences={setExperiences}
             isSubmitting={isSubmittingAthlete}
             onSubmit={handleExternalAthleteSubmit}
+            submitLabel={isDelegado ? "Registrar deportista UCB" : "Inscribir jugador"}
           />
         </div>
       </Layout>
@@ -673,15 +705,17 @@ const PlayersPage: React.FC = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="overflow-hidden rounded-lg bg-[var(--color-navy)] text-white shadow-sm">
+          <div className="h-1.5 bg-[var(--color-yellow)]" />
+          <div className="flex flex-col gap-4 p-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-primary-700">
+            <p className="text-sm font-black uppercase tracking-wide text-[var(--color-yellow)]">
               Participantes
             </p>
-            <h1 className="mt-1 text-3xl font-bold text-gray-900">
+            <h1 className="mt-2 text-3xl font-bold text-white">
               Gestion de Jugadores
             </h1>
-            <p className="mt-2 max-w-2xl text-sm text-gray-600">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80">
               Administra los datos de contacto y la asignacion de equipos de cada
               jugador registrado.
             </p>
@@ -697,6 +731,7 @@ const PlayersPage: React.FC = () => {
               <Plus size={20} />
               {isDelegado ? "Nuevo deportista UCB" : "Nuevo Jugador"}
             </Button>
+          </div>
           </div>
         </div>
 
@@ -1044,6 +1079,7 @@ interface ExternalAthleteFormProps {
   setExperiences: React.Dispatch<React.SetStateAction<Array<typeof emptyExperience>>>;
   isSubmitting: boolean;
   onSubmit: (event: React.FormEvent) => void;
+  submitLabel?: string;
 }
 
 const ExternalAthleteForm: React.FC<ExternalAthleteFormProps> = ({
@@ -1056,10 +1092,11 @@ const ExternalAthleteForm: React.FC<ExternalAthleteFormProps> = ({
   setExperiences,
   isSubmitting,
   onSubmit,
+  submitLabel = "Inscribir jugador",
 }) => (
-  <Card className="max-w-3xl">
+  <Card className="w-full p-0">
     <form onSubmit={onSubmit} className="space-y-8">
-      <section className="space-y-5">
+      <section className="space-y-5 p-6 pb-0">
         <h2 className="border-b border-primary-200 pb-3 text-sm font-bold uppercase tracking-wide text-primary-800">
           Datos del deportista
         </h2>
@@ -1078,7 +1115,7 @@ const ExternalAthleteForm: React.FC<ExternalAthleteFormProps> = ({
         </div>
       </section>
 
-      <section className="space-y-5">
+      <section className="space-y-5 px-6">
         <h2 className="border-b border-primary-200 pb-3 text-sm font-bold uppercase tracking-wide text-primary-800">
           Inscripcion
         </h2>
@@ -1088,7 +1125,7 @@ const ExternalAthleteForm: React.FC<ExternalAthleteFormProps> = ({
         </div>
       </section>
 
-      <section className={optionalSectionClass}>
+      <section className={`${optionalSectionClass} mx-6`}>
         <h3 className="mb-5 flex items-center gap-2 text-sm font-bold text-primary-800">
           <ChevronDown size={14} />
           Tutor / Apoderado
@@ -1114,7 +1151,7 @@ const ExternalAthleteForm: React.FC<ExternalAthleteFormProps> = ({
         )}
       </section>
 
-      <section className={optionalSectionClass}>
+      <section className={`${optionalSectionClass} mx-6`}>
         <h3 className="mb-5 flex items-center gap-2 text-sm font-bold text-primary-800">
           <ChevronDown size={14} />
           Ficha medica
@@ -1129,7 +1166,7 @@ const ExternalAthleteForm: React.FC<ExternalAthleteFormProps> = ({
         </div>
       </section>
 
-      <section className={optionalSectionClass}>
+      <section className={`${optionalSectionClass} mx-6`}>
         <h3 className="mb-5 flex items-center gap-2 text-sm font-bold text-primary-800">
           <ChevronDown size={14} />
           Experiencia deportiva previa
@@ -1159,9 +1196,11 @@ const ExternalAthleteForm: React.FC<ExternalAthleteFormProps> = ({
         </div>
       </section>
 
-      <Button type="submit" variant="primary" isLoading={isSubmitting}>
-        Inscribir jugador
-      </Button>
+      <div className="flex justify-end border-t border-primary-100 bg-gray-50 px-6 py-4">
+        <Button type="submit" variant="primary" isLoading={isSubmitting}>
+          {submitLabel}
+        </Button>
+      </div>
     </form>
   </Card>
 );

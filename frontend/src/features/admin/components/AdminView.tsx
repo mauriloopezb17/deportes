@@ -97,28 +97,36 @@ const AdminPage: React.FC = () => {
           />
         ) : (
           <>
-            <div className="flex flex-col items-start gap-4">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Panel Administrativo
-                </h1>
-                <p className="mt-2 text-sm text-gray-600">
-                  Gestiona inscripciones de deportistas externos y permisos de
-                  usuarios administrativos.
-                </p>
+            <div className="overflow-hidden rounded-lg bg-[var(--color-navy)] text-white shadow-sm">
+              <div className="h-1.5 bg-[var(--color-yellow)]" />
+              <div className="flex flex-col gap-4 p-6 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <p className="text-sm font-black uppercase tracking-wide text-[var(--color-yellow)]">
+                    Administracion
+                  </p>
+                  <h1 className="mt-2 text-3xl font-bold text-white">
+                    Panel Administrativo
+                  </h1>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80">
+                    Gestiona inscripciones de deportistas externos y permisos de
+                    usuarios administrativos.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Button
+                    variant="primary"
+                    className="gap-2"
+                    onClick={() => {
+                      setShowUserForm(true);
+                      setMessage(null);
+                      setError(null);
+                    }}
+                  >
+                    <UserPlus size={20} />
+                    Anadir usuario
+                  </Button>
+                </div>
               </div>
-              <Button
-                variant="primary"
-                className="gap-2"
-                onClick={() => {
-                  setShowUserForm(true);
-                  setMessage(null);
-                  setError(null);
-                }}
-              >
-                <UserPlus size={20} />
-                Anadir usuario
-              </Button>
             </div>
 
             {message && (
@@ -171,13 +179,19 @@ const UserForm: React.FC<UserFormProps> = ({
       Volver al panel
     </button>
 
-    <div>
-      <h1 className="text-3xl font-bold text-gray-900">Registrar Usuario</h1>
-      <p className="mt-2 text-sm text-gray-600">
-        Crear cuentas para miembros del cuerpo tecnico, delegados y administradores.
-        Los deportistas se registran desde Inscribir Deportista. La contrasena
-        inicial sera el numero de CI del usuario.
-      </p>
+    <div className="overflow-hidden rounded-lg bg-[var(--color-navy)] text-white shadow-sm">
+      <div className="h-1.5 bg-[var(--color-yellow)]" />
+      <div className="p-6">
+        <p className="text-sm font-black uppercase tracking-wide text-[var(--color-yellow)]">
+          Usuarios del sistema
+        </p>
+        <h1 className="mt-2 text-3xl font-bold text-white">Registrar Usuario</h1>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-white/80">
+          Crear cuentas para miembros del cuerpo tecnico, delegados y administradores.
+          Los deportistas se registran desde Inscribir Deportista. La contrasena
+          inicial sera el numero de CI del usuario.
+        </p>
+      </div>
     </div>
 
     <Card>
