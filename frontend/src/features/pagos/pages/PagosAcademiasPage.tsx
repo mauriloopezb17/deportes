@@ -31,6 +31,7 @@ function estadoIcon(estado: PagoEstado) {
 export default function PagosAcademiasPage() {
   const [pagos, setPagos] = useState<PagoRow[]>([]);
   const [filters, setFilters] = useState<PagoFilters>(initialFilters);
+  const [selectedPago, setSelectedPago] = useState<PagoRow | null>(null);
 
   useEffect(() => {
     listarPagos().then(setPagos);
@@ -84,6 +85,11 @@ export default function PagosAcademiasPage() {
   async function handleMarcarAlDia(id_pago: number) {
     const updated = await marcarPagoComoAlDia(id_pago);
     setPagos(updated);
+
+    const actualizado = updated.find((pago) => pago.id_pago === id_pago);
+    if (actualizado) {
+      setSelectedPago(actualizado);
+    }
   }
 
   return (
@@ -201,19 +207,25 @@ export default function PagosAcademiasPage() {
                   <td>Bs. {pago.monto_pagado}</td>
                   <td>Bs. {pago.deuda}</td>
                   <td>
-                    {pago.estado === "Al día" || pago.estado === "Exonerado/Beca" ? (
-                      <button className="btn btn-outline small" type="button">
+                    <div className="actions-row">
+                      <button
+                        className="btn btn-outline small"
+                        type="button"
+                        onClick={() => setSelectedPago(pago)}
+                      >
                         Ver cuenta
                       </button>
-                    ) : (
-                      <button
-                        className="btn btn-primary small"
-                        type="button"
-                        onClick={() => handleMarcarAlDia(pago.id_pago)}
-                      >
-                        Marcar al día
-                      </button>
-                    )}
+
+                      {pago.estado !== "Al día" && pago.estado !== "Exonerado/Beca" && (
+                        <button
+                          className="btn btn-primary small"
+                          type="button"
+                          onClick={() => handleMarcarAlDia(pago.id_pago)}
+                        >
+                          Marcar al día
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
@@ -221,6 +233,76 @@ export default function PagosAcademiasPage() {
           </tbody>
         </table>
       </section>
+
+      {selectedPago && (
+        <div className="modal-backdrop" role="presentation">
+          <section className="modal-card pago-account-modal">
+            <button
+              className="modal-close"
+              type="button"
+              onClick={() => setSelectedPago(null)}
+            >
+              ×
+            </button>
+
+            <p className="section-label">Estado de cuenta</p>
+            <h2>{selectedPago.deportista}</h2>
+            <p>Detalle del pago mensual registrado para el deportista seleccionado.</p>
+
+            <div className="account-summary">
+              <div>
+                <span>CI</span>
+                <strong>{selectedPago.ci}</strong>
+              </div>
+
+              <div>
+                <span>Disciplina</span>
+                <strong>{selectedPago.disciplina}</strong>
+              </div>
+
+              <div>
+                <span>Categoría</span>
+                <strong>{selectedPago.categoria}</strong>
+              </div>
+
+              <div>
+                <span>Mes</span>
+                <strong>{selectedPago.mes_correspondiente} {selectedPago.gestion}</strong>
+              </div>
+
+              <div>
+                <span>Monto pagado</span>
+                <strong>Bs. {selectedPago.monto_pagado}</strong>
+              </div>
+
+              <div>
+                <span>Deuda</span>
+                <strong>Bs. {selectedPago.deuda}</strong>
+              </div>
+
+              <div>
+                <span>Estado</span>
+                <strong>{selectedPago.estado}</strong>
+              </div>
+
+              <div>
+                <span>Factura</span>
+                <strong>{selectedPago.estado_factura}</strong>
+              </div>
+            </div>
+
+            <div className="form-actions">
+              <button
+                className="btn btn-primary"
+                type="button"
+                onClick={() => setSelectedPago(null)}
+              >
+                Cerrar
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }
