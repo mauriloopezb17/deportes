@@ -1,0 +1,662 @@
+openapi: 3.0.0
+info:
+  title: MS Infraestructura
+  description: Microservicio de infraestructura - espacios, reservas, horarios y comprobantes
+  version: "1.0"
+servers:
+  - url: http://localhost:3006/api
+    description: Desarrollo local
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CreateReservaDto:
+      type: object
+      required:
+        - espacio_id
+        - fecha_reserva
+        - hora_inicio
+        - hora_fin
+        - tipo_reserva
+        - nombre_solicitante
+        - ci
+
+      properties:
+        espacio_id:
+          type: integer
+          example: 1
+        fecha_reserva:
+          type: string
+          format: date
+          example: "2026-05-20"
+        hora_inicio:
+          type: string
+          pattern: "^([01]\\d|2[0-3]):([0-5]\\d)$"
+          example: "14:00"
+        hora_fin:
+          type: string
+          pattern: "^([01]\\d|2[0-3]):([0-5]\\d)$"
+          example: "16:00"
+        tipo_reserva:
+          type: string
+          example: entrenamiento
+        motivo:
+          type: string
+          maxLength: 200
+          example: Entrenamiento de equipo
+        nombre_solicitante:
+          type: string
+          minLength: 2
+          example: Juan Pérez
+        ci:
+          type: integer
+          example: 12345678
+        complemento:
+          type: string
+          example: LP
+        correo_solicitante:
+          type: string
+          format: email
+          pattern: "@ucb\\.edu\\.bo$"
+          example: juan.perez@ucb.edu.bo
+    UpdateReservaDto:
+      type: object
+      properties:
+        estado:
+          type: string
+          enum:
+            - confirmada
+            - cancelada
+          example: confirmada
+        fecha_reserva:
+          type: string
+          format: date
+          example: "2026-06-15"
+        hora_inicio:
+          type: string
+          pattern: "^([01]\\d|2[0-3]):([0-5]\\d)$"
+          example: "14:00"
+        hora_fin:
+          type: string
+          pattern: "^([01]\\d|2[0-3]):([0-5]\\d)$"
+          example: "16:00"
+        tipo_reserva:
+          type: string
+          example: entrenamiento
+        nombre_solicitante:
+          type: string
+          minLength: 2
+          example: Juan Pérez
+        ci:
+          type: integer
+          example: 12345678
+        complemento:
+          type: string
+          example: LP
+        correo_solicitante:
+          type: string
+          format: email
+          example: juan@ucb.edu.bo
+        motivo:
+          type: string
+          maxLength: 200
+          example: Entrenamiento de vóleibol
+        espacio_id:
+          type: integer
+          example: 1
+    EspacioResponse:
+      type: object
+      properties:
+        id_espacio:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: Cancha de Fútbol
+        ubicacion:
+          type: string
+          example: Campus Central
+        capacidad:
+          type: integer
+          example: 22
+        hora_apertura:
+          type: string
+          example: "08:00"
+        hora_cierre:
+          type: string
+          example: "20:00"
+        activo:
+          type: boolean
+          example: true
+        horarios:
+          type: array
+          items:
+            type: object
+            properties:
+              dia_semana:
+                type: integer
+                example: 1
+              hora_inicio:
+                type: string
+                example: "08:00"
+              hora_fin:
+                type: string
+                example: "10:00"
+    RangoHorarioResponse:
+      type: object
+      properties:
+        hora_apertura:
+          type: string
+          example: "07:00"
+        hora_cierre:
+          type: string
+          example: "22:00"
+    DisponibilidadResponse:
+      type: object
+      properties:
+        espacioId:
+          type: integer
+          example: 1
+        fecha:
+          type: string
+          format: date
+          example: "2026-05-15"
+        bloques_ocupados:
+          type: array
+          items:
+            type: object
+            properties:
+              hora_inicio:
+                type: string
+                example: "08:00"
+              hora_fin:
+                type: string
+                example: "10:00"
+              motivo:
+                type: string
+                example: Clase de Fútbol
+        bloques_disponibles:
+          type: array
+          items:
+            type: object
+            properties:
+              hora_inicio:
+                type: string
+                example: "10:00"
+              hora_fin:
+                type: string
+                example: "12:00"
+    ReservaResponse:
+      type: object
+      properties:
+        id_reserva:
+          type: integer
+          example: 1
+        nombre_solicitante:
+          type: string
+          example: Carlos Méndez
+        espacio_nombre:
+          type: string
+          example: Cancha de Fútbol
+        fecha_reserva:
+          type: string
+          format: date
+          example: "2026-05-15"
+        hora_inicio:
+          type: string
+          example: "10:00"
+        hora_fin:
+          type: string
+          example: "12:00"
+        motivo:
+          type: string
+          example: Entrenamiento
+        estado:
+          type: string
+          example: confirmada
+        id_aprobador:
+          type: integer
+          example: 3
+        observaciones:
+          type: string
+    CreateReservaSuccessResponse:
+      type: object
+      properties:
+        id_reserva:
+          type: integer
+          example: 10
+        nombre_solicitante:
+          type: string
+          example: Carlos Méndez
+        estado:
+          type: string
+          example: pendiente
+        mensaje:
+          type: string
+          example: Reserva creada exitosamente
+    AuditoriaResponse:
+      type: object
+      properties:
+        id_auditoria:
+          type: integer
+          example: 1
+        entidad:
+          type: string
+          example: Reserva
+        id_entidad:
+          type: integer
+          example: 10
+        accion:
+          type: string
+          example: CREAR
+        usuario:
+          type: string
+          example: admin@ucb.edu.bo
+        fecha:
+          type: string
+          format: date-time
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        timestamp:
+          type: string
+          format: date-time
+    HealthReadyResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        database:
+          type: string
+          example: connected
+        timestamp:
+          type: string
+          format: date-time
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: Fecha mal formada
+        error:
+          type: string
+          example: Bad Request
+paths:
+  /espacios:
+    get:
+      summary: Listar espacios físicos disponibles
+      tags:
+        - Espacios
+      responses:
+        "200":
+          description: Lista de espacios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EspacioResponse"
+  /espacios/rango-horario:
+    get:
+      summary: Rango horario global
+      description: Retorna el horario mínimo de apertura y máximo de cierre entre todos los espacios activos
+      tags:
+        - Espacios
+      responses:
+        "200":
+          description: Rango horario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RangoHorarioResponse"
+  /espacios/{id}:
+    get:
+      summary: Ver detalle de un espacio
+      tags:
+        - Espacios
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Espacio encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EspacioResponse"
+        "404":
+          description: Espacio no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /horarios-disponibles/{espacioId}:
+    get:
+      summary: Consultar disponibilidad de horarios
+      description: Consulta los horarios disponibles para un espacio en una fecha específica
+      tags:
+        - Horarios
+      parameters:
+        - name: espacioId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: fecha
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          example: "2026-05-15"
+      responses:
+        "200":
+          description: Disponibilidad
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DisponibilidadResponse"
+        "400":
+          description: Fecha mal formada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /reservas:
+    get:
+      summary: Listado general de reservas
+      description: Obtiene todas las reservas con filtros opcionales
+      tags:
+        - Reservas
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: espacioId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: fecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: busqueda
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de reservas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReservaResponse"
+    post:
+      summary: Registrar nueva reserva
+      description: Crea una reserva validando disponibilidad horaria
+      tags:
+        - Reservas
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReservaDto"
+      responses:
+        "201":
+          description: Reserva creada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateReservaSuccessResponse"
+        "400":
+          description: Error de validación (email no institucional, datos inválidos, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /reservas/reporte:
+    get:
+      summary: Exportar reporte de reservas en Excel o PDF
+      tags:
+        - Reservas
+        - Reportes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: formato
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - pdf
+              - excel
+        - name: desde
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha inicio (YYYY-MM-DD)
+        - name: hasta
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha fin (YYYY-MM-DD)
+        - name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 'Estado: confirmada, cancelada, todas'
+      responses:
+        "200":
+          description: Archivo binario (Excel .xlsx o PDF .pdf)
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+  /reservas/{id}:
+    get:
+      summary: Consultar una reserva específica
+      tags:
+        - Reservas
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Reserva encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReservaResponse"
+    patch:
+      summary: Cambiar estado de la reserva
+      description: Permite confirmar o cancelar una reserva
+      tags:
+        - Reservas
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReservaDto"
+      responses:
+        "200":
+          description: Reserva actualizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReservaResponse"
+  /reservas/{id}/comprobante:
+    get:
+      summary: Generar y descargar comprobante PDF de una reserva
+      tags:
+        - Reservas
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Archivo PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+  /auth/logout:
+    post:
+      summary: Cerrar sesión
+      description: Invalida la sesión del usuario del lado del servidor
+      tags:
+        - Auth
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: Sin contenido
+  /auditoria:
+    get:
+      summary: Consultar registros de auditoría
+      tags:
+        - Auditoría
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: entidad
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: usuario
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: desde
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: YYYY-MM-DD
+        - name: hasta
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: YYYY-MM-DD
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Registros de auditoría
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditoriaResponse"
+  /health:
+    get:
+      summary: Health check del servicio
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Servicio saludable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /health/ready:
+    get:
+      summary: Readiness check con verificación de base de datos
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Servicio listo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthReadyResponse"
+        "503":
+          description: Base de datos no disponible
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"

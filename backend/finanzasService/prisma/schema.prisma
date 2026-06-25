@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model categorias {
+  id_categoria Int             @id(map: "categorias_pk") @default(autoincrement())
+  nombre_categoria String      @db.VarChar(50)
+  inscripciones inscripciones[]
+}
+
+model conceptos_pago {
+  id_concepto   Int          @id(map: "conceptos_pago_pk") @default(autoincrement())
+  id_disciplina Int?
+  codigo_caja   String       @db.VarChar(20)
+  nombre        String       @db.VarChar(100)
+  monto_actual  Decimal      @db.Decimal(10, 2)
+  activo        Boolean      @default(true)
+  disciplinas   disciplinas? @relation(fields: [id_disciplina], references: [id_disciplina], onDelete: NoAction, onUpdate: NoAction, map: "conceptos_pago_disciplinas")
+  pagos         pagos[]
+}
+
+model transaccion_sync {
+  id_sync_transaccion   Int      @id @default(autoincrement())
+  id_transaccion_caja   String   @unique @db.VarChar(100)
+  nit_ci_cliente        Int
+  nombre_titular        String   @db.VarChar(200)
+  monto_total           Decimal  @db.Decimal(10, 2)
+  detalle               String?  @db.Text
+  concepto              String   @db.VarChar(200)
+  fecha_pago            DateTime @db.Date
+  estado_factura        String   @default("Activa") @db.VarChar(20)
+  fecha_recepcion       DateTime @default(now())
+  estado_sync           String   @default("pendiente") @db.VarChar(20)
+  id_persona_pagador    Int?
+  pagos                 pagos[]
+  personas              personas? @relation(fields: [id_persona_pagador], references: [id_persona], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("transaccion_sync")
+}
+
+model pagos {
+  id_pago                    Int              @id(map: "pagos_pk") @default(autoincrement())
+  id_persona_pago            Int
+  id_deportista_beneficiario Int
+  id_concepto                Int
+  id_transaccion_caja        String           @db.VarChar(100)
+  monto_pagado               Decimal          @db.Decimal(10, 2)
+  fecha_pago                 DateTime         @db.Date
+  mes_correspondiente        Int
+  gestion                    Int
+  estado_factura             String           @default("Activa") @db.VarChar(20)
+  id_transaccion_sync        Int?
+  conceptos_pago             conceptos_pago   @relation(fields: [id_concepto], references: [id_concepto], onDelete: NoAction, onUpdate: NoAction, map: "pagos_conceptos_pago")
+  deportistas                deportistas      @relation(fields: [id_deportista_beneficiario], references: [id_deportista], onDelete: NoAction, onUpdate: NoAction, map: "pagos_deportistas")
+  personas                   personas         @relation(fields: [id_persona_pago], references: [id_persona], onDelete: NoAction, onUpdate: NoAction, map: "pagos_personas")
+  transaccion_sync           transaccion_sync? @relation(fields: [id_transaccion_sync], references: [id_sync_transaccion], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([id_deportista_beneficiario, gestion, estado_factura], map: "idx_pagos_deportista_gestion_estado")
+  @@index([mes_correspondiente], map: "idx_pagos_mes_correspondiente")
+}
+
+model personas {
+  id_persona        Int           @id(map: "personas_pk") @default(autoincrement())
+  nombres           String        @db.VarChar(100)
+  ape_paterno       String        @db.VarChar(50)
+  ape_materno       String        @db.VarChar(50)
+  fecha_nacimiento  DateTime      @db.Date
+  celular           String        @db.VarChar(20)
+  ci                Int           @unique(map: "personas_ci_unique")
+  complemento       String?       @db.VarChar(5)
+  deportistas       deportistas[] @relation("deportistas_persona")
+  pagos             pagos[]
+  transaccion_sync  transaccion_sync[]
+}
+
+model deportistas {
+  id_deportista   Int     @id(map: "deportistas_pk") @default(autoincrement())
+  id_persona      Int
+  tipo_deportista String  @db.VarChar(20)
+  activo          Boolean @default(true)
+  inscripciones   inscripciones[]
+  pagos           pagos[]
+  persona         personas @relation("deportistas_persona", fields: [id_persona], references: [id_persona], onDelete: NoAction, onUpdate: NoAction, map: "deportistas_personas")
+}
+
+model disciplinas {
+  id_disciplina     Int             @id(map: "disciplinas_pk") @default(autoincrement())
+  nombre_disciplina String          @db.VarChar(50)
+  activo            Boolean         @default(true)
+  conceptos_pago    conceptos_pago[]
+  inscripciones     inscripciones[]
+}
+
+model inscripciones {
+  id_inscripcion    Int         @id(map: "inscripciones_pk") @default(autoincrement())
+  id_deportista     Int
+  id_disciplina     Int
+  id_categoria      Int
+  fecha_inscripcion DateTime    @db.Date
+  estado            String      @db.VarChar(20)
+  fecha_baja        DateTime?   @db.Date
+  motivo_baja       String?
+  categorias        categorias  @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_categorias")
+  deportistas       deportistas @relation(fields: [id_deportista], references: [id_deportista], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_deportistas")
+  disciplinas       disciplinas @relation(fields: [id_disciplina], references: [id_disciplina], onDelete: NoAction, onUpdate: NoAction, map: "inscripciones_disciplinas")
+}
+

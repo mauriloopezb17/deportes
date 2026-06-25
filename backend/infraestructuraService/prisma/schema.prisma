@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model espacios {
+  id_espacio               Int                        @id(map: "espacios_pk") @default(autoincrement())
+  nombre_espacio           String                     @db.VarChar(100)
+  hora_apertura            DateTime                   @db.Time(6)
+  activo                   Boolean                    @default(true)
+  horario_cierre           DateTime?                  @db.Time(6)
+  plantilla_horarios_fijos plantilla_horarios_fijos[]
+  reservas                 reservas[]
+}
+
+model reservas {
+  id_reserva           Int           @id(map: "reservas_pk") @default(autoincrement())
+  id_espacio           Int
+  id_persona_aprobador Int
+  fecha_reserva        DateTime      @db.Date
+  hora_inicio          DateTime      @db.Time(6)
+  hora_fin             DateTime      @db.Time(6)
+  tipo_reserva         String        @db.VarChar(50)
+  motivo               String?       @db.VarChar(200)
+  estado               EstadoReserva @default(pendiente)
+  ruta_comprobante_pdf String?       @db.VarChar(255)
+  nombre_solicitante   String        @db.VarChar(255)
+  ci                   Int
+  complemento          String?       @db.VarChar(5)
+  correo_solicitante   String?        @db.VarChar(150)
+  espacios             espacios      @relation(fields: [id_espacio], references: [id_espacio], onDelete: NoAction, onUpdate: NoAction, map: "reservas_espacios")
+  personas_aprobador   personas      @relation("reservas_aprobador", fields: [id_persona_aprobador], references: [id_persona], onUpdate: NoAction, map: "reservas_personas_aprobadores")
+}
+
+model plantilla_horarios_fijos {
+  id_plantilla    Int           @id(map: "plantilla_horarios_fijos_pk") @default(autoincrement())
+  id_espacio      Int
+  id_disciplina   Int?
+  dia_semana      Int
+  hora_inicio     DateTime      @db.Time(6)
+  hora_fin        DateTime      @db.Time(6)
+  id_tipo_bloqueo Int
+  id_entrenador   Int?
+  espacios        espacios      @relation(fields: [id_espacio], references: [id_espacio], onDelete: NoAction, onUpdate: NoAction, map: "plantilla_horarios_fijos_espacios")
+  tipos_bloqueo   tipos_bloqueo @relation(fields: [id_tipo_bloqueo], references: [id_tipo_bloqueo], onDelete: NoAction, onUpdate: NoAction, map: "plantilla_horarios_fijos_tipos_bloqueo")
+}
+
+model tipos_bloqueo {
+  id_tipo_bloqueo          Int                        @id(map: "tipos_bloqueo_pk") @default(autoincrement())
+  nombre_bloqueo           String                     @db.VarChar(50)
+  plantilla_horarios_fijos plantilla_horarios_fijos[]
+}
+
+model personas {
+  id_persona       Int        @id(map: "personas_pk") @default(autoincrement())
+  nombres          String     @db.VarChar(100)
+  ape_paterno      String     @db.VarChar(50)
+  ape_materno      String     @db.VarChar(50)
+  fecha_nacimiento DateTime   @db.Date
+  celular          String     @db.VarChar(20)
+  ci               Int        @unique(map: "personas_ci_unique")
+  complemento      String?    @db.VarChar(5)
+  reservas_aprobador   reservas[] @relation("reservas_aprobador")
+  usuarios         usuarios[]
+}
+
+model usuarios {
+  id_usuario Int      @id(map: "usuarios_pk") @default(autoincrement())
+  id_persona Int
+  email      String   @db.VarChar(150)
+  personas   personas @relation(fields: [id_persona], references: [id_persona], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_personas")
+}
+
+
+enum EstadoReserva {
+  confirmada
+  cancelada
+  pendiente
+
+  @@map("estado_reserva")
+}
