@@ -1,0 +1,900 @@
+openapi: 3.0.3
+info:
+  title: Torneos Service - Gestion Deportiva UCB
+  description: API del microservicio de torneos para gestionar autenticacion, carreras, disciplinas, equipos, jugadores, torneos, fixtures, reservas y resultados.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3004/api
+    description: Servidor local del microservicio de torneos
+tags:
+  - name: Autenticacion
+  - name: Personas
+  - name: Roles
+  - name: Carreras
+  - name: Disciplinas
+  - name: Categorias
+  - name: Canchas
+  - name: Equipos
+  - name: Jugadores
+  - name: Torneos
+  - name: Fixture
+  - name: Reservas
+  - name: Entrenador
+paths:
+  /auth/login:
+    post:
+      tags: [Autenticacion]
+      summary: Iniciar sesion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: Login exitoso con token JWT
+  /auth/register:
+    post:
+      tags: [Autenticacion]
+      summary: Registrar usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDto'
+      responses:
+        '201':
+          description: Usuario registrado exitosamente
+  /auth/profile:
+    get:
+      tags: [Autenticacion]
+      summary: Obtener perfil autenticado
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Perfil del usuario autenticado
+
+  /persona:
+    get:
+      tags: [Personas]
+      summary: Listar personas
+      responses:
+        '200':
+          description: Lista paginada de personas
+    post:
+      tags: [Personas]
+      summary: Crear persona o deportista UCB
+      description: Cuando el usuario autenticado es delegado, valida correo @ucb.edu.bo y registra tambien el deportista UCB con su carrera.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonaInput'
+      responses:
+        '201':
+          description: Persona creada
+  /persona/{id}:
+    get:
+      tags: [Personas]
+      summary: Obtener persona por ID
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Persona encontrada
+    patch:
+      tags: [Personas]
+      summary: Actualizar persona
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonaInput'
+      responses:
+        '200':
+          description: Persona actualizada
+    delete:
+      tags: [Personas]
+      summary: Eliminar persona
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Persona eliminada
+
+  /rol:
+    get:
+      tags: [Roles]
+      summary: Listar roles
+      responses:
+        '200':
+          description: Lista de roles
+    post:
+      tags: [Roles]
+      summary: Crear rol
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  example: JUGADOR
+      responses:
+        '201':
+          description: Rol creado
+  /rol/{id}:
+    get:
+      tags: [Roles]
+      summary: Obtener rol por ID
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Rol encontrado
+    patch:
+      tags: [Roles]
+      summary: Actualizar rol
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Rol actualizado
+    delete:
+      tags: [Roles]
+      summary: Eliminar rol
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Rol eliminado
+
+  /persona-rol:
+    get:
+      tags: [Roles]
+      summary: Listar asignaciones persona-rol
+      responses:
+        '200':
+          description: Lista de asignaciones
+    post:
+      tags: [Roles]
+      summary: Asignar rol a persona
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                persona_id:
+                  type: integer
+                  example: 1
+                rol_id:
+                  type: integer
+                  example: 3
+      responses:
+        '201':
+          description: Rol asignado
+  /persona-rol/persona/{personaId}:
+    get:
+      tags: [Roles]
+      summary: Obtener roles de una persona
+      parameters:
+        - name: personaId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Roles de la persona
+
+  /carrera:
+    get:
+      tags: [Carreras]
+      summary: Listar carreras
+      responses:
+        '200':
+          description: Lista de carreras
+    post:
+      tags: [Carreras]
+      summary: Crear carrera
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CarreraInput'
+      responses:
+        '201':
+          description: Carrera creada
+  /carrera/{id}:
+    get:
+      tags: [Carreras]
+      summary: Obtener carrera por ID
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Carrera encontrada
+    patch:
+      tags: [Carreras]
+      summary: Actualizar carrera
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Carrera actualizada
+    delete:
+      tags: [Carreras]
+      summary: Eliminar carrera
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Carrera eliminada
+
+  /disciplina:
+    get:
+      tags: [Disciplinas]
+      summary: Listar disciplinas
+      responses:
+        '200':
+          description: Lista de disciplinas
+    post:
+      tags: [Disciplinas]
+      summary: Crear disciplina
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisciplinaInput'
+      responses:
+        '201':
+          description: Disciplina creada
+  /disciplina/{id}:
+    get:
+      tags: [Disciplinas]
+      summary: Obtener disciplina por ID
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Disciplina encontrada
+    patch:
+      tags: [Disciplinas]
+      summary: Actualizar disciplina
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Disciplina actualizada
+    delete:
+      tags: [Disciplinas]
+      summary: Eliminar disciplina
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Disciplina eliminada
+
+  /categoria:
+    get:
+      tags: [Categorias]
+      summary: Listar categorias
+      responses:
+        '200':
+          description: Lista de categorias
+
+  /cancha:
+    get:
+      tags: [Canchas]
+      summary: Listar canchas
+      responses:
+        '200':
+          description: Lista de canchas
+    post:
+      tags: [Canchas]
+      summary: Crear cancha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CanchaInput'
+      responses:
+        '201':
+          description: Cancha creada
+  /cancha/{id}:
+    get:
+      tags: [Canchas]
+      summary: Obtener cancha por ID
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Cancha encontrada
+    patch:
+      tags: [Canchas]
+      summary: Actualizar cancha
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Cancha actualizada
+    delete:
+      tags: [Canchas]
+      summary: Eliminar cancha
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Cancha eliminada
+
+  /equipo:
+    get:
+      tags: [Equipos]
+      summary: Listar equipos
+      responses:
+        '200':
+          description: Lista de equipos
+    post:
+      tags: [Equipos]
+      summary: Crear equipo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipoInput'
+      responses:
+        '201':
+          description: Equipo creado
+  /equipo/{id}:
+    get:
+      tags: [Equipos]
+      summary: Obtener equipo por ID
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Equipo encontrado
+    patch:
+      tags: [Equipos]
+      summary: Actualizar equipo
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Equipo actualizado
+    delete:
+      tags: [Equipos]
+      summary: Eliminar equipo
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Equipo eliminado
+
+  /jugador-equipo:
+    get:
+      tags: [Jugadores]
+      summary: Listar relaciones jugador-equipo
+      responses:
+        '200':
+          description: Lista de relaciones
+    post:
+      tags: [Jugadores]
+      summary: Inscribir jugador a equipo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JugadorEquipoInput'
+      responses:
+        '201':
+          description: Jugador inscrito en equipo
+  /jugador-equipo/jugador/{jugadorId}:
+    get:
+      tags: [Jugadores]
+      summary: Obtener equipos de un jugador
+      parameters:
+        - name: jugadorId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Equipos del jugador
+  /jugador-equipo/equipo/{equipoId}:
+    get:
+      tags: [Jugadores]
+      summary: Obtener jugadores de un equipo
+      parameters:
+        - name: equipoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Jugadores del equipo
+  /jugador-equipo/{jugadorId}/{equipoId}:
+    delete:
+      tags: [Jugadores]
+      summary: Quitar jugador de equipo
+      parameters:
+        - name: jugadorId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: equipoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Relacion eliminada
+
+  /torneo:
+    get:
+      tags: [Torneos]
+      summary: Listar torneos
+      responses:
+        '200':
+          description: Lista de torneos
+    post:
+      tags: [Torneos]
+      summary: Crear torneo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TorneoInput'
+      responses:
+        '201':
+          description: Torneo creado
+  /torneo/{id}:
+    get:
+      tags: [Torneos]
+      summary: Obtener torneo por ID
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Torneo encontrado
+    patch:
+      tags: [Torneos]
+      summary: Actualizar torneo
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Torneo actualizado
+    delete:
+      tags: [Torneos]
+      summary: Eliminar torneo
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Torneo eliminado
+
+  /torneo-equipo:
+    get:
+      tags: [Torneos]
+      summary: Listar equipos inscritos en torneos
+      responses:
+        '200':
+          description: Lista de inscripciones
+    post:
+      tags: [Torneos]
+      summary: Inscribir equipo a torneo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TorneoEquipoInput'
+      responses:
+        '201':
+          description: Equipo inscrito
+  /torneo-equipo/torneo/{torneoId}:
+    get:
+      tags: [Torneos]
+      summary: Obtener equipos de un torneo
+      parameters:
+        - name: torneoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Equipos inscritos
+
+  /fixture:
+    get:
+      tags: [Fixture]
+      summary: Listar partidos
+      responses:
+        '200':
+          description: Lista de partidos
+    post:
+      tags: [Fixture]
+      summary: Crear partido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FixtureInput'
+      responses:
+        '201':
+          description: Partido creado
+  /fixture/generar:
+    post:
+      tags: [Fixture]
+      summary: Generar fixture automaticamente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateFixtureInput'
+      responses:
+        '201':
+          description: Fixture generado
+  /fixture/torneo/{torneoId}:
+    get:
+      tags: [Fixture]
+      summary: Obtener partidos por torneo
+      parameters:
+        - name: torneoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Partidos del torneo
+  /fixture/{id}:
+    get:
+      tags: [Fixture]
+      summary: Obtener partido por ID
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Partido encontrado
+    patch:
+      tags: [Fixture]
+      summary: Actualizar partido o registrar resultado
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FixtureInput'
+      responses:
+        '200':
+          description: Partido actualizado
+    delete:
+      tags: [Fixture]
+      summary: Eliminar partido
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Partido eliminado
+
+  /reserva:
+    get:
+      tags: [Reservas]
+      summary: Listar reservas de canchas
+      responses:
+        '200':
+          description: Lista de reservas
+    post:
+      tags: [Reservas]
+      summary: Crear reserva de cancha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservaInput'
+      responses:
+        '201':
+          description: Reserva creada
+  /reserva/{id}:
+    get:
+      tags: [Reservas]
+      summary: Obtener reserva por ID
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Reserva encontrada
+    patch:
+      tags: [Reservas]
+      summary: Actualizar reserva
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Reserva actualizada
+    delete:
+      tags: [Reservas]
+      summary: Eliminar reserva
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Reserva eliminada
+
+  /entrenador-panel/resumen:
+    get:
+      tags: [Entrenador]
+      summary: Obtener resumen del panel de entrenador
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Resumen del entrenador
+  /entrenador-panel/equipos:
+    get:
+      tags: [Entrenador]
+      summary: Listar equipos asignados al entrenador
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Equipos visibles para el entrenador
+  /entrenador-panel/partidos:
+    get:
+      tags: [Entrenador]
+      summary: Listar partidos del entrenador
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Partidos visibles para el entrenador
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  schemas:
+    LoginDto:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: admin@ucb.edu.bo
+        password:
+          type: string
+          format: password
+          example: Cambiar123
+    RegisterDto:
+      allOf:
+        - $ref: '#/components/schemas/PersonaInput'
+        - type: object
+          required: [password, rol]
+          properties:
+            password:
+              type: string
+              format: password
+              example: Cambiar123
+            rol:
+              type: string
+              example: DELEGADO
+    PersonaInput:
+      type: object
+      required: [nombre, apellido, carnet, email, celular]
+      properties:
+        nombre:
+          type: string
+          example: Juan
+        apellido:
+          type: string
+          example: Perez
+        carnet:
+          type: string
+          example: '12345678'
+        email:
+          type: string
+          format: email
+          example: juan.perez@ucb.edu.bo
+        celular:
+          type: string
+          example: '+59170000000'
+    CarreraInput:
+      type: object
+      required: [nombre]
+      properties:
+        nombre:
+          type: string
+          example: Ingenieria de Sistemas
+    DisciplinaInput:
+      type: object
+      required: [nombre]
+      properties:
+        nombre:
+          type: string
+          example: Futbol
+        descripcion:
+          type: string
+          example: Futbol universitario
+    CanchaInput:
+      type: object
+      required: [nombre]
+      properties:
+        nombre:
+          type: string
+          example: Cancha principal
+        ubicacion:
+          type: string
+          example: Campus Tupuraya
+        disponible:
+          type: boolean
+          example: true
+    EquipoInput:
+      type: object
+      required: [nombre, categoria, carrera_id, disciplina_id]
+      properties:
+        nombre:
+          type: string
+          example: Sistemas A
+        categoria:
+          type: string
+          example: Mayores
+        carrera_id:
+          type: integer
+          example: 1
+        disciplina_id:
+          type: integer
+          example: 1
+    JugadorEquipoInput:
+      type: object
+      required: [jugador_id, equipo_id]
+      properties:
+        jugador_id:
+          type: integer
+          example: 1
+        equipo_id:
+          type: integer
+          example: 2
+        numero_camiseta:
+          type: integer
+          example: 10
+        posicion:
+          type: string
+          example: Delantero
+    TorneoInput:
+      type: object
+      required: [nombre, disciplina_id]
+      properties:
+        nombre:
+          type: string
+          example: Torneo Intercarreras 2026
+        disciplina_id:
+          type: integer
+          example: 1
+        fecha_inicio:
+          type: string
+          format: date
+          example: '2026-07-01'
+        fecha_fin:
+          type: string
+          format: date
+          example: '2026-07-30'
+        estado:
+          type: string
+          example: activo
+    TorneoEquipoInput:
+      type: object
+      required: [torneo_id, equipo_id]
+      properties:
+        torneo_id:
+          type: integer
+          example: 1
+        equipo_id:
+          type: integer
+          example: 2
+    FixtureInput:
+      type: object
+      required: [torneo_id, equipo_local_id, equipo_visitante_id, fecha, hora]
+      properties:
+        torneo_id:
+          type: integer
+          example: 1
+        equipo_local_id:
+          type: integer
+          example: 1
+        equipo_visitante_id:
+          type: integer
+          example: 2
+        cancha_id:
+          type: integer
+          example: 1
+        fecha:
+          type: string
+          format: date
+          example: '2026-07-10'
+        hora:
+          type: string
+          example: '15:00'
+        resultado_local:
+          type: integer
+          example: 2
+        resultado_visitante:
+          type: integer
+          example: 1
+        estado:
+          type: string
+          example: programado
+    GenerateFixtureInput:
+      type: object
+      required: [torneo_id]
+      properties:
+        torneo_id:
+          type: integer
+          example: 1
+        fecha_inicio:
+          type: string
+          format: date
+          example: '2026-07-01'
+    ReservaInput:
+      type: object
+      required: [cancha_id, fecha, hora_inicio, hora_fin]
+      properties:
+        cancha_id:
+          type: integer
+          example: 1
+        equipo_id:
+          type: integer
+          example: 2
+        fecha:
+          type: string
+          format: date
+          example: '2026-07-05'
+        hora_inicio:
+          type: string
+          example: '14:00'
+        hora_fin:
+          type: string
+          example: '16:00'
+        motivo:
+          type: string
+          example: Entrenamiento

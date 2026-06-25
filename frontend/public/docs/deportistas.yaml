@@ -1,0 +1,204 @@
+openapi: 3.0.0
+info:
+  title: MS3 - Deportistas e Inscripciones UCB
+  version: 1.0.0
+  description: Microservicio encargado de la gestión de deportistas, usuarios administrativos e inscripciones.
+
+servers:
+  - url: /
+    description: Servidor Local
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    InscribirDeportistaBody:
+      type: object
+      required: [deportista, inscripcion]
+      properties:
+        deportista:
+          type: object
+          required:
+            [
+              nombres,
+              ape_paterno,
+              ape_materno,
+              fecha_nacimiento,
+              celular,
+              ci,
+              email,
+            ]
+          properties:
+            nombres: { type: string }
+            ape_paterno: { type: string }
+            ape_materno: { type: string }
+            fecha_nacimiento: { type: string, format: date }
+            celular: { type: string }
+            ci: { type: integer }
+            complemento: { type: string }
+            email: { type: string }
+            talla_ropa: { type: string }
+            colegio_instituto: { type: string }
+            curso: { type: string }
+        inscripcion:
+          type: object
+          required: [id_disciplina, id_categoria]
+          properties:
+            id_disciplina: { type: integer }
+            id_categoria: { type: integer }
+        tutor:
+          type: object
+          properties:
+            nombres: { type: string }
+            ape_paterno: { type: string }
+            ape_materno: { type: string }
+            fecha_nacimiento: { type: string, format: date }
+            ci: { type: integer }
+            celular: { type: string }
+            email: { type: string }
+        ficha_medica:
+          type: object
+          required:
+            [
+              tipo_sangre,
+              contacto_emergencia_nombre,
+              contacto_emergencia_telefono,
+            ]
+          properties:
+            tipo_sangre: { type: string }
+            seguro_medico: { type: string }
+            enfermedades_padecimientos: { type: string }
+            contacto_emergencia_nombre: { type: string }
+            contacto_emergencia_telefono: { type: string }
+        experiencias:
+          type: array
+          items:
+            type: object
+            required: [tipo_participacion, gestion, club_sede]
+            properties:
+              tipo_participacion: { type: string }
+              gestion: { type: integer }
+              club_sede: { type: string }
+              categoria_jugada: { type: string }
+
+    CrearUsuarioBody:
+      type: object
+      required:
+        [nombres, ape_paterno, fecha_nacimiento, celular, ci, email, id_rol]
+      properties:
+        nombres: { type: string }
+        ape_paterno: { type: string }
+        ape_materno: { type: string }
+        fecha_nacimiento: { type: string, format: date }
+        celular: { type: string }
+        ci: { type: string }
+        email: { type: string }
+        id_rol:
+          {
+            type: integer,
+            description: '1=Administrador, 3=Delegado, 4=Deportista',
+          }
+        id_carrera:
+          { type: integer, description: 'Obligatorio si id_rol = 3 (Delegado)' }
+        gestion:
+          { type: integer, description: 'Obligatorio si id_rol = 3 (Delegado)' }
+
+tags:
+  - name: Admin
+    description: Operaciones administrativas de catálogos y usuarios
+  - name: Deportistas
+    description: Gestión pública y privada de deportistas
+
+paths:
+  /api/admin/catalogos/inscripcion:
+    get:
+      tags: [Admin]
+      summary: Obtener catálogos para el formulario de inscripción
+      security: [{ bearerAuth: [] }]
+      responses:
+        200:
+          description: Catálogos (disciplinas, categorías, etc.)
+
+  /api/admin/deportistas/inscribir:
+    post:
+      tags: [Admin]
+      summary: Inscribir un deportista
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InscribirDeportistaBody'
+      responses:
+        201:
+          description: Deportista inscrito correctamente
+
+  /api/admin/roles:
+    get:
+      tags: [Admin]
+      summary: Listar todos los roles del sistema
+      security: [{ bearerAuth: [] }]
+      responses:
+        200:
+          description: Lista de roles
+
+  /api/admin/usuarios/registrar:
+    post:
+      tags: [Admin]
+      summary: Registrar un usuario administrativo/delegado
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearUsuarioBody'
+      responses:
+        201:
+          description: Usuario registrado correctamente
+
+  /api/admin/carreras:
+    get:
+      tags: [Admin]
+      summary: Listar todas las carreras
+      security: [{ bearerAuth: [] }]
+      responses:
+        200:
+          description: Lista de carreras
+
+  /api/admin/deportistas:
+    get:
+      tags: [Admin]
+      summary: Listar todos los deportistas
+      security: [{ bearerAuth: [] }]
+      responses:
+        200:
+          description: Lista de deportistas
+
+  /api/admin/deportistas/{id}/estado:
+    patch:
+      tags: [Admin]
+      summary: Cambiar o alternar el estado de un deportista
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Estado actualizado correctamente
+
+  /api/deportistas/destacados:
+    get:
+      tags: [Deportistas]
+      summary: Obtener lista de jugadores destacados
+      responses:
+        200:
+          description: Lista de jugadores destacados
