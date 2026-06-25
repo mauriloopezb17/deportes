@@ -1,2 +1,0 @@
-ALTER TABLE usuarios ADD COLUMN dos_fa_secret VARCHAR(255) NULL;
-ALTER TABLE usuarios ADD COLUMN dos_fa_activo BOOLEAN DEFAULT FALSE;
