@@ -1,0 +1,227 @@
+/* Noticia detalle (public view) — self-contained, scoped under
+   .noticia-detalle-page. */
+.noticia-detalle-page {
+  --ucb-blue: #052845;
+  --ucb-blue-light: #e6f4f8;
+  --ucb-yellow: #fecc00;
+  --text-dark: #052845;
+  --text-light: #8b8b8b;
+  --border-color: #e2e8ee;
+
+  font-family: 'Inter', sans-serif;
+  color: #052845;
+
+  /* ── re-homed globals ── */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 5%;
+  }
+
+  .page-header {
+    background-color: #ffffff;
+    padding: 3rem 5% 2rem;
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+    animation: nd-fadeInUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .page-header h1 {
+    color: var(--ucb-blue);
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .nd-status {
+    padding: 4rem;
+    text-align: center;
+    color: var(--text-light);
+    font-size: 1.1rem;
+  }
+
+  .nd-error {
+    color: #c0392b;
+  }
+
+  .nd-container {
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+    max-width: 860px;
+    animation: nd-fadeInUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .nd-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #009dc1;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    transition: gap 0.2s ease;
+  }
+
+  .nd-back:hover {
+    gap: 10px;
+  }
+
+  .nd-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .nd-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--ucb-yellow);
+    color: var(--ucb-blue);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .nd-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-light);
+    font-size: 0.9rem;
+  }
+
+  .nd-hero-img {
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    max-height: 460px;
+  }
+
+  .nd-hero-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .nd-resumen {
+    font-size: 1.15rem;
+    color: var(--text-light);
+    border-left: 4px solid var(--ucb-yellow);
+    padding-left: 1rem;
+    margin-bottom: 2rem;
+    font-style: italic;
+  }
+
+  /* EditorJS block rendering */
+  .nd-body {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--text-dark);
+  }
+
+  .nd-body p {
+    margin-bottom: 1.2rem;
+  }
+
+  .nd-body h2 {
+    font-size: 1.6rem;
+    color: var(--ucb-blue);
+    margin: 2rem 0 0.8rem;
+  }
+
+  .nd-body h3 {
+    font-size: 1.3rem;
+    color: var(--ucb-blue);
+    margin: 1.6rem 0 0.6rem;
+  }
+
+  .nd-body h4 {
+    font-size: 1.1rem;
+    color: var(--ucb-blue);
+    margin: 1.4rem 0 0.5rem;
+  }
+
+  .nd-body ul,
+  .nd-body ol {
+    padding-left: 1.8rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .nd-body li {
+    margin-bottom: 0.4rem;
+  }
+
+  .nd-figure {
+    margin: 1.5rem 0;
+    text-align: center;
+  }
+
+  .nd-figure img {
+    border-radius: 8px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .nd-figure figcaption {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    font-style: italic;
+  }
+
+  .nd-quote {
+    border-left: 4px solid var(--ucb-blue);
+    background: var(--ucb-blue-light);
+    padding: 1rem 1.5rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1.5rem 0;
+  }
+
+  .nd-quote p {
+    margin: 0 0 0.4rem;
+    font-style: italic;
+    color: var(--ucb-blue);
+  }
+
+  .nd-quote cite {
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+
+  .nd-delimiter {
+    border: none;
+    border-top: 2px solid var(--ucb-yellow);
+    margin: 2rem auto;
+    width: 60px;
+  }
+
+  .nd-table-wrap {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+
+  .nd-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .nd-table td {
+    border: 1px solid var(--border-color);
+    padding: 0.6rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .nd-table tr:nth-child(even) td {
+    background: var(--ucb-blue-light);
+  }
+}
+
+@keyframes nd-fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}

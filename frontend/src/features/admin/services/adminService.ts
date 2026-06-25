@@ -1,131 +1,128 @@
-import {
-  Academia,
-  Pago,
-  Comunicado,
-  HistorialClub,
-  PaginatedResponse,
-} from "@types";
-import { apiClient } from "@/services/api";
+/* Admin module — network layer aislado para el panel administrativo. */
 
-const emptyPage = <T>(): PaginatedResponse<T> => ({
-  success: true,
-  data: [],
-  pagination: { total: 0, page: 1, limit: 0, pages: 1 },
-});
+export const API_BASE = normalizarBaseUrl(import.meta.env.VITE_API_BASE ?? "")
 
-export const academiaService = {
-  async obtenerAcademias(params?: any): Promise<PaginatedResponse<Academia>> {
-    void params;
-    return emptyPage<Academia>();
-  },
+const AUTH_BASE = normalizarBaseUrl(import.meta.env.VITE_API_AUTH_URL ?? "") || API_BASE
+const DEPORTISTAS_BASE = normalizarBaseUrl(import.meta.env.VITE_API_DEPORTISTAS_URL ?? "") || API_BASE
+const FINANZAS_BASE = normalizarBaseUrl(import.meta.env.VITE_API_FINANZAS_URL ?? "") || API_BASE
+const TORNEOS_BASE = normalizarBaseUrl(import.meta.env.VITE_API_TORNEOS_URL ?? "") || API_BASE
+const PORTAL_BASE = normalizarBaseUrl(import.meta.env.VITE_API_PORTAL_WEB_URL ?? "") || API_BASE
+const INFRAESTRUCTURA_BASE =
+  normalizarBaseUrl(import.meta.env.VITE_API_INFRAESTRUCTURA_URL ?? "") || API_BASE
 
-  async obtenerAcademia(id: number): Promise<Academia> {
-    return { id, nombre: "", director: "", contacto: "", saldo: 0, estado: "inactiva" };
-  },
+type AdminRequestOptions = RequestInit & {
+  baseUrl?: string
+}
 
-  async crearAcademia(data: Partial<Academia>): Promise<Academia> {
-    return { id: Date.now(), saldo: 0, estado: "activa", ...data } as Academia;
-  },
+function normalizarBaseUrl(value: string): string {
+  const cleaned = value.trim()
+  if (!cleaned || cleaned === "__RELATIVE__") return ""
+  return cleaned.replace(/\/+$/, "")
+}
 
-  async actualizarAcademia(
-    id: number,
-    data: Partial<Academia>,
-  ): Promise<Academia> {
-    return { id, saldo: 0, estado: "activa", ...data } as Academia;
-  },
+function buildUrl(baseUrl: string, path: string): string {
+  if (path.startsWith("http://") || path.startsWith("https://")) return path
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`
+  return baseUrl ? `${baseUrl}${normalizedPath}` : normalizedPath
+}
 
-  async eliminarAcademia(id: number): Promise<void> {
-    void id;
-  },
-};
+function resolveBaseUrl(path: string, explicitBaseUrl?: string): string {
+  if (explicitBaseUrl !== undefined) return normalizarBaseUrl(explicitBaseUrl)
 
-export const pagoService = {
-  async obtenerPagos(params?: any): Promise<PaginatedResponse<Pago>> {
-    void params;
-    return emptyPage<Pago>();
-  },
+  if (
+    path.startsWith("/api/admin/deportistas") ||
+    path.startsWith("/api/admin/catalogos") ||
+    path.startsWith("/api/deportistas") ||
+    path.startsWith("/api/inscripciones")
+  ) {
+    return DEPORTISTAS_BASE
+  }
 
-  async obtenerPago(id: number): Promise<Pago> {
-    return { id, academia: await academiaService.obtenerAcademia(0), monto: 0, concepto: "", fecha_vencimiento: "", estado: "pendiente" };
-  },
+  if (
+    path.startsWith("/api/admin/roles") ||
+    path.startsWith("/api/auth") ||
+    path.startsWith("/api/users")
+  ) {
+    return AUTH_BASE
+  }
 
-  async crearPago(data: Partial<Pago>): Promise<Pago> {
-    return { id: Date.now(), academia: await academiaService.obtenerAcademia(0), monto: 0, concepto: "", fecha_vencimiento: "", estado: "pendiente", ...data } as Pago;
-  },
+  if (
+    path.startsWith("/api/pagos") ||
+    path.startsWith("/api/finanzas") ||
+    path.startsWith("/api/conceptos-pago")
+  ) {
+    return FINANZAS_BASE
+  }
 
-  async registrarPago(id: number, fecha: string): Promise<Pago> {
-    return { ...(await this.obtenerPago(id)), estado: "pagado", fecha_pago: fecha };
-  },
+  if (
+    path.startsWith("/api/torneos") ||
+    path.startsWith("/api/partidos") ||
+    path.startsWith("/api/equipos")
+  ) {
+    return TORNEOS_BASE
+  }
 
-  async obtenerPagosPorAcademia(academiaId: number): Promise<Pago[]> {
-    void academiaId;
-    return [];
-  },
-};
+  if (
+    path.startsWith("/api/noticias") ||
+    path.startsWith("/api/galeria") ||
+    path.startsWith("/api/portal")
+  ) {
+    return PORTAL_BASE
+  }
 
-export const comunicadoService = {
-  async obtenerComunicados(
-    params?: any,
-  ): Promise<PaginatedResponse<Comunicado>> {
-    void params;
-    return emptyPage<Comunicado>();
-  },
+  if (
+    path.startsWith("/api/reservas") ||
+    path.startsWith("/api/espacios") ||
+    path.startsWith("/api/horarios")
+  ) {
+    return INFRAESTRUCTURA_BASE
+  }
 
-  async obtenerComunicado(id: number): Promise<Comunicado> {
-    return { id, titulo: "", contenido: "", fecha_creacion: "", autor: null as any, estado: "borrador" };
-  },
+  return API_BASE
+}
 
-  async crearComunicado(data: Partial<Comunicado>): Promise<Comunicado> {
-    return { id: Date.now(), titulo: "", contenido: "", fecha_creacion: new Date().toISOString(), autor: null as any, estado: "borrador", ...data } as Comunicado;
-  },
+export function getToken(): string | null {
+  return localStorage.getItem("ucb_token")
+}
 
-  async actualizarComunicado(
-    id: number,
-    data: Partial<Comunicado>,
-  ): Promise<Comunicado> {
-    return { ...(await this.obtenerComunicado(id)), ...data };
-  },
+export function clearToken(): void {
+  localStorage.removeItem("ucb_token")
+}
 
-  async eliminarComunicado(id: number): Promise<void> {
-    void id;
-  },
+export async function apiFetch<T = any>(
+  path: string,
+  options: AdminRequestOptions = {},
+): Promise<T> {
+  const { baseUrl, headers: optionHeaders, ...rest } = options
+  const token = getToken()
 
-  async publicarComunicado(id: number): Promise<Comunicado> {
-    return { ...(await this.obtenerComunicado(id)), estado: "publicado" };
-  },
-};
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(optionHeaders as Record<string, string>),
+  }
 
-export const historialService = {
-  async obtenerHistorial(
-    params?: any,
-  ): Promise<PaginatedResponse<HistorialClub>> {
-    void params;
-    return emptyPage<HistorialClub>();
-  },
+  if (token) headers.Authorization = `Bearer ${token}`
 
-  async crearRegistroHistorial(
-    data: Partial<HistorialClub>,
-  ): Promise<HistorialClub> {
-    return { id: Date.now(), titulo: "", descripcion: "", fecha: new Date().toISOString(), tipo: "", ...data } as HistorialClub;
-  },
-};
+  const resolvedBaseUrl = resolveBaseUrl(path, baseUrl)
+  const res = await fetch(buildUrl(resolvedBaseUrl, path), { ...rest, headers })
 
-export const deportistaAdminService = {
-  async obtenerCatalogosInscripcion(): Promise<{
-    disciplinas: Array<{ id_disciplina: number; nombre_disciplina: string }>;
-    categorias: Array<{ id_categoria: number; nombre_categoria: string }>;
-  }> {
-    const response = await apiClient.get<any>("/admin/catalogos/inscripcion");
-    return response.data || { disciplinas: [], categorias: [] };
-  },
+  if (!res.ok) {
+    let message = res.statusText
 
-  async listarDeportistas(): Promise<any[]> {
-    const response = await apiClient.get<any[]>("/admin/deportistas");
-    return response.data || [];
-  },
+    try {
+      const body = await res.json()
+      message = body.error ?? body.message ?? message
+    } catch {}
 
-  async inscribirDeportista(data: any): Promise<any> {
-    const response = await apiClient.post<any>("/admin/deportistas/inscribir", data);
-    return response.data;
-  },
-};
+    throw new Error(Array.isArray(message) ? message.join(". ") : message)
+  }
+
+  const text = await res.text()
+  if (!text) return null as T
+
+  try {
+    return JSON.parse(text) as T
+  } catch {
+    return text as T
+  }
+}
