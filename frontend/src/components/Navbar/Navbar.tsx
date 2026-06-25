@@ -1,6 +1,6 @@
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
-import { User, Shield, LogOut, ChevronDown } from 'lucide-react'
+import { User, Shield, LogOut, ChevronDown, LayoutDashboard } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import './Navbar.css'
 
@@ -12,6 +12,9 @@ const links = [
   { to: '/noticias', label: 'Noticias' },
   { to: '/inscribete', label: 'Inscríbete' },
 ]
+
+// Panel de gestión del grupo 2 (app aparte servida bajo /gestion). Configurable por entorno.
+const PANEL_URL = import.meta.env.VITE_PANEL_URL || '/gestion'
 
 function Navbar() {
   const { user, isAuthenticated, isAdmin, logout, loading } = useAuth()
@@ -108,6 +111,14 @@ function Navbar() {
                     Panel de administración
                   </Link>
                 )}
+                <a
+                  href={PANEL_URL}
+                  className="nav-user-dropdown-item"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <LayoutDashboard size={14} strokeWidth={2.2} />
+                  Panel de gestión
+                </a>
                 <button
                   type="button"
                   className="nav-user-dropdown-item logout"
