@@ -1,7 +1,5 @@
 const TOKEN_KEY = "ucb_auth_token";
 
-// MODO LOCAL PARA INTEGRACIÓN FRONTEND:
-// Permite entrar directo al dashboard sin depender todavía del login/back de autenticación.
 // Cuando el grupo de autenticación esté listo, cambiar a false.
 const BYPASS_AUTH = true;
 const LOCAL_USER = {

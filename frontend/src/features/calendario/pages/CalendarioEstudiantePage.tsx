@@ -8,6 +8,7 @@ import EncabezadoCalendario from "../components/EncabezadoCalendario";
 import GrillaCalendarioSemanal, { clasePorEspacio } from "../components/GrillaCalendarioSemanal";
 import LeyendaCalendario from "../components/LeyendaCalendario";
 import NavegacionSemana from "../components/NavegacionSemana";
+import "./CalendarioAdminPage.css";
 
 function obtenerLunes(fecha: Date) {
   const y = fecha.getFullYear();
@@ -52,14 +53,14 @@ function CalendarioEstudiantePage() {
   }, [semanaBase]);
 
   return (
-    <div className="page-stack">
+    <div className="page-stack calendario-lms">
       <EncabezadoCalendario
         titulo="Calendario Semanal"
         subtitulo="Consulta disponibilidad de canchas. Las reservas se realizan de forma presencial."
       />
 
       <section className="stats-grid compact">
-        <StatCard label="Horario visible" value="14:00 - 18:00" />
+        <StatCard label="Horario visible" value="12:00 - 19:00" />
       </section>
 
       <div className="gc-toolbar">

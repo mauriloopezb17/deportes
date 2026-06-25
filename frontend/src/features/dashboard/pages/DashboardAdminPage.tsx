@@ -2,48 +2,42 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../../../shared/components/PageHeader";
 import StatCard from "../../../shared/components/StatCard";
-import { apiRequest } from "../../../shared/services/apiClient";
-import { listarDeportistas } from "../../deportistas/services/deportistaService";
-
 import { ExportarReporteButton } from "../../../shared/components/ExportarReporteButton";
+import { listarDisciplinas } from "../../disciplinas/services/disciplinaService";
+import { getReservas } from "../../reservas/services/reservaService";
 import "./DashboardAdminPage.css";
 
 type Stats = {
-  totalDeportistas: number;
-  pagosPendientes: number;
-  noAplica: number;
+  reservasRegistradas: number;
+  reservasActivas: number;
+  reservasCanceladas: number;
   disciplinasActivas: number;
 };
 
 function DashboardAdminPage() {
   const navigate = useNavigate();
   const [stats, setStats] = useState<Stats>({
-    totalDeportistas: 0,
-    pagosPendientes: 0,
-    noAplica: 0,
+    reservasRegistradas: 0,
+    reservasActivas: 0,
+    reservasCanceladas: 0,
     disciplinasActivas: 0,
   });
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     const cargarStats = async () => {
+      setCargando(true);
       try {
-        const [deportistas, disciplinas] = await Promise.all([
-          listarDeportistas(),
-          apiRequest<{ id: number; activo: boolean }[]>(
-            "/api/disciplinas?activo=true",
-            { requiresAuth: true },
-          ),
+        const [reservas, disciplinas] = await Promise.all([
+          getReservas(),
+          listarDisciplinas(),
         ]);
 
         setStats({
-          totalDeportistas: deportistas.length,
-          pagosPendientes: deportistas.filter(
-            (d) => d.estadoCuenta === "pendiente",
-          ).length,
-          noAplica: deportistas.filter((d) => d.estadoCuenta === "no_aplica")
-            .length,
-          disciplinasActivas: disciplinas.length,
+          reservasRegistradas: reservas.length,
+          reservasActivas: reservas.filter((reserva) => reserva.estado !== "cancelada").length,
+          reservasCanceladas: reservas.filter((reserva) => reserva.estado === "cancelada").length,
+          disciplinasActivas: disciplinas.filter((disciplina) => disciplina.estado === "activa").length,
         });
       } catch (e) {
         console.error("Error cargando stats del dashboard", e);
@@ -57,24 +51,24 @@ function DashboardAdminPage() {
 
   const quickAccess: { label: string; helper: string; path: string }[] = [
     {
-      label: "Registrar deportista",
-      helper: "Alta de nuevos deportistas",
-      path: "/deportistas",
-    },
-    {
-      label: "Verificar pagos",
-      helper: "Estado de pagos y cuentas",
-      path: "/pagos",
-    },
-    {
-      label: "Gestionar disciplinas",
-      helper: "CRUD y estados de disciplinas",
-      path: "/disciplinas",
-    },
-    {
-      label: "Calendario",
-      helper: "Vista admin y estudiante",
+      label: "Calendario admin",
+      helper: "Gestión semanal de espacios",
       path: "/calendario",
+    },
+    {
+      label: "Calendario consulta",
+      helper: "Vista pública sin edición",
+      path: "/calendario/consulta",
+    },
+    {
+      label: "Reservas",
+      helper: "Administrar solicitudes y comprobantes",
+      path: "/reservas",
+    },
+    {
+      label: "Disciplinas",
+      helper: "Crear, editar y activar disciplinas",
+      path: "/disciplinas",
     },
   ];
 
@@ -83,26 +77,26 @@ function DashboardAdminPage() {
       <PageHeader
         eyebrow="Panel administrativo"
         title="Departamento de Deportes"
-        description="Gestión de deportistas, pagos, disciplinas y calendario."
+        description="Gestión del calendario semanal, reservas y disciplinas deportivas."
       />
 
       <section className="stats-grid">
         <StatCard
-          label="Deportistas registrados"
-          value={cargando ? "..." : stats.totalDeportistas}
+          label="Reservas registradas"
+          value={cargando ? "..." : stats.reservasRegistradas}
           helper="en el sistema"
         />
         <StatCard
-          label="Pagos pendientes"
-          value={cargando ? "..." : stats.pagosPendientes}
-          tone="yellow"
-          helper="academia"
+          label="Reservas activas"
+          value={cargando ? "..." : stats.reservasActivas}
+          tone="green"
+          helper="confirmadas o pendientes"
         />
         <StatCard
-          label="No aplica pago"
-          value={cargando ? "..." : stats.noAplica}
-          tone="green"
-          helper="UCB y competitivos"
+          label="Reservas canceladas"
+          value={cargando ? "..." : stats.reservasCanceladas}
+          tone="yellow"
+          helper="historial"
         />
         <StatCard
           label="Disciplinas activas"
@@ -112,94 +106,53 @@ function DashboardAdminPage() {
         />
       </section>
 
-      <section className="panel-card" style={{ borderLeft: "4px solid var(--brand-blue, #002f6c)" }}>
+      <section className="panel-card dashboard-report-card">
         <div className="section-heading">
-          <span>Módulo de reportes generales</span>
-          <h2>Exportar información global</h2>
+          <span>Módulo de reportes</span>
+          <h2>Exportar información de tus módulos</h2>
         </div>
-        
-        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", marginTop: "15px", padding: "10px 0" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <span style={{ fontSize: "12px", color: "gray", fontWeight: "600" }}>MÓDULO DEPORTISTAS</span>
-            <ExportarReporteButton 
-              endpoint="/deportistas/reporte" 
-              filtrosActuales={{ tipo: "todos" }} 
-              nombreArchivoBase="Reporte_General_Deportistas_UCB" 
-              filtrosConfig={[
-                { name: "tipo", label: "Tipo", type: "select", options: [
-                  { value: "todos", label: "Todos" },
-                  { value: "estudiante_ucb", label: "Estudiante UCB" },
-                  { value: "academia", label: "Academia" },
-                  { value: "competitivo", label: "Competitivo" },
-                  { value: "externo", label: "Externo" },
-                ]},
-              ]}
-            />
-          </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <span style={{ fontSize: "12px", color: "gray", fontWeight: "600" }}>MÓDULO PAGOS</span>
-            <ExportarReporteButton 
-              endpoint="/pagos/reporte" 
-              filtrosActuales={{ mes: "", anio: "" }} 
-              nombreArchivoBase="Reporte_General_Pagos_Academias" 
-              filtrosConfig={[
-                { name: "mes", label: "Mes", type: "select", options: [
-                  { value: "", label: "Todos" },
-                  { value: "enero", label: "Enero" },
-                  { value: "febrero", label: "Febrero" },
-                  { value: "marzo", label: "Marzo" },
-                  { value: "abril", label: "Abril" },
-                  { value: "mayo", label: "Mayo" },
-                  { value: "junio", label: "Junio" },
-                  { value: "julio", label: "Julio" },
-                  { value: "agosto", label: "Agosto" },
-                  { value: "septiembre", label: "Septiembre" },
-                  { value: "octubre", label: "Octubre" },
-                  { value: "noviembre", label: "Noviembre" },
-                  { value: "diciembre", label: "Diciembre" },
-                ]},
-                { name: "anio", label: "Año", type: "select", options: [
-                  { value: "", label: "Todos" },
-                  { value: "2024", label: "2024" },
-                  { value: "2025", label: "2025" },
-                  { value: "2026", label: "2026" },
-                  { value: "2027", label: "2027" },
-                ]},
-              ]}
-            />
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <span style={{ fontSize: "12px", color: "gray", fontWeight: "600" }}>MÓDULO RESERVAS</span>
-            <ExportarReporteButton 
-              endpoint="/reservas/reporte" 
-              filtrosActuales={{ desde: "", hasta: "", estado: "todos" }} 
-              nombreArchivoBase="Reporte_General_Reservas_Espacios" 
+        <div className="dashboard-report-grid">
+          <div className="dashboard-report-item">
+            <span>MÓDULO RESERVAS</span>
+            <ExportarReporteButton
+              endpoint="/reservas/reporte"
+              filtrosActuales={{ desde: "", hasta: "", estado: "todos" }}
+              nombreArchivoBase="Reporte_General_Reservas_Espacios"
               filtrosConfig={[
                 { name: "desde", label: "Fecha inicio", type: "date" },
                 { name: "hasta", label: "Fecha fin", type: "date" },
-                { name: "estado", label: "Estado", type: "select", options: [
-                  { value: "todos", label: "Todos" },
-                  { value: "confirmada", label: "Confirmada" },
-                  { value: "cancelada", label: "Cancelada" },
-                ]},
+                {
+                  name: "estado",
+                  label: "Estado",
+                  type: "select",
+                  options: [
+                    { value: "todos", label: "Todos" },
+                    { value: "confirmada", label: "Confirmada" },
+                    { value: "cancelada", label: "Cancelada" },
+                  ],
+                },
               ]}
             />
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <span style={{ fontSize: "12px", color: "gray", fontWeight: "600" }}>MÓDULO DISCIPLINAS</span>
-            <ExportarReporteButton 
-              endpoint="/disciplinas/reporte" 
-              filtrosActuales={{ estado: "todas" }} 
-              nombreArchivoBase="Reporte_General_Disciplinas_Deportivas" 
+          <div className="dashboard-report-item">
+            <span>MÓDULO DISCIPLINAS</span>
+            <ExportarReporteButton
+              endpoint="/disciplinas/reporte"
+              filtrosActuales={{ estado: "todas" }}
+              nombreArchivoBase="Reporte_General_Disciplinas_Deportivas"
               filtrosConfig={[
-                { name: "estado", label: "Estado", type: "select", options: [
-                  { value: "todas", label: "Todas" },
-                  { value: "activas", label: "Activas" },
-                  { value: "inactivas", label: "Inactivas" },
-                ]},
+                {
+                  name: "estado",
+                  label: "Estado",
+                  type: "select",
+                  options: [
+                    { value: "todas", label: "Todas" },
+                    { value: "activas", label: "Activas" },
+                    { value: "inactivas", label: "Inactivas" },
+                  ],
+                },
               ]}
             />
           </div>

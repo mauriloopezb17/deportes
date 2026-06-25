@@ -10,31 +10,38 @@ import {
 import type { Espacio } from "../../reservas/types/reserva.types";
 import AlertasCalendario from "../components/AlertasCalendario";
 import EncabezadoCalendario from "../components/EncabezadoCalendario";
-import GrillaCalendarioSemanal, { clasePorEspacio } from "../components/GrillaCalendarioSemanal";
+import GrillaCalendarioSemanal, {
+  clasePorEspacio,
+} from "../components/GrillaCalendarioSemanal";
 import LeyendaCalendario from "../components/LeyendaCalendario";
 import NavegacionSemana from "../components/NavegacionSemana";
 import "./CalendarioAdminPage.css";
 
 function obtenerLunes(fecha: Date) {
-  const y = fecha.getFullYear();
-  const m = fecha.getMonth();
-  const d = fecha.getDate();
-  const copia = new Date(y, m, d);
+  const copia = new Date(
+    fecha.getFullYear(),
+    fecha.getMonth(),
+    fecha.getDate(),
+  );
+
   const dia = copia.getDay();
   const ajuste = dia === 0 ? -6 : 1 - dia;
+
   copia.setDate(copia.getDate() + ajuste);
   return copia;
 }
 
 function sumarDias(fecha: Date, dias: number) {
-  const y = fecha.getFullYear();
-  const m = fecha.getMonth();
-  const d = fecha.getDate();
-  return new Date(y, m, d + dias);
+  return new Date(
+    fecha.getFullYear(),
+    fecha.getMonth(),
+    fecha.getDate() + dias,
+  );
 }
 
 function CalendarioAdminPage() {
   const navigate = useNavigate();
+
   const [semanaBase, setSemanaBase] = useState(obtenerLunes(new Date()));
   const [mensaje, setMensaje] = useState("");
   const [totalReservas, setTotalReservas] = useState(0);
@@ -51,10 +58,21 @@ function CalendarioAdminPage() {
   }, []);
 
   useEffect(() => {
-    const fechas = Array.from({ length: 6 }, (_, i) => fechaParaAPI(semanaBase, i));
-    Promise.all(fechas.map((f) => getReservas({ fecha: f })))
+    const fechasSemana = Array.from({ length: 6 }, (_, i) =>
+      fechaParaAPI(semanaBase, i),
+    );
+
+    Promise.all(fechasSemana.map((fecha) => getReservas({ fecha })))
       .then((resultados) => {
-        setTotalReservas(resultados.reduce((sum, r) => sum + r.length, 0));
+        const total = resultados.reduce(
+          (sumatoria, reservasDelDia) => sumatoria + reservasDelDia.length,
+          0,
+        );
+
+        setTotalReservas(total);
+      })
+      .catch(() => {
+        setTotalReservas(0);
       });
   }, [semanaBase]);
 
@@ -74,7 +92,7 @@ function CalendarioAdminPage() {
 
       <section className="stats-grid compact">
         <StatCard label="Reservas registradas" value={totalReservas} />
-        <StatCard label="Horario visible" value="14:00 - 18:00" />
+        <StatCard label="Horario visible" value="12:00 - 19:00" />
       </section>
 
       <div className="gc-toolbar">
@@ -88,10 +106,15 @@ function CalendarioAdminPage() {
           {espacios.map((espacio) => (
             <button
               key={espacio.id}
-              className={`gc-space-chip${espacioSeleccionado === espacio.id ? " active" : ""}`}
+              type="button"
+              className={`gc-space-chip${
+                espacioSeleccionado === espacio.id ? " active" : ""
+              }`}
               onClick={() => setEspacioSeleccionado(espacio.id)}
             >
-              <span className={`gc-space-dot ${clasePorEspacio(espacio.nombre)}`} />
+              <span
+                className={`gc-space-dot ${clasePorEspacio(espacio.nombre)}`}
+              />
               {espacio.nombre}
             </button>
           ))}
@@ -99,6 +122,7 @@ function CalendarioAdminPage() {
       </div>
 
       <LeyendaCalendario espacios={espacios} />
+
       <AlertasCalendario mensaje={mensaje} tipo="error" />
 
       {espacioSeleccionado && (

@@ -1,10 +1,13 @@
 import { apiRequest } from "../../../shared/services/apiClient";
+import { MICROSERVICE_URLS } from "../../../config/microservices.config";
 import type {
   Disciplina,
   DisciplinaFormData,
   EstadoDisciplina,
 } from "../types/disciplina.types";
 import { disciplinasMock } from "../mocks/disciplinasMock";
+
+const DISCIPLINAS_API_URL = MICROSERVICE_URLS.disciplinas;
 
 type DisciplinaRaw = {
   id?: number;
@@ -32,6 +35,7 @@ export async function listarDisciplinas(): Promise<Disciplina[]> {
   try {
     const raw = await apiRequest<DisciplinaRaw[]>("/api/disciplinas", {
       requiresAuth: false,
+      baseUrl: DISCIPLINAS_API_URL,
     });
     return raw.map(mapDisciplina);
   } catch (error) {
@@ -46,6 +50,7 @@ export async function crearDisciplina(
   const raw = await apiRequest<DisciplinaRaw>("/api/disciplinas", {
     method: "POST",
     requiresAuth: true,
+    baseUrl: DISCIPLINAS_API_URL,
     body: JSON.stringify({
       nombre_disciplina: data.nombre.trim(),
       nombre: data.nombre.trim(),
@@ -62,6 +67,7 @@ export async function actualizarDisciplina(
   const raw = await apiRequest<DisciplinaRaw>(`/api/disciplinas/${id}`, {
     method: "PATCH",
     requiresAuth: true,
+    baseUrl: DISCIPLINAS_API_URL,
     body: JSON.stringify({
       nombre_disciplina: data.nombre.trim(),
       nombre: data.nombre.trim(),
@@ -78,6 +84,7 @@ export async function cambiarEstadoDisciplina(
   const raw = await apiRequest<DisciplinaRaw>(`/api/disciplinas/${id}/estado`, {
     method: "PATCH",
     requiresAuth: true,
+    baseUrl: DISCIPLINAS_API_URL,
     body: JSON.stringify({ activo: estado === "activa" }),
   });
   return mapDisciplina(raw);

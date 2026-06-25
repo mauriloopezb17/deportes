@@ -1,4 +1,5 @@
-import { apiRequest, API_URL } from "../../../shared/services/apiClient";
+import { apiRequest } from "../../../shared/services/apiClient";
+import { buildApiUrl, MICROSERVICE_URLS } from "../../../config/microservices.config";
 import type {
   BloqueOcupado,
   CreateReservaDto,
@@ -51,6 +52,9 @@ type ReservaRaw = Partial<Reserva> & {
 type DisponibilidadRaw = Partial<DisponibilidadEspacio> & {
   espacio?: EspacioRaw | DisponibilidadEspacio["espacio"];
 };
+
+const RESERVAS_API_URL = MICROSERVICE_URLS.reservas;
+const DISCIPLINAS_API_URL = MICROSERVICE_URLS.disciplinas;
 
 const espaciosFallback: Espacio[] = [
   {
@@ -178,7 +182,9 @@ export { fechaParaAPI };
 
 export async function getEspacios(): Promise<Espacio[]> {
   try {
-    const data = await apiRequest<EspacioRaw[]>("/api/espacios");
+    const data = await apiRequest<EspacioRaw[]>("/api/espacios", {
+      baseUrl: RESERVAS_API_URL,
+    });
     const espacios = data.map(mapEspacio).filter((espacio) => espacio.id !== 0);
     return espacios.length ? espacios : espaciosFallback;
   } catch (error) {
@@ -189,7 +195,9 @@ export async function getEspacios(): Promise<Espacio[]> {
 
 export async function getDisciplinasReserva(): Promise<DisciplinaBasica[]> {
   try {
-    const data = await apiRequest<DisciplinaRaw[]>("/api/disciplinas");
+    const data = await apiRequest<DisciplinaRaw[]>("/api/disciplinas", {
+      baseUrl: DISCIPLINAS_API_URL,
+    });
     const disciplinas = data.map(mapDisciplina).filter((disciplina) => disciplina.id !== 0);
     return disciplinas.length ? disciplinas : disciplinasFallback;
   } catch (error) {
@@ -205,6 +213,7 @@ export async function getDisponibilidad(
   try {
     const data = await apiRequest<DisponibilidadRaw>(
       `/api/horarios-disponibles/${espacioId}?fecha=${fecha}`,
+      { baseUrl: RESERVAS_API_URL },
     );
     return mapDisponibilidad(data);
   } catch (error) {
@@ -271,7 +280,7 @@ export async function getReservas(params?: {
           page: number;
           limit: number;
         }
-    >(endpoint, { requiresAuth: true });
+    >(endpoint, { requiresAuth: true, baseUrl: RESERVAS_API_URL });
 
     const rawList = Array.isArray(response) ? response : response.data;
     return rawList.map(mapReserva);
@@ -293,6 +302,7 @@ export async function crearReserva(datos: CreateReservaDto): Promise<Reserva> {
   const raw = await apiRequest<ReservaRaw>("/api/reservas", {
     method: "POST",
     requiresAuth: true,
+    baseUrl: RESERVAS_API_URL,
     body: JSON.stringify({
       ...datos,
       id_espacio: datos.espacio_id,
@@ -306,6 +316,7 @@ export async function cancelarReserva(id: number): Promise<Reserva> {
     const raw = await apiRequest<ReservaRaw>(`/api/reservas/${id}`, {
       method: "PATCH",
       requiresAuth: true,
+      baseUrl: RESERVAS_API_URL,
       body: JSON.stringify({ estado: "cancelada" }),
     });
     return mapReserva(raw);
@@ -323,6 +334,7 @@ export async function habilitarReserva(id: number): Promise<Reserva> {
     const raw = await apiRequest<ReservaRaw>(`/api/reservas/${id}`, {
       method: "PATCH",
       requiresAuth: true,
+      baseUrl: RESERVAS_API_URL,
       body: JSON.stringify({ estado: "confirmada" }),
     });
     return mapReserva(raw);
@@ -343,6 +355,7 @@ export async function editarReserva(
     const raw = await apiRequest<ReservaRaw>(`/api/reservas/${id}`, {
       method: "PATCH",
       requiresAuth: true,
+      baseUrl: RESERVAS_API_URL,
       body: JSON.stringify({
         ...datos,
         ...(datos.espacio_id ? { id_espacio: datos.espacio_id } : {}),
@@ -356,7 +369,7 @@ export async function editarReserva(
 }
 
 export function getComprobanteUrl(id: number): string {
-  return `${API_URL}/api/reservas/${id}/comprobante`;
+  return buildApiUrl(RESERVAS_API_URL, `/api/reservas/${id}/comprobante`);
 }
 
 export async function descargarComprobanteReserva(

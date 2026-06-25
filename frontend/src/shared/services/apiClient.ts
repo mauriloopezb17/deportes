@@ -1,10 +1,12 @@
-const viteApiUrl = import.meta.env.VITE_API_URL;
-export const API_URL = viteApiUrl === "__RELATIVE__" ? "" : (viteApiUrl || "http://localhost:4000");
+import { API_BASE_URL, buildApiUrl } from "../../config/microservices.config";
+
+export const API_URL = API_BASE_URL;
 const TOKEN_KEY = "ucb_auth_token";
 const BYPASS_AUTH = true;
 
 type RequestOptions = RequestInit & {
   requiresAuth?: boolean;
+  baseUrl?: string;
 };
 
 function tokenExpirado(): boolean {
@@ -15,7 +17,7 @@ function tokenExpirado(): boolean {
     if (!token) return true;
 
     const payload = JSON.parse(
-      atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))
+      atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")),
     );
 
     return payload.exp && payload.exp * 1000 < Date.now();
@@ -28,7 +30,7 @@ function authHeaders(requiresAuth: boolean): Record<string, string> {
   const base: Record<string, string> = { "Content-Type": "application/json" };
   if (!requiresAuth) return base;
   const token = sessionStorage.getItem(TOKEN_KEY);
-  if (token) base["Authorization"] = `Bearer ${token}`;
+  if (token) base.Authorization = `Bearer ${token}`;
   return base;
 }
 
@@ -43,14 +45,14 @@ export async function apiRequest<T>(
   endpoint: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const { requiresAuth = false, headers, ...rest } = options;
+  const { requiresAuth = false, headers, baseUrl, ...rest } = options;
 
   if (requiresAuth && tokenExpirado()) {
     redirectLogin();
-    throw new Error("Sesi\u00f3n expirada");
+    throw new Error("Sesión expirada");
   }
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(buildApiUrl(baseUrl ?? API_URL, endpoint), {
     ...rest,
     headers: {
       ...authHeaders(requiresAuth),
@@ -73,10 +75,10 @@ export async function apiRequest<T>(
 
     if (response.status === 401) {
       redirectLogin();
-      throw new Error("Sesi\u00f3n expirada");
+      throw new Error("Sesión expirada");
     }
     if (response.status === 403) {
-      const message = errorData?.message || errorData?.error || "No tienes permisos para realizar esta acci\u00f3n";
+      const message = errorData?.message || errorData?.error || "No tienes permisos para realizar esta acción";
       throw new Error(Array.isArray(message) ? message.join(". ") : message);
     }
     const message =

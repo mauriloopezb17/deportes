@@ -1,12 +1,21 @@
 import { API_URL } from "./apiClient";
+import { buildApiUrl, MICROSERVICE_URLS } from "../../config/microservices.config";
 
 const TOKEN_KEY = "ucb_auth_token";
 
 function authHeaders(): Record<string, string> {
   const headers: Record<string, string> = {};
   const token = sessionStorage.getItem(TOKEN_KEY);
-  if (token) headers["Authorization"] = `Bearer ${token}`;
+  if (token) headers.Authorization = `Bearer ${token}`;
   return headers;
+}
+
+function baseUrlPorEndpoint(endpoint: string): string {
+  if (endpoint.startsWith("/reservas")) return MICROSERVICE_URLS.reservas;
+  if (endpoint.startsWith("/disciplinas")) return MICROSERVICE_URLS.disciplinas;
+  if (endpoint.startsWith("/deportistas")) return MICROSERVICE_URLS.deportistas;
+  if (endpoint.startsWith("/pagos")) return MICROSERVICE_URLS.finanzas;
+  return API_URL;
 }
 
 export const descargarReporte = async (
@@ -22,7 +31,7 @@ export const descargarReporte = async (
     }
   }
 
-  const url = `${API_URL}/api${endpoint}?${params.toString()}`;
+  const url = buildApiUrl(baseUrlPorEndpoint(endpoint), `/api${endpoint}?${params.toString()}`);
   const response = await fetch(url, { headers: authHeaders() });
 
   if (!response.ok) {
