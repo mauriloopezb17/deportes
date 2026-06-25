@@ -1,68 +1,214 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext'
-import MainLayout from './views/MainLayout/MainLayout'
-import Home from './features/home/components/Home'
-import Torneos from './features/torneos/components/Torneos'
-import Club from './features/club/components/Club'
-import Galeria from './features/galeria/components/Galeria'
-import Noticias from './features/noticias/components/Noticias'
-import NoticiaDetalle from './features/noticias/components/NoticiaDetalle'
-import Inscribete from './features/inscribete/components/Inscribete'
-import LoginPage from './features/login/components/LoginPage'
-import AuthCallback from './features/login/components/AuthCallback'
-import AdminHub from './features/admin/components/AdminHub'
-import RegistrarUsuario from './features/admin/components/RegistrarUsuario'
-import AdminDeportistas from './features/admin/components/AdminDeportistas'
-import AdminGaleria from './features/admin/components/AdminGaleria'
-import AdminEntrenadores from './features/admin/components/AdminEntrenadores'
-import AdminHorarios from './features/admin/components/AdminHorarios'
-import AdminPartidos from './features/admin/components/AdminPartidos'
-import AdminTorneo from './features/admin/components/AdminTorneo'
-import FinanzasPanel from './features/finanzas/components/FinanzasPanel'
-import DelegadoPanel from './features/delegado/components/DelegadoPanel'
-import EntrenadorPanel from './features/entrenador/components/EntrenadorPanel'
-import ApiDocsView from './views/Documentacion/ApiDocsView'
-// News editor / CMS module — pending migration by the team (src/pages not yet in repo).
-// TODO: restore these imports and the two routes below once the CMS is added.
-// import AdminNoticias from './pages/AdminNoticias'
-// import MisNoticias from './pages/admin/MisNoticias'
+import React, { useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { UserRole } from "@types";
+import { useAuthStore } from "@/features/auth/stores/authStore";
+import { ProtectedRoute } from "@/features/auth/components";
+import {
+  LoginPage,
+  RegisterPage,
+  Dashboard,
+  TeamsPage,
+  PlayersPage,
+  ReservationsPage,
+  TournamentsPage,
+  FixturePage,
+  ResultsPage,
+  AdminPage,
+  CMSPage,
+  DisciplinesPage,
+  CategoriesPage,
+  CoachPanelPage,
+  SettingsPage,
+  ProfilePage,
+  NotFoundPage,
+} from "@pages/index";
 
-function App() {
+const App: React.FC = () => {
+  const { checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/torneos" element={<Torneos />} />
-            <Route path="/club" element={<Club />} />
-            <Route path="/galeria" element={<Galeria />} />
-            <Route path="/noticias" element={<Noticias />} />
-            <Route path="/noticias/:id" element={<NoticiaDetalle />} />
-            <Route path="/inscribete" element={<Inscribete />} />
-            <Route path="/admin" element={<AdminHub />} />
-            <Route path="/docs" element={<ApiDocsView />} />
-            <Route path="/panel-finanzas" element={<FinanzasPanel />} />
-            <Route path="/panel-delegado" element={<DelegadoPanel />} />
-            <Route path="/panel-entrenador" element={<EntrenadorPanel />} />
-            {/* TODO: restore once CMS migrated — <Route path="/admin/mis-noticias" element={<MisNoticias />} /> */}
-            <Route path="/admin/registrar-usuario" element={<RegistrarUsuario />} />
-            <Route path="/admin/deportistas" element={<AdminDeportistas />} />
-            <Route path="/admin/galeria" element={<AdminGaleria />} />
-            <Route path="/admin/galeria/:tipo" element={<AdminGaleria />} />
-            <Route path="/admin/entrenadores" element={<AdminEntrenadores />} />
-            <Route path="/admin/horarios" element={<AdminHorarios />} />
-            <Route path="/admin/partidos" element={<AdminPartidos />} />
-            <Route path="/admin/torneo" element={<AdminTorneo />} />
-          </Route>
-          {/* TODO: restore once CMS migrated — <Route path="/noticiasAdmin" element={<AdminNoticias />} /> */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
-  )
-}
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
-export default App
+        <Route
+          path="/panel-admin"
+          element={
+            <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/panel-delegado"
+          element={
+            <ProtectedRoute requiredRoles={[UserRole.DELEGADO]}>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/panel-entrenador"
+          element={
+            <ProtectedRoute requiredRoles={[UserRole.ENTRENADOR]}>
+              <CoachPanelPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/equipos"
+          element={
+            <ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.DELEGADO]}>
+              <TeamsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/jugadores"
+          element={
+            <ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.DELEGADO]}>
+              <PlayersPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/reservas"
+          element={
+            <ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.DELEGADO]}>
+              <ReservationsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/torneos"
+          element={
+            <ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.DELEGADO]}>
+              <TournamentsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/fixture"
+          element={
+            <ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.DELEGADO]}>
+              <FixturePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/resultados"
+          element={
+            <ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.DELEGADO]}>
+              <ResultsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/disciplinas"
+          element={
+            <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+              <DisciplinesPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/entrenador"
+          element={
+            <Navigate to="/panel-entrenador" replace />
+          }
+        />
+
+        <Route
+          path="/categorias"
+          element={
+            <ProtectedRoute
+              requiredRoles={[UserRole.ADMIN, UserRole.DELEGADO, UserRole.ENTRENADOR]}
+            >
+              <CategoriesPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+              <AdminPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+              <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/cms"
+          element={
+            <ProtectedRoute requiredRoles={[UserRole.ADMIN]}>
+              <CMSPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/perfil"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/404" element={<NotFoundPage />} />
+        <Route path="/" element={<Navigate to="/panel-admin" replace />} />
+        <Route path="*" element={<Navigate to="/404" replace />} />
+      </Routes>
+    </Router>
+  );
+};
+
+export default App;
