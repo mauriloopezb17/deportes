@@ -200,6 +200,35 @@ paths:
         400:
           description: Token inválido o expirado
 
+  /api/auth/2fa/generar:
+    post:
+      tags: [Auth]
+      summary: Generar código QR para la Autenticación de Dos Pasos (2FA)
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Código QR generado con éxito.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Código QR generado con éxito
+                  qrCode:
+                    type: string
+                    description: Imagen del código QR en formato data URL Base64
+                    example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
+        400:
+          description: El usuario es una cuenta externa (Google OAuth) o no existe
+        401:
+          description: Token no provisto o inválido
+
   /api/admin/roles:
     get:
       tags: [Usuarios y Roles]
