@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Navbar from '../../features/cms/components/Navbar';
 import type { SaveStatus } from '../../features/cms/components/Navbar';
 import EditorNoticias from '../../features/cms/components/EditorNoticias';
@@ -27,7 +26,7 @@ function extractTitle(data: any): string {
 
 const AdminNoticias: React.FC = () => {
   const { user, isAdmin, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+ 
 
   // newsDataRef siempre tiene el valor más reciente de newsData,
   // evitando stale closures en handleSave / handlePublish / handleModalConfirm
