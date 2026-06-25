@@ -10,6 +10,7 @@ import NoticiaDetalle from './features/noticias/components/NoticiaDetalle'
 import Inscribete from './features/inscribete/components/Inscribete'
 import LoginPage from './features/login/components/LoginPage'
 import AuthCallback from './features/login/components/AuthCallback'
+import TwoFactorSetup from './features/seguridad/components/TwoFactorSetup'
 import AdminHub from './features/admin/components/AdminHub'
 import RegistrarUsuario from './features/admin/components/RegistrarUsuario'
 import AdminDeportistas from './features/admin/components/AdminDeportistas'
@@ -34,6 +35,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/seguridad/2fa" element={<TwoFactorSetup />} />
           <Route element={<MainLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/torneos" element={<Torneos />} />
