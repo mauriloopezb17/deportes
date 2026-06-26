@@ -19,7 +19,7 @@
   box-shadow: 0 2px 12px rgba(5, 40, 69, 0.3);
   position: sticky;
   top: 0;
-  z-index: 40;
+  z-index: 1100;
   font-family: 'Inter', sans-serif;
 }
 
