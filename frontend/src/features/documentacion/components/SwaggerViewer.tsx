@@ -16,16 +16,18 @@ import "swagger-ui-react/swagger-ui.css"
    swagger-ui-react no trae el dropdown nativo multi-spec, por eso el <select>. */
 const BASE = (import.meta.env.VITE_API_BASE ?? "").trim().replace(/\/+$/, "")
 
-/* slug = como lo expone el gateway. `auth` está confirmado; el resto sigue la
-   convención por nombre. Si alguno cambia, es editar el slug acá: igual la
-   detección de abajo cae al estático si el endpoint en vivo no responde. */
+/* slug = como lo expone el gateway en ${BASE}/api/<slug>/swagger.yaml.
+   Slugs reales confirmados desde el SwaggerViewer de cobine17 en main:
+   portalWeb -> noticias, finanzas -> pagos, infraestructura -> reservas.
+   Si alguno cambia, es editar el slug acá; igual la detección de abajo cae al
+   estático si el endpoint en vivo no responde. */
 const SERVICES = [
   { name: "Identidad y Usuarios (auth)", slug: "auth", static: "/docs/auth.yaml" },
-  { name: "Portal Web", slug: "portalweb", static: "/docs/portal-web.yaml" },
+  { name: "Portal Web", slug: "noticias", static: "/docs/portal-web.yaml" },
   { name: "Deportistas e Inscripciones", slug: "deportistas", static: "/docs/deportistas.yaml" },
   { name: "Torneos", slug: "torneos", static: "/docs/torneos.yaml" },
-  { name: "Finanzas", slug: "finanzas", static: "/docs/finanzas.yaml" },
-  { name: "Infraestructura", slug: "infraestructura", static: "/docs/infraestructura.yaml" },
+  { name: "Finanzas", slug: "pagos", static: "/docs/finanzas.yaml" },
+  { name: "Infraestructura", slug: "reservas", static: "/docs/infraestructura.yaml" },
 ] as const
 
 function SwaggerViewer() {

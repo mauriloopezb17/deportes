@@ -53,6 +53,9 @@ async function bootstrap() {
         customSiteTitle: "MS Finanzas - API Docs",
       }),
     );
+    app.getHttpAdapter().get("/api/pagos/swagger.yaml", (req, res) => {
+      res.sendFile(swaggerFilePath);
+    });
   } else {
     Logger.warn(`[Swagger] No se encontró el archivo en: ${swaggerFilePath}`);
   }

@@ -31,11 +31,14 @@ async function bootstrap() {
         customSiteTitle: 'MS3: Deportistas - API Docs',
       }),
     );
+    app.getHttpAdapter().get('/api/deportistas/swagger.yaml', (req, res) => {
+      res.sendFile(swaggerFilePath);
+    });
   } else {
     console.warn(`[Swagger] No se encontró el archivo en: ${swaggerFilePath}`);
   }
 
-  const port = process.env.PORT || 3003;
+  const port = process.env.PORT || 3004;
   await app.listen(port);
 
   console.log(`[API] Servidor corriendo en: http://localhost:${port}/api`);

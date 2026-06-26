@@ -53,6 +53,9 @@ async function bootstrap() {
         customSiteTitle: "MS Infraestructura - API Docs",
       }),
     );
+    app.getHttpAdapter().get("/api/reservas/swagger.yaml", (req, res) => {
+      res.sendFile(swaggerFilePath);
+    });
   } else {
     Logger.warn(`[Swagger] No se encontró el archivo en: ${swaggerFilePath}`);
   }
