@@ -1,17 +1,39 @@
 import {
   Controller,
+  Get,
   Post,
+  Param,
+  Res,
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
+import * as fs from 'fs';
+import * as path from 'path';
 import { OracleStorageService } from '../oracle-storage/oracle-storage.service';
 import 'multer';
 
 @Controller('upload')
 export class UploadController {
   constructor(private readonly oracleStorage: OracleStorageService) {}
+
+  // Sirve las imagenes temporales del editor (previsualizacion mientras se
+  // redacta). Ruta final: GET /api/upload/temp/:filename
+  @Get('temp/:filename')
+  serveTempImage(
+    @Param('filename') filename: string,
+    @Res() res: Response,
+  ) {
+    const safeName = path.basename(filename); // evita path traversal
+    const filepath = path.join(process.cwd(), 'uploads/temp', safeName);
+    if (!fs.existsSync(filepath)) {
+      throw new NotFoundException('Imagen temporal no encontrada.');
+    }
+    return res.sendFile(filepath);
+  }
 
   @Post()
   @UseInterceptors(

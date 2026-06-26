@@ -76,7 +76,8 @@ export async function uploadImagenPortada(file: File): Promise<string> {
 }
 
 export async function createDraft(dto: SaveDraftDTO): Promise<CreateNoticiaResponse> {
-  const res = await fetch(BASE, {
+  // Barra final para evitar el redirect del proxy (HTTPS -> HTTP) que bloquea el POST.
+  const res = await fetch(`${BASE}/`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({
