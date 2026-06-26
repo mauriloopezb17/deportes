@@ -1,8 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { ApiResponse, PaginatedResponse } from "@types";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "https://test.62344037.xyz/api";
+import { API_BASE_URL, withTrailingSlash } from "./apiUrl";
 
 class ApiClient {
   private client: AxiosInstance;
@@ -26,6 +24,7 @@ class ApiClient {
     // Interceptor para agregar token a cada request
     this.client.interceptors.request.use(
       (config) => {
+        config.url = withTrailingSlash(config.url);
         const token = localStorage.getItem("token");
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;

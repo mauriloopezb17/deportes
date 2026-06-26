@@ -114,6 +114,9 @@ const PlayersPage: React.FC = () => {
   const [categoriasInscripcion, setCategoriasInscripcion] = useState<
     Array<{ id: number; nombre: string }>
   >([]);
+  const [rolesTutor, setRolesTutor] = useState<
+    Array<{ id: number; nombre: string }>
+  >([]);
   const [isSubmittingAthlete, setIsSubmittingAthlete] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { usuario, hasRole } = useAuthStore();
@@ -123,10 +126,22 @@ const PlayersPage: React.FC = () => {
   const loadPlayers = async () => {
     setIsLoading(true);
     try {
-      const [response, equiposResponse] = await Promise.all([
-        personaService.obtenerPersonas(),
-        equipoService.obtenerEquipos(),
-      ]);
+      let response;
+      let equiposResponse;
+      try {
+        [response, equiposResponse] = await Promise.all([
+          personaService.obtenerPersonas(),
+          equipoService.obtenerEquipos(),
+        ]);
+      } catch {
+        setPersonas([]);
+        setEquipos([]);
+        setEquiposPorJugador({});
+        setPageMessage(
+          "No se pudo cargar la lista de jugadores con la sesión actual.",
+        );
+        return;
+      }
 
       const equiposDisponibles =
         isDelegado && delegadoCarreraId
@@ -174,19 +189,30 @@ const PlayersPage: React.FC = () => {
     const loadCatalogosInscripcion = async () => {
       if (isDelegado) return;
 
-      const catalogos = await deportistaAdminService.obtenerCatalogosInscripcion();
-      setDisciplinasInscripcion(
-        (catalogos.disciplinas || []).map((disciplina) => ({
-          id: disciplina.id_disciplina,
-          nombre: disciplina.nombre_disciplina,
-        })),
-      );
-      setCategoriasInscripcion(
-        (catalogos.categorias || []).map((categoria) => ({
-          id: categoria.id_categoria,
-          nombre: categoria.nombre_categoria,
-        })),
-      );
+      const [catalogosResult, rolesResult] = await Promise.allSettled([
+        deportistaAdminService.obtenerCatalogosInscripcion(),
+        deportistaAdminService.obtenerRolesSistema(),
+      ]);
+
+      if (catalogosResult.status === "fulfilled") {
+        const catalogos = catalogosResult.value;
+        setDisciplinasInscripcion(
+          (catalogos.disciplinas || []).map((disciplina) => ({
+            id: disciplina.id_disciplina,
+            nombre: disciplina.nombre_disciplina,
+          })),
+        );
+        setCategoriasInscripcion(
+          (catalogos.categorias || []).map((categoria) => ({
+            id: categoria.id_categoria,
+            nombre: categoria.nombre_categoria,
+          })),
+        );
+      }
+
+      if (rolesResult.status === "fulfilled") {
+        setRolesTutor(rolesResult.value);
+      }
     };
 
     void loadCatalogosInscripcion();
@@ -690,6 +716,7 @@ const PlayersPage: React.FC = () => {
             setFormData={setAthleteForm}
             disciplinas={disciplinasInscripcion}
             categorias={categoriasInscripcion}
+            rolesTutor={rolesTutor}
             tutorApplies={tutorApplies}
             experiences={experiences}
             setExperiences={setExperiences}
@@ -1074,6 +1101,7 @@ interface ExternalAthleteFormProps {
   setFormData: React.Dispatch<React.SetStateAction<typeof emptyAthleteForm>>;
   disciplinas: Array<{ id: number; nombre: string }>;
   categorias: Array<{ id: number; nombre: string }>;
+  rolesTutor: Array<{ id: number; nombre: string }>;
   tutorApplies: boolean;
   experiences: Array<typeof emptyExperience>;
   setExperiences: React.Dispatch<React.SetStateAction<Array<typeof emptyExperience>>>;
@@ -1087,6 +1115,7 @@ const ExternalAthleteForm: React.FC<ExternalAthleteFormProps> = ({
   setFormData,
   disciplinas,
   categorias,
+  rolesTutor,
   tutorApplies,
   experiences,
   setExperiences,
@@ -1146,7 +1175,7 @@ const ExternalAthleteForm: React.FC<ExternalAthleteFormProps> = ({
             <Input label="Complemento CI" value={formData.tutor_complemento} onChange={(event) => setFormData({ ...formData, tutor_complemento: event.target.value })} />
             <Input label="Celular" value={formData.tutor_celular} onChange={(event) => setFormData({ ...formData, tutor_celular: event.target.value })} />
             <Input label="Correo (opcional)" type="email" value={formData.tutor_email} onChange={(event) => setFormData({ ...formData, tutor_email: event.target.value })} />
-            <Select label="Rol del tutor" value={formData.tutor_rol} onChange={(event) => setFormData({ ...formData, tutor_rol: event.target.value })} options={["Madre", "Padre", "Tutor", "Apoderado"].map((role) => ({ value: role, label: role }))} />
+            <Select label="Rol del tutor" value={formData.tutor_rol} onChange={(event) => setFormData({ ...formData, tutor_rol: event.target.value })} options={rolesTutor.map((role) => ({ value: role.id, label: role.nombre }))} />
           </div>
         )}
       </section>

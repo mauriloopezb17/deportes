@@ -73,7 +73,7 @@ const Dashboard: React.FC = () => {
         const equiposAsignados = await jugadorService.obtenerEquiposPorJugador(
           usuario.id,
         );
-        const [partidosResponse, reservasResponse, canchasResponse] = await Promise.all([
+        const [partidosResponse, reservasResponse, canchasResponse] = await Promise.allSettled([
           partidoService.obtenerPartidos(),
           reservaService.obtenerReservas(),
           canchaService.obtenerCanchas(),
@@ -82,7 +82,10 @@ const Dashboard: React.FC = () => {
 
         setEquiposJugador(equiposAsignados);
         setPartidosJugador(
-          partidosResponse.data.filter((partido) => {
+          (partidosResponse.status === "fulfilled"
+            ? partidosResponse.value.data
+            : []
+          ).filter((partido) => {
             const localId =
               (partido as any).equipo_local_id ?? partido.equipo_local?.id;
             const visitanteId =
@@ -92,12 +95,19 @@ const Dashboard: React.FC = () => {
           }),
         );
         setReservasJugador(
-          reservasResponse.data.filter((reserva) => {
+          (reservasResponse.status === "fulfilled"
+            ? reservasResponse.value.data
+            : []
+          ).filter((reserva) => {
             const equipoId = (reserva as any).equipo_id ?? reserva.equipo?.id;
             return equipoIds.has(equipoId);
           }),
         );
-        setCanchas(canchasResponse.data);
+        setCanchas(
+          canchasResponse.status === "fulfilled"
+            ? canchasResponse.value.data
+            : [],
+        );
       } finally {
         setIsPlayerLoading(false);
       }
@@ -118,7 +128,7 @@ const Dashboard: React.FC = () => {
           partidosResponse,
           reservasResponse,
           canchasResponse,
-        ] = await Promise.all([
+        ] = await Promise.allSettled([
           equipoService.obtenerEquipos(),
           torneoService.obtenerTorneos(),
           partidoService.obtenerPartidos(),
@@ -126,11 +136,21 @@ const Dashboard: React.FC = () => {
           canchaService.obtenerCanchas(),
         ]);
 
-        setEquipos(equiposResponse.data);
-        setTorneos(torneosResponse.data);
-        setPartidos(partidosResponse.data);
-        setReservas(reservasResponse.data);
-        setCanchas(canchasResponse.data);
+        setEquipos(
+          equiposResponse.status === "fulfilled" ? equiposResponse.value.data : [],
+        );
+        setTorneos(
+          torneosResponse.status === "fulfilled" ? torneosResponse.value.data : [],
+        );
+        setPartidos(
+          partidosResponse.status === "fulfilled" ? partidosResponse.value.data : [],
+        );
+        setReservas(
+          reservasResponse.status === "fulfilled" ? reservasResponse.value.data : [],
+        );
+        setCanchas(
+          canchasResponse.status === "fulfilled" ? canchasResponse.value.data : [],
+        );
       } finally {
         setIsDashboardLoading(false);
       }
