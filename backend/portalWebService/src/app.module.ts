@@ -6,6 +6,9 @@ import { AppService } from './app.service';
 import { NoticiasModule } from './noticias/noticias.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
+import { InfoModule } from './info/info.module';
+import { GaleriaModule } from './galeria/galeria.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -23,6 +26,9 @@ import { AuthModule } from './auth/auth.module';
     PrismaModule,
     AuthModule,
     NoticiasModule,
+    InfoModule,
+    GaleriaModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

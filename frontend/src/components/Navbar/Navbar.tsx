@@ -1,6 +1,6 @@
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
-import { User, Shield, LogOut, ChevronDown } from 'lucide-react'
+import { User, Shield, LogOut, ChevronDown, LayoutDashboard, Newspaper, ShieldCheck, FileText } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import './Navbar.css'
 
@@ -12,6 +12,10 @@ const links = [
   { to: '/noticias', label: 'Noticias' },
   { to: '/inscribete', label: 'Inscríbete' },
 ]
+
+// Panel de gestión del grupo 2 (app aparte servida bajo /gestion). Configurable por entorno.
+// Se le quita la barra final para no duplicarla al concatenar rutas (.../gestion/panel-admin).
+const PANEL_URL = (import.meta.env.VITE_PANEL_URL || '/gestion').replace(/\/+$/, '')
 
 function Navbar() {
   const { user, isAuthenticated, isAdmin, logout, loading } = useAuth()
@@ -39,6 +43,18 @@ function Navbar() {
     ? (`${user.nombres ?? ''} ${user.ape_paterno ?? ''}`.trim() || user.email)
     : ''
 
+  // El panel de gestión es solo para admin (1), entrenador (2) y delegado (3).
+  // Se matchea por nombre_rol primero (contrato estable con el backend) y cae a id_rol.
+  const rol = (user?.nombre_rol ?? '').toLowerCase()
+  const canManage =
+    isAdmin ||
+    rol.includes('entrenador') || rol.includes('delegado') ||
+    user?.id_rol === 2 || user?.id_rol === 3
+
+  // El CMS de noticias es para el rol marketing (5). Ruta /noticiasAdmin
+  // (pendiente de habilitar en App.tsx por el equipo dueño del CMS).
+  const canCms = rol.includes('marketing') || user?.id_rol === 5
+
   return (
     <nav className="ucb-nav">
       <Link to="/" className="logo-area">
@@ -62,13 +78,10 @@ function Navbar() {
         ))}
 
         {isAdmin && (
-          <NavLink
-            to="/admin"
-            className={({ isActive }) => `nav-admin-link${isActive ? ' active' : ''}`}
-          >
+          <a href={`${PANEL_URL}/panel-admin`} className="nav-admin-link">
             <Shield size={15} strokeWidth={2.5} />
             Panel admin
-          </NavLink>
+          </a>
         )}
 
         {!loading && !isAuthenticated && (
@@ -98,16 +111,42 @@ function Navbar() {
                   <p className="nav-user-dropdown-email">{user?.email}</p>
                   <span className="nav-user-dropdown-role">{user?.nombre_rol}</span>
                 </div>
-                {isAdmin && (
-                  <Link
-                    to="/admin"
+                {canManage && (
+                  <a
+                    href={`${PANEL_URL}/`}
                     className="nav-user-dropdown-item"
                     onClick={() => setMenuOpen(false)}
                   >
-                    <Shield size={14} strokeWidth={2.2} />
-                    Panel de administración
+                    <LayoutDashboard size={14} strokeWidth={2.2} />
+                    Panel de gestión
+                  </a>
+                )}
+                {canCms && (
+                  <Link
+                    to="/noticiasAdmin"
+                    className="nav-user-dropdown-item"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <Newspaper size={14} strokeWidth={2.2} />
+                    CMS de noticias
                   </Link>
                 )}
+                <Link
+                  to="/seguridad/2fa"
+                  className="nav-user-dropdown-item"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <ShieldCheck size={14} strokeWidth={2.2} />
+                  Verificación en dos pasos
+                </Link>
+                <Link
+                  to="/docs"
+                  className="nav-user-dropdown-item"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <FileText size={14} strokeWidth={2.2} />
+                  Documentación API
+                </Link>
                 <button
                   type="button"
                   className="nav-user-dropdown-item logout"

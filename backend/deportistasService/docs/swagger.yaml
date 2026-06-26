@@ -112,6 +112,8 @@ tags:
     description: Operaciones administrativas de catálogos y usuarios
   - name: Deportistas
     description: Gestión pública y privada de deportistas
+  - name: Partidos
+    description: Gestión de resultados, fixtures y estadísticas de torneos
 
 paths:
   /api/admin/catalogos/inscripcion:
@@ -202,3 +204,134 @@ paths:
       responses:
         200:
           description: Lista de jugadores destacados
+
+  # --- NUEVOS ENDPOINTS DE PARTIDOS ---
+  /api/partidos/recientes:
+    get:
+      tags: [Partidos]
+      summary: Obtener resultados de partidos recientes
+      responses:
+        200:
+          description: Lista de partidos recientes finalizados
+
+  /api/partidos/fixture/{idTorneo}:
+    get:
+      tags: [Partidos]
+      summary: Obtener el fixture de un torneo
+      parameters:
+        - in: path
+          name: idTorneo
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Fixture programado del torneo
+
+  /api/partidos/torneos:
+    get:
+      tags: [Partidos]
+      summary: Listar todos los torneos activos o finalizados
+      responses:
+        200:
+          description: Lista de torneos
+
+  /api/partidos/disciplinas:
+    get:
+      tags: [Partidos]
+      summary: Listar todas las disciplinas deportivas
+      responses:
+        200:
+          description: Lista de disciplinas
+
+  /api/partidos/resultados:
+    get:
+      tags: [Partidos]
+      summary: Obtener todos los resultados generales
+      responses:
+        200:
+          description: Lista de resultados
+
+  /api/partidos/proximos:
+    get:
+      tags: [Partidos]
+      summary: Obtener próximos partidos generales programados
+      responses:
+        200:
+          description: Lista de próximos partidos
+
+  /api/partidos/posiciones/{idTorneo}:
+    get:
+      tags: [Partidos]
+      summary: Obtener la tabla de posiciones de un torneo
+      parameters:
+        - in: path
+          name: idTorneo
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: disciplina
+          required: false
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Tabla de posiciones
+
+  /api/partidos/torneo/{idTorneo}:
+    get:
+      tags: [Partidos]
+      summary: Obtener todos los partidos de un torneo específico
+      parameters:
+        - in: path
+          name: idTorneo
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: disciplina
+          required: false
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Partidos del torneo
+
+  /api/partidos/goleadores/{idTorneo}:
+    get:
+      tags: [Partidos]
+      summary: Obtener tabla de goleadores de un torneo
+      parameters:
+        - in: path
+          name: idTorneo
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: disciplina
+          required: false
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Tabla de goleadores
+
+  /api/partidos/tarjetas/{idTorneo}:
+    get:
+      tags: [Partidos]
+      summary: Obtener tabla de tarjetas (fair play) de un torneo
+      parameters:
+        - in: path
+          name: idTorneo
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: disciplina
+          required: false
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Tabla de tarjetas

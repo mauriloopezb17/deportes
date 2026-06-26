@@ -2,7 +2,7 @@
 import { useState, useRef, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./LoginPage.css";
-import { login, forgotPassword, verifyResetCode, resetPassword, googleAuthUrl, panelPathForUser } from "../services/loginService";
+import { login, forgotPassword, verifyResetCode, resetPassword, googleAuthUrl, panelPathForUser, panelAppUrlForUser, bridgeSessionToPanel } from "../services/loginService";
 import { useAuth } from "../../../contexts/AuthContext";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -71,8 +71,14 @@ function LoginPage() {
     try {
       const data = await login(email.trim(), password);
       localStorage.setItem("ucb_token", data.token);
-      console.log("JWT Token:", data.token);
       refreshAuth();
+      // admin/delegado/entrenador -> panel del grupo 2 (app aparte bajo /gestion).
+      const panelUrl = panelAppUrlForUser(data.user ?? {});
+      if (panelUrl) {
+        bridgeSessionToPanel(data.token, data.user ?? {});
+        window.location.href = panelUrl; // navegación de página completa a la otra app
+        return;
+      }
       navigate(panelPathForUser(data.user ?? {}), { replace: true });
     } catch (err: any) {
       setFormError(err.message ?? "Error al iniciar sesión.");

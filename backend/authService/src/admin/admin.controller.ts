@@ -51,3 +51,31 @@ export class AdminController {
     };
   }
 }
+/*@Controller('admin')
+export class AdminController {
+  constructor(
+    private prisma: PrismaService,
+    private usersService: UsersService,
+  ) {}
+
+  @Post('usuarios/registrar')
+  async registrarUsuario(@Body() createUserDto: CreateUserDto) {
+    if (createUserDto.id_rol === 3) {
+      if (!createUserDto.id_carrera || !createUserDto.gestion) {
+        throw new BadRequestException(
+          'Para registrar un Delegado, es obligatorio seleccionar la Carrera e ingresar la Gestión.',
+        );
+      }
+    }
+
+    const nuevoUsuario = await this.usersService.create(createUserDto);
+
+    return {
+      message: 'Usuario registrado exitosamente en el sistema',
+      user: {
+        email: nuevoUsuario.email,
+        id_rol: nuevoUsuario.id_rol,
+      },
+    };
+  }
+}*/

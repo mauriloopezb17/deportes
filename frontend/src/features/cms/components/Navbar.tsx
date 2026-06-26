@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Upload, Eye, EyeOff, LogOut, Menu, X, Loader2 } from 'lucide-react';
-import 'CSS/Navbar.css';
+import './CSS/Navbar.css';
 
 export type SaveStatus =
   | 'nuevo'

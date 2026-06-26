@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, MousePointer, Type, AlignLeft, Palette, Image, Lightbulb, Info } from 'lucide-react';
-import 'CSS/ModalAyuda.css';
+import './CSS/ModalAyuda.css';
 
 interface ModalAyudaProps {
   isOpen: boolean;

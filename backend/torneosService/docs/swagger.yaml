@@ -1,0 +1,890 @@
+openapi: 3.0.3
+info:
+  title: Torneos Service - Gestion Deportiva UCB
+  description: API documentada solo con los endpoints usados por el frontend de gestion deportiva.
+  version: 1.0.0
+servers:
+  - url: /
+    description: Servidor local del microservicio de torneos
+tags:
+  - name: Auth
+  - name: Catalogos
+  - name: Personas y jugadores
+  - name: Equipos
+  - name: Reservas
+  - name: Torneos
+  - name: Fixture
+  - name: Partidos
+  - name: Entrenador
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Iniciar sesion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginDto"
+      responses:
+        "200":
+          description: Retorna token JWT y datos del usuario
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Registrar usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterDto"
+      responses:
+        "201":
+          description: Usuario registrado
+  /auth/profile:
+    get:
+      tags: [Auth]
+      summary: Obtener perfil autenticado
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Perfil del usuario autenticado
+
+  /carrera:
+    get:
+      tags: [Catalogos]
+      summary: Listar carreras
+      responses:
+        "200":
+          description: Carreras disponibles
+  /disciplina:
+    get:
+      tags: [Catalogos]
+      summary: Listar disciplinas
+      responses:
+        "200":
+          description: Disciplinas disponibles
+  /categoria:
+    get:
+      tags: [Catalogos]
+      summary: Listar categorias
+      responses:
+        "200":
+          description: Categorias disponibles
+  /rol:
+    get:
+      tags: [Catalogos]
+      summary: Listar roles
+      responses:
+        "200":
+          description: Roles disponibles para asignacion
+
+  /persona:
+    get:
+      tags: [Personas y jugadores]
+      summary: Listar personas visibles como jugadores
+      responses:
+        "200":
+          description: Lista paginada de personas
+    post:
+      tags: [Personas y jugadores]
+      summary: Crear persona o deportista UCB
+      description: Usado para registrar deportistas UCB desde delegado y jugadores desde administracion.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonaInput"
+      responses:
+        "201":
+          description: Persona creada
+  /persona/{id}:
+    get:
+      tags: [Personas y jugadores]
+      summary: Obtener persona por ID
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Persona encontrada
+    patch:
+      tags: [Personas y jugadores]
+      summary: Actualizar persona
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonaInput"
+      responses:
+        "200":
+          description: Persona actualizada
+    delete:
+      tags: [Personas y jugadores]
+      summary: Eliminar persona
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Persona eliminada
+  /persona-rol:
+    post:
+      tags: [Personas y jugadores]
+      summary: Asignar rol a persona
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonaRolInput"
+      responses:
+        "201":
+          description: Rol asignado
+  /persona-rol/persona/{personaId}:
+    get:
+      tags: [Personas y jugadores]
+      summary: Obtener roles de una persona
+      parameters:
+        - name: personaId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Roles de la persona
+  /jugador-equipo:
+    post:
+      tags: [Personas y jugadores]
+      summary: Inscribir jugador a equipo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JugadorEquipoInput"
+      responses:
+        "201":
+          description: Jugador inscrito al equipo
+  /jugador-equipo/jugador/{jugadorId}:
+    get:
+      tags: [Personas y jugadores]
+      summary: Obtener equipos de un jugador
+      parameters:
+        - name: jugadorId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Equipos del jugador
+  /jugador-equipo/equipo/{equipoId}:
+    get:
+      tags: [Personas y jugadores]
+      summary: Obtener jugadores de un equipo
+      parameters:
+        - name: equipoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Jugadores del equipo
+  /jugador-equipo/{jugadorId}/{equipoId}:
+    delete:
+      tags: [Personas y jugadores]
+      summary: Quitar jugador de equipo
+      parameters:
+        - name: jugadorId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: equipoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Relacion eliminada
+
+  /equipo:
+    get:
+      tags: [Equipos]
+      summary: Listar equipos
+      responses:
+        "200":
+          description: Equipos registrados
+    post:
+      tags: [Equipos]
+      summary: Crear equipo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EquipoInput"
+      responses:
+        "201":
+          description: Equipo creado
+  /equipo/{id}:
+    get:
+      tags: [Equipos]
+      summary: Obtener equipo por ID
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Equipo encontrado
+    patch:
+      tags: [Equipos]
+      summary: Actualizar equipo
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EquipoInput"
+      responses:
+        "200":
+          description: Equipo actualizado
+    delete:
+      tags: [Equipos]
+      summary: Eliminar equipo
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Equipo eliminado
+
+  /cancha:
+    get:
+      tags: [Reservas]
+      summary: Listar canchas
+      responses:
+        "200":
+          description: Canchas disponibles
+    post:
+      tags: [Reservas]
+      summary: Crear cancha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CanchaInput"
+      responses:
+        "201":
+          description: Cancha creada
+  /cancha/rango-horario:
+    get:
+      tags: [Reservas]
+      summary: Obtener rango horario global de espacios
+      responses:
+        "200":
+          description: Rango horario disponible
+  /cancha/{id}:
+    get:
+      tags: [Reservas]
+      summary: Obtener cancha por ID
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Cancha encontrada
+    patch:
+      tags: [Reservas]
+      summary: Actualizar cancha
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CanchaInput"
+      responses:
+        "200":
+          description: Cancha actualizada
+    delete:
+      tags: [Reservas]
+      summary: Eliminar cancha
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Cancha eliminada
+  /reserva:
+    get:
+      tags: [Reservas]
+      summary: Listar reservas
+      parameters:
+        - name: fecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: equipoId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Reservas registradas
+    post:
+      tags: [Reservas]
+      summary: Crear reserva
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservaInput"
+      responses:
+        "201":
+          description: Reserva creada
+  /reserva/disponibilidad/{canchaId}/{fecha}:
+    get:
+      tags: [Reservas]
+      summary: Consultar disponibilidad de cancha
+      parameters:
+        - name: canchaId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: fecha
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Horarios disponibles
+  /reserva/{id}:
+    get:
+      tags: [Reservas]
+      summary: Obtener reserva por ID
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Reserva encontrada
+    patch:
+      tags: [Reservas]
+      summary: Actualizar o cancelar reserva
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservaInput"
+      responses:
+        "200":
+          description: Reserva actualizada
+    delete:
+      tags: [Reservas]
+      summary: Eliminar reserva
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Reserva eliminada
+
+  /torneo:
+    get:
+      tags: [Torneos]
+      summary: Listar torneos
+      responses:
+        "200":
+          description: Torneos registrados
+    post:
+      tags: [Torneos]
+      summary: Crear torneo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TorneoInput"
+      responses:
+        "201":
+          description: Torneo creado
+  /torneo/{id}:
+    get:
+      tags: [Torneos]
+      summary: Obtener torneo por ID
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Torneo encontrado
+    patch:
+      tags: [Torneos]
+      summary: Actualizar torneo
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TorneoInput"
+      responses:
+        "200":
+          description: Torneo actualizado
+    delete:
+      tags: [Torneos]
+      summary: Eliminar torneo
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Torneo eliminado
+  /torneo-equipo:
+    post:
+      tags: [Torneos]
+      summary: Agregar equipo a torneo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TorneoEquipoInput"
+      responses:
+        "201":
+          description: Equipo agregado al torneo
+  /torneo-equipo/{torneoId}/{equipoId}:
+    delete:
+      tags: [Torneos]
+      summary: Quitar equipo de torneo
+      parameters:
+        - name: torneoId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: equipoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Equipo removido del torneo
+
+  /fixture:
+    get:
+      tags: [Fixture]
+      summary: Listar partidos
+      responses:
+        "200":
+          description: Partidos registrados
+    post:
+      tags: [Fixture]
+      summary: Crear partido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FixtureInput"
+      responses:
+        "201":
+          description: Partido creado
+  /fixture/generar:
+    post:
+      tags: [Fixture]
+      summary: Generar fixture automaticamente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateFixtureInput"
+      responses:
+        "201":
+          description: Fixture generado
+  /fixture/torneo/{torneoId}:
+    get:
+      tags: [Fixture]
+      summary: Obtener partidos por torneo
+      parameters:
+        - name: torneoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Partidos del torneo
+  /fixture/{id}:
+    get:
+      tags: [Fixture]
+      summary: Obtener partido por ID
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Partido encontrado
+    patch:
+      tags: [Fixture]
+      summary: Actualizar partido o registrar resultado
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FixtureInput"
+      responses:
+        "200":
+          description: Partido actualizado
+    delete:
+      tags: [Fixture]
+      summary: Eliminar partido
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Partido eliminado
+
+  /partidos/fixture/{idTorneo}:
+    get:
+      tags: [Partidos]
+      summary: Obtener el fixture de un torneo
+      parameters:
+        - name: idTorneo
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Fixture del torneo
+  /partidos/torneos:
+    get:
+      tags: [Partidos]
+      summary: Listar todos los torneos
+      responses:
+        "200":
+          description: Torneos registrados
+  /partidos/disciplinas:
+    get:
+      tags: [Partidos]
+      summary: Listar todas las disciplinas deportivas
+      responses:
+        "200":
+          description: Disciplinas disponibles
+  /partidos/torneo/{idTorneo}:
+    get:
+      tags: [Partidos]
+      summary: Obtener todos los partidos de un torneo
+      parameters:
+        - name: idTorneo
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Partidos del torneo
+
+  /entrenador-panel/resumen:
+    get:
+      tags: [Entrenador]
+      summary: Obtener resumen del entrenador
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Resumen del entrenador autenticado
+  /entrenador-panel/partidos-pendientes:
+    get:
+      tags: [Entrenador]
+      summary: Obtener partidos pendientes del entrenador
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Partidos pendientes del entrenador
+  /entrenador-panel/partidos/{id}:
+    get:
+      tags: [Entrenador]
+      summary: Obtener detalle de partido para entrenador
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Detalle del partido
+  /entrenador-panel/partidos/{id}/registro:
+    post:
+      tags: [Entrenador]
+      summary: Registrar resultado y estadisticas del partido
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistroEntrenadorInput"
+      responses:
+        "201":
+          description: Resultado registrado
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  schemas:
+    LoginDto:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: admin@ucb.edu.bo
+        password:
+          type: string
+          format: password
+          example: Cambiar123
+    RegisterDto:
+      allOf:
+        - $ref: "#/components/schemas/PersonaInput"
+        - type: object
+          required: [password, rol]
+          properties:
+            password:
+              type: string
+              format: password
+              example: Cambiar123
+            rol:
+              type: string
+              enum: [JUGADOR, ADMIN, DELEGADO]
+              example: DELEGADO
+    PersonaInput:
+      type: object
+      required: [nombre, apellido, carnet, email, celular]
+      properties:
+        nombre:
+          type: string
+          example: Juan
+        apellido:
+          type: string
+          example: Perez
+        carnet:
+          type: string
+          example: "12345678"
+        email:
+          type: string
+          format: email
+          example: juan.perez@ucb.edu.bo
+        celular:
+          type: string
+          example: "+59170000000"
+    PersonaRolInput:
+      type: object
+      required: [persona_id, rol_id]
+      properties:
+        persona_id:
+          type: integer
+          example: 1
+        rol_id:
+          type: integer
+          example: 3
+    JugadorEquipoInput:
+      type: object
+      required: [jugador_id, equipo_id]
+      properties:
+        jugador_id:
+          type: integer
+          example: 1
+        equipo_id:
+          type: integer
+          example: 2
+    EquipoInput:
+      type: object
+      required: [nombre_equipo, carrera_id, disciplina_id]
+      properties:
+        nombre_equipo:
+          type: string
+          example: Sistemas A
+        carrera_id:
+          type: integer
+          example: 1
+        disciplina_id:
+          type: integer
+          example: 1
+    CanchaInput:
+      type: object
+      properties:
+        nombre:
+          type: string
+          example: Cancha principal
+        ubicacion:
+          type: string
+          example: Campus Tupuraya
+        disponible:
+          type: boolean
+          example: true
+    ReservaInput:
+      type: object
+      properties:
+        cancha_id:
+          type: integer
+          example: 1
+        equipo_id:
+          type: integer
+          example: 2
+        fecha:
+          type: string
+          format: date
+          example: "2026-07-05"
+        hora_inicio:
+          type: string
+          example: "14:00"
+        hora_fin:
+          type: string
+          example: "16:00"
+        estado:
+          type: string
+          example: confirmada
+        observaciones:
+          type: string
+          example: Entrenamiento
+    TorneoInput:
+      type: object
+      properties:
+        nombre:
+          type: string
+          example: Torneo Intercarreras 2026
+        tipo:
+          type: string
+          example: Interno
+        estado:
+          type: string
+          example: planeado
+        disciplina_id:
+          type: integer
+          example: 1
+        fecha_inicio:
+          type: string
+          format: date
+          example: "2026-07-01"
+        fecha_fin:
+          type: string
+          format: date
+          example: "2026-07-30"
+        imagen_url:
+          type: string
+          example: https://example.com/torneo.jpg
+    TorneoEquipoInput:
+      type: object
+      required: [torneo_id, equipo_id]
+      properties:
+        torneo_id:
+          type: integer
+          example: 1
+        equipo_id:
+          type: integer
+          example: 2
+    FixtureInput:
+      type: object
+      properties:
+        torneo_id:
+          type: integer
+          example: 1
+        ronda:
+          type: integer
+          example: 1
+        equipo_local_id:
+          type: integer
+          example: 1
+        equipo_visitante_id:
+          type: integer
+          example: 2
+        fecha_hora:
+          type: string
+          format: date-time
+          example: "2026-07-10T15:00"
+        estadio:
+          type: string
+          example: Cancha principal
+        resultado_local:
+          type: integer
+          example: 2
+        resultado_visitante:
+          type: integer
+          example: 1
+    GenerateFixtureInput:
+      type: object
+      required: [torneo_id]
+      properties:
+        torneo_id:
+          type: integer
+          example: 1
+        fecha_inicio:
+          type: string
+          format: date
+          example: "2026-07-01"
+    RegistroEntrenadorInput:
+      type: object
+      required: [resultado_local, resultado_visitante]
+      properties:
+        resultado_local:
+          type: integer
+          example: 3
+        resultado_visitante:
+          type: integer
+          example: 1
+        estadisticas:
+          type: array
+          items:
+            type: object
+            properties:
+              id_deportista:
+                type: integer
+                example: 1
+              puntos_goles:
+                type: integer
+                example: 2
+              faltas_tarjetas_amarillas:
+                type: integer
+                example: 1
+              faltas_tarjetas_rojas:
+                type: integer
+                example: 0

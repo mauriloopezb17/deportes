@@ -354,6 +354,8 @@ CREATE TABLE USUARIOS (
     email varchar(150) NOT NULL,
     hash_password varchar(255) NOT NULL,
     activo boolean NOT NULL DEFAULT TRUE,
+    dos_fa_secret varchar(255) NULL,
+    dos_fa_activo boolean default false,
     CONSTRAINT USUARIOS_pk PRIMARY KEY (id_usuario)
 );
 -- foreign keys

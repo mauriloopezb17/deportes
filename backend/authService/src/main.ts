@@ -16,6 +16,10 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, swaggerDocument, {
     customSiteTitle: 'Deportes UCB - API Docs',
   });
+
+  app.getHttpAdapter().get('/api/auth/swagger.yaml', (req, res) => {
+    res.sendFile(yamlPath);
+  });
   const port = process.env.PORT || 3003;
   await app.listen(port);
   console.log(`[API] Servidor corriendo en: http://localhost:${port}/api`);

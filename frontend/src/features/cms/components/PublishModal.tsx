@@ -3,7 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { X, ImagePlus, Trash2, FileText, Upload, Loader2 } from 'lucide-react';
 import { uploadImagenPortada } from '../services/noticiaApi';
-import 'CSS/PublishModal.css';
+import './CSS/PublishModal.css';
 
 export interface PublishPayload {
   titulo:    string;

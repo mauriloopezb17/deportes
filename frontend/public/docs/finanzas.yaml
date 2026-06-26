@@ -1,0 +1,736 @@
+openapi: 3.0.0
+info:
+  title: MS Finanzas
+  description: Microservicio de finanzas - pagos, reportes y sincronización
+  version: "1.0"
+servers:
+  - url: http://localhost:3005/api
+    description: Desarrollo local
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CreatePagoDto:
+      type: object
+      required:
+        - id_persona_pago
+        - id_deportista_beneficiario
+        - id_concepto
+        - id_transaccion_caja
+        - monto_pagado
+        - fecha_pago
+        - mes_correspondiente
+        - gestion
+      properties:
+        id_persona_pago:
+          type: integer
+          example: 1
+        id_deportista_beneficiario:
+          type: integer
+          example: 5
+        id_concepto:
+          type: integer
+          example: 2
+        id_transaccion_caja:
+          type: string
+          example: CAJA-001
+        monto_pagado:
+          type: number
+          format: float
+          example: 120.0
+        fecha_pago:
+          type: string
+          format: date
+          example: "2026-04-30"
+        mes_correspondiente:
+          type: integer
+          minimum: 0
+          maximum: 12
+          example: 3
+        gestion:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          example: 2026
+    AsignarPagoDto:
+      type: object
+      required:
+        - id_deportista
+        - id_concepto
+        - mes_correspondiente
+        - monto
+      properties:
+        id_deportista:
+          type: integer
+          example: 5
+        id_concepto:
+          type: integer
+          example: 2
+        mes_correspondiente:
+          type: integer
+          minimum: 1
+          maximum: 12
+          example: 3
+        monto:
+          type: number
+          format: float
+          example: 150.00
+    PagoResponse:
+      type: object
+      properties:
+        id_pago:
+          type: integer
+          example: 1
+        monto_pagado:
+          type: string
+          example: "350.00"
+        id_concepto:
+          type: integer
+          example: 1
+        id_deportista:
+          type: integer
+          example: 5
+        fecha_pago:
+          type: string
+          format: date-time
+        estado_factura:
+          type: string
+          example: ACTIVA
+        concepto:
+          type: object
+          properties:
+            nombre:
+              type: string
+              example: Mensualidad Junio
+    ConceptoResponse:
+      type: object
+      properties:
+        id_concepto:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: Mensualidad
+        monto:
+          type: number
+          example: 350.00
+        id_disciplina:
+          type: integer
+          example: 1
+    PaginationMeta:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+        total:
+          type: integer
+          example: 45
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        totalPages:
+          type: integer
+          example: 3
+    CuentaAcademiaResponse:
+      type: object
+      properties:
+        id_deportista:
+          type: integer
+          example: 5
+        nombre_completo:
+          type: string
+          example: Juan Pérez
+        celular:
+          type: string
+          example: "77712345"
+        disciplina:
+          type: string
+          example: Fútbol
+        planilla:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            enero: pagado
+            febrero: pagado
+            marzo: pendiente
+    MorosoResponse:
+      type: object
+      properties:
+        id_deportista:
+          type: integer
+          example: 8
+        nombre_completo:
+          type: string
+          example: María López
+        celular:
+          type: string
+          example: "77756789"
+        disciplina:
+          type: string
+          example: Baloncesto
+        monto_pendiente:
+          type: number
+          example: 700.00
+        meses_pendientes:
+          type: array
+          items:
+            type: string
+          example:
+            - marzo
+            - abril
+    DeportistaPagosResponse:
+      type: object
+      properties:
+        deportista:
+          type: object
+          properties:
+            id_deportista:
+              type: integer
+            nombre_completo:
+              type: string
+        pagos:
+          type: array
+          items:
+            $ref: "#/components/schemas/PagoResponse"
+    TotalRecaudadoResponse:
+      type: object
+      properties:
+        total_recaudado:
+          type: number
+          example: 125000.00
+        anio:
+          type: integer
+          example: 2026
+    SyncPendienteResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        monto:
+          type: number
+          example: 350.00
+        concepto:
+          type: string
+          example: Mensualidad
+        fecha:
+          type: string
+          format: date
+        estado:
+          type: string
+          example: pendiente
+    SyncResultResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Sincronización completada
+        procesados:
+          type: integer
+          example: 3
+    AuditoriaResponse:
+      type: object
+      properties:
+        id_auditoria:
+          type: integer
+          example: 1
+        entidad:
+          type: string
+          example: Pago
+        id_entidad:
+          type: integer
+          example: 42
+        accion:
+          type: string
+          example: CREAR
+        usuario:
+          type: string
+          example: admin@ucb.edu.bo
+        fecha:
+          type: string
+          format: date-time
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - status
+        - timestamp
+    HealthReadyResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        database:
+          type: string
+          example: connected
+        timestamp:
+          type: string
+          format: date-time
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 401
+        message:
+          type: string
+          example: No autorizado
+        error:
+          type: string
+          example: Unauthorized
+paths:
+  /pagos:
+    get:
+      summary: Listar pagos con paginación
+      tags:
+        - Pagos
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Lista de pagos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PagoResponse"
+    post:
+      summary: Registrar un pago manual
+      tags:
+        - Pagos
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePagoDto"
+      responses:
+        "201":
+          description: Pago registrado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagoResponse"
+  /pagos/cuentas-academia:
+    get:
+      summary: Cuentas academia con paginación, filtros y planilla
+      tags:
+        - Pagos
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: busqueda
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: disciplinaId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: mes
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: anio
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Cuentas academia
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginationMeta"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CuentaAcademiaResponse"
+  /pagos/conceptos:
+    get:
+      summary: Listar conceptos de pago
+      tags:
+        - Pagos
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: disciplinaId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lista de conceptos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ConceptoResponse"
+  /pagos/planilla:
+    get:
+      summary: Ver planilla de pagos por disciplina y año
+      tags:
+        - Pagos
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: disciplinaId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: anio
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Planilla de pagos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CuentaAcademiaResponse"
+  /pagos/morosos:
+    get:
+      summary: Listar deportistas con pagos pendientes
+      tags:
+        - Pagos
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: disciplinaId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: anio
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lista de morosos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MorosoResponse"
+  /pagos/reporte:
+    get:
+      summary: Exportar reporte de pagos en Excel o PDF
+      tags:
+        - Pagos
+        - Reportes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: formato
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - pdf
+              - excel
+        - name: mes
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Mes (nombre como enero o número 1-12)
+        - name: anio
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Año del pago
+      responses:
+        "200":
+          description: Archivo binario (Excel .xlsx o PDF .pdf)
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+  /pagos/deportista/{id}:
+    get:
+      summary: Historial de pagos de un deportista
+      tags:
+        - Pagos
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Historial del deportista
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeportistaPagosResponse"
+  /pagos/total-recaudado:
+    get:
+      summary: Total recaudado en pagos activos
+      tags:
+        - Pagos
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: anio
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Total recaudado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TotalRecaudadoResponse"
+  /pagos/{id}/anular:
+    patch:
+      summary: Anular un pago
+      tags:
+        - Pagos
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Pago anulado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagoResponse"
+  /pagos/sync:
+    post:
+      summary: Ejecutar sincronización con caja externa
+      tags:
+        - Sync
+      security:
+        - BearerAuth: []
+      responses:
+        "201":
+          description: Sincronización completada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncResultResponse"
+  /pagos/sync/pendientes:
+    get:
+      summary: Listar transacciones externas pendientes de asignación
+      tags:
+        - Sync
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Transacciones pendientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SyncPendienteResponse"
+  /pagos/sync/{id}/asignar:
+    post:
+      summary: Asignar un pago parcial a un deportista
+      tags:
+        - Sync
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AsignarPagoDto"
+      responses:
+        "201":
+          description: Pago asignado correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Pago asignado correctamente
+                  id_pago:
+                    type: integer
+                    example: 42
+  /auth/logout:
+    post:
+      summary: Cerrar sesión
+      description: Invalida la sesión del usuario del lado del servidor
+      tags:
+        - Auth
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: Sin contenido
+  /auditoria:
+    get:
+      summary: Consultar registros de auditoría
+      tags:
+        - Auditoría
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: entidad
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: usuario
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: desde
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: YYYY-MM-DD
+        - name: hasta
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: YYYY-MM-DD
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Registros de auditoría
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditoriaResponse"
+  /health:
+    get:
+      summary: Health check del servicio
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Servicio saludable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /health/ready:
+    get:
+      summary: Readiness check con verificación de base de datos
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Servicio listo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthReadyResponse"
+        "503":
+          description: Base de datos no disponible
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
