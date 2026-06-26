@@ -129,3 +129,49 @@ export const deportistaAdminService = {
     return response.data;
   },
 };
+
+export interface RolSistema {
+  id_rol: number;
+  nombre_rol: string;
+  descripcion?: string;
+}
+
+export interface CarreraAdmin {
+  id_carrera: number;
+  nombre: string;
+  sigla?: string;
+}
+
+export interface RegistrarUsuarioPayload {
+  nombres: string;
+  ape_paterno: string;
+  ape_materno: string;
+  fecha_nacimiento: string;
+  celular: string;
+  ci: string;
+  complemento: string | null;
+  email: string;
+  id_rol: number;
+  id_carrera?: number;
+  gestion?: string;
+}
+
+export const usuarioAdminService = {
+  async obtenerRoles(): Promise<RolSistema[]> {
+    const response = await apiClient.get<RolSistema[]>("/admin/roles");
+    return response.data || [];
+  },
+
+  async obtenerCarreras(): Promise<CarreraAdmin[]> {
+    const response = await apiClient.get<CarreraAdmin[]>("/admin/carreras");
+    return response.data || [];
+  },
+
+  async registrarUsuario(payload: RegistrarUsuarioPayload): Promise<any> {
+    const response = await apiClient.post<any>(
+      "/admin/usuarios/registrar",
+      payload,
+    );
+    return response.data;
+  },
+};

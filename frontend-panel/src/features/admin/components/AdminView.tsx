@@ -3,11 +3,10 @@ import { ArrowLeft, UserPlus } from "lucide-react";
 import { Layout } from "@components/layout";
 import { Alert, Button, Card, Input, Select } from "@components/common";
 import {
-  carreraService,
-  disciplinaService,
-} from "@/features/disciplines/services/disciplinaService";
-
-type UserFormRole = "DELEGADO" | "ENTRENADOR" | "ADMIN";
+  CarreraAdmin,
+  RolSistema,
+  usuarioAdminService,
+} from "@/features/admin/services/adminService";
 
 const emptyUserForm = {
   nombres: "",
@@ -18,59 +17,94 @@ const emptyUserForm = {
   complemento: "",
   celular: "",
   email: "",
-  rol: "",
+  id_rol: "",
   id_carrera: "",
   gestion: "",
-  id_disciplina: "",
 };
+
+const isRoleDelegado = (nombre?: string) =>
+  (nombre ?? "").toLowerCase().includes("delegado");
+
+const isRoleJugador = (nombre?: string) =>
+  (nombre ?? "").toLowerCase().includes("jugador");
 
 const AdminPage: React.FC = () => {
   const [showUserForm, setShowUserForm] = useState(false);
   const [userForm, setUserForm] = useState(emptyUserForm);
-  const [carreras, setCarreras] = useState<Array<{ id: number; nombre: string }>>(
-    [],
-  );
-  const [disciplinas, setDisciplinas] = useState<
-    Array<{ id: number; nombre: string }>
-  >([]);
+  const [roles, setRoles] = useState<RolSistema[]>([]);
+  const [carreras, setCarreras] = useState<CarreraAdmin[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const loadOptions = async () => {
-      const [carrerasResponse, disciplinasResponse] = await Promise.all([
-        carreraService.obtenerCarreras(),
-        disciplinaService.obtenerDisciplinas(),
-      ]);
-
-      setCarreras(carrerasResponse.data);
-      setDisciplinas(disciplinasResponse.data);
+      try {
+        const [rolesData, carrerasData] = await Promise.all([
+          usuarioAdminService.obtenerRoles(),
+          usuarioAdminService.obtenerCarreras(),
+        ]);
+        setRoles(rolesData);
+        setCarreras(carrerasData);
+      } catch {
+        setError("No se pudieron cargar los datos del formulario.");
+      }
     };
 
     void loadOptions();
   }, []);
 
-  const selectedRole = userForm.rol as UserFormRole | "";
+  // El cuerpo tecnico se registra aqui; los jugadores van por Inscribir Deportista.
+  const staffRoles = roles.filter((rol) => !isRoleJugador(rol.nombre_rol));
+  const selectedRole = roles.find(
+    (rol) => rol.id_rol === Number(userForm.id_rol),
+  );
+  const isDelegado = isRoleDelegado(selectedRole?.nombre_rol);
 
-  const handleUserSubmit = (event: React.FormEvent) => {
+  const handleUserSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
     setMessage(null);
 
-    if (!userForm.rol) {
+    if (!userForm.id_rol) {
       setError("Selecciona un rol para el usuario.");
       return;
     }
-    if (selectedRole === "DELEGADO" && (!userForm.id_carrera || !userForm.gestion)) {
+    if (isDelegado && (!userForm.id_carrera || !userForm.gestion)) {
       setError("Para delegado, selecciona carrera y gestion.");
       return;
     }
-    if (selectedRole === "ENTRENADOR" && !userForm.id_disciplina) {
-      setError("Para entrenador, selecciona una disciplina.");
-      return;
-    }
 
-    setMessage("Formulario preparado para conectarlo al login de tu companero.");
+    setIsSubmitting(true);
+    try {
+      await usuarioAdminService.registrarUsuario({
+        nombres: userForm.nombres.trim(),
+        ape_paterno: userForm.ape_paterno.trim(),
+        ape_materno: userForm.ape_materno.trim(),
+        fecha_nacimiento: userForm.fecha_nacimiento,
+        celular: userForm.celular.trim(),
+        ci: userForm.ci.trim(),
+        complemento: userForm.complemento.trim() || null,
+        email: userForm.email.trim(),
+        id_rol: Number(userForm.id_rol),
+        ...(isDelegado && {
+          id_carrera: Number(userForm.id_carrera),
+          gestion: userForm.gestion.trim(),
+        }),
+      });
+      setMessage(
+        "Usuario registrado. La contrasena inicial es su numero de CI.",
+      );
+      setUserForm(emptyUserForm);
+    } catch (err: any) {
+      const detail =
+        err.response?.data?.message ??
+        err.message ??
+        "Error al registrar el usuario.";
+      setError(Array.isArray(detail) ? detail.join(". ") : detail);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -80,9 +114,10 @@ const AdminPage: React.FC = () => {
           <UserForm
             formData={userForm}
             setFormData={setUserForm}
-            selectedRole={selectedRole}
+            staffRoles={staffRoles}
+            isDelegado={isDelegado}
+            isSubmitting={isSubmitting}
             carreras={carreras}
-            disciplinas={disciplinas}
             message={message}
             error={error}
             onSubmit={handleUserSubmit}
@@ -145,9 +180,10 @@ const AdminPage: React.FC = () => {
 interface UserFormProps {
   formData: typeof emptyUserForm;
   setFormData: React.Dispatch<React.SetStateAction<typeof emptyUserForm>>;
-  selectedRole: UserFormRole | "";
-  carreras: Array<{ id: number; nombre: string }>;
-  disciplinas: Array<{ id: number; nombre: string }>;
+  staffRoles: RolSistema[];
+  isDelegado: boolean;
+  isSubmitting: boolean;
+  carreras: CarreraAdmin[];
   message: string | null;
   error: string | null;
   onSubmit: (event: React.FormEvent) => void;
@@ -159,9 +195,10 @@ interface UserFormProps {
 const UserForm: React.FC<UserFormProps> = ({
   formData,
   setFormData,
-  selectedRole,
+  staffRoles,
+  isDelegado,
+  isSubmitting,
   carreras,
-  disciplinas,
   message,
   error,
   onSubmit,
@@ -202,25 +239,23 @@ const UserForm: React.FC<UserFormProps> = ({
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Select
             label="Rol"
-            value={formData.rol}
+            value={formData.id_rol}
             onChange={(event) =>
               setFormData({
                 ...formData,
-                rol: event.target.value,
+                id_rol: event.target.value,
                 id_carrera: "",
                 gestion: "",
-                id_disciplina: "",
               })
             }
-            options={[
-              { value: "DELEGADO", label: "Delegado" },
-              { value: "ENTRENADOR", label: "Entrenador" },
-              { value: "ADMIN", label: "Administrador" },
-            ]}
+            options={staffRoles.map((rol) => ({
+              value: rol.id_rol,
+              label: rol.nombre_rol,
+            }))}
             required
           />
         </div>
-        {selectedRole === "DELEGADO" && (
+        {isDelegado && (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Select
               label="Carrera"
@@ -229,8 +264,10 @@ const UserForm: React.FC<UserFormProps> = ({
                 setFormData({ ...formData, id_carrera: event.target.value })
               }
               options={carreras.map((carrera) => ({
-                value: carrera.id,
-                label: carrera.nombre,
+                value: carrera.id_carrera,
+                label: carrera.sigla
+                  ? `${carrera.nombre} (${carrera.sigla})`
+                  : carrera.nombre,
               }))}
               required
             />
@@ -245,24 +282,12 @@ const UserForm: React.FC<UserFormProps> = ({
             />
           </div>
         )}
-        {selectedRole === "ENTRENADOR" && (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Select
-              label="Disciplina"
-              value={formData.id_disciplina}
-              onChange={(event) =>
-                setFormData({ ...formData, id_disciplina: event.target.value })
-              }
-              options={disciplinas.map((disciplina) => ({
-                value: disciplina.id,
-                label: disciplina.nombre,
-              }))}
-              required
-            />
-          </div>
-        )}
-        <Button variant="primary" type="submit">
-          Registrar usuario
+        <Button
+          variant="primary"
+          type="submit"
+          disabled={isSubmitting || staffRoles.length === 0}
+        >
+          {isSubmitting ? "Registrando..." : "Registrar usuario"}
         </Button>
       </form>
     </Card>

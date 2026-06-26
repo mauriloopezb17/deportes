@@ -238,7 +238,7 @@
   border: none;
   text-align: left;
   font-size: 13px;
-  color: var(--ucb-blue);
+  color: var(--ucb-blue) !important;
   text-decoration: none;
   cursor: pointer;
   font-family: inherit;

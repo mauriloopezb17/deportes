@@ -3,15 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/features/auth/stores/authStore";
 import { UserRole } from "@types";
 import { Globe, ImagePlus, Menu, Upload, User } from "lucide-react";
-import { Input, Modal, Select } from "@components/common";
+import { Alert, Input, Modal, Select } from "@components/common";
+import {
+  galeriaService,
+  PartidoOption,
+  TorneoOption,
+} from "@/features/multimedia/services/galeriaService";
 import logoSrc from "../images/Logo color - azul (1).png";
 
 const emptyGalleryForm = {
   tipo_archivo: "foto",
   archivo_nombre: "",
   url_archivo: "",
-  torneo_relacionado: "",
-  partido_relacionado: "",
+  id_torneo: "",
+  id_partido: "",
   publicar: false,
 };
 
@@ -26,6 +31,11 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, actions }) => {
   const [showDropdown, setShowDropdown] = React.useState(false);
   const [isGalleryModalOpen, setIsGalleryModalOpen] = React.useState(false);
   const [galleryForm, setGalleryForm] = React.useState(emptyGalleryForm);
+  const [torneos, setTorneos] = React.useState<TorneoOption[]>([]);
+  const [partidos, setPartidos] = React.useState<PartidoOption[]>([]);
+  const [isUploading, setIsUploading] = React.useState(false);
+  const [isSubmittingGallery, setIsSubmittingGallery] = React.useState(false);
+  const [galleryError, setGalleryError] = React.useState<string | null>(null);
   const isAdmin = usuario?.roles?.includes(UserRole.ADMIN);
 
   const goToProfile = () => {
@@ -33,10 +43,82 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, actions }) => {
     navigate("/perfil");
   };
 
-  const handleGallerySubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    setGalleryForm(emptyGalleryForm);
+  const closeGalleryModal = () => {
     setIsGalleryModalOpen(false);
+    setGalleryForm(emptyGalleryForm);
+    setGalleryError(null);
+  };
+
+  // Carga los torneos al abrir el modal.
+  React.useEffect(() => {
+    if (!isGalleryModalOpen) return;
+    galeriaService
+      .obtenerTorneos()
+      .then(setTorneos)
+      .catch(() => setTorneos([]));
+  }, [isGalleryModalOpen]);
+
+  // Carga los partidos del torneo seleccionado.
+  React.useEffect(() => {
+    if (!galleryForm.id_torneo) {
+      setPartidos([]);
+      return;
+    }
+    galeriaService
+      .obtenerPartidos(Number(galleryForm.id_torneo))
+      .then(setPartidos)
+      .catch(() => setPartidos([]));
+  }, [galleryForm.id_torneo]);
+
+  const handleGalleryUpload = async (file: File) => {
+    setGalleryError(null);
+    setIsUploading(true);
+    try {
+      const url = await galeriaService.subirArchivo(file);
+      setGalleryForm((current) => ({
+        ...current,
+        archivo_nombre: file.name,
+        url_archivo: url,
+      }));
+    } catch (error: any) {
+      setGalleryError(error.message ?? "No se pudo subir el archivo.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleGallerySubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setGalleryError(null);
+
+    if (!galleryForm.url_archivo.trim()) {
+      setGalleryError("Ingresa una URL o sube un archivo.");
+      return;
+    }
+
+    setIsSubmittingGallery(true);
+    try {
+      await galeriaService.crearMultimedia({
+        url_archivo: galleryForm.url_archivo.trim(),
+        tipo_archivo: galleryForm.tipo_archivo,
+        publicado: galleryForm.publicar,
+        id_torneo: galleryForm.id_torneo
+          ? Number(galleryForm.id_torneo)
+          : null,
+        id_partido: galleryForm.id_partido
+          ? Number(galleryForm.id_partido)
+          : null,
+      });
+      closeGalleryModal();
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message ??
+        error.message ??
+        "No se pudo guardar el elemento.";
+      setGalleryError(Array.isArray(message) ? message.join(". ") : message);
+    } finally {
+      setIsSubmittingGallery(false);
+    }
   };
 
   return (
@@ -157,10 +239,13 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, actions }) => {
         isOpen={isGalleryModalOpen}
         formData={galleryForm}
         setFormData={setGalleryForm}
-        onClose={() => {
-          setIsGalleryModalOpen(false);
-          setGalleryForm(emptyGalleryForm);
-        }}
+        torneos={torneos}
+        partidos={partidos}
+        isUploading={isUploading}
+        isSubmitting={isSubmittingGallery}
+        error={galleryError}
+        onUpload={handleGalleryUpload}
+        onClose={closeGalleryModal}
         onSubmit={handleGallerySubmit}
       />
     </>
@@ -171,6 +256,12 @@ interface GalleryModalProps {
   isOpen: boolean;
   formData: typeof emptyGalleryForm;
   setFormData: React.Dispatch<React.SetStateAction<typeof emptyGalleryForm>>;
+  torneos: TorneoOption[];
+  partidos: PartidoOption[];
+  isUploading: boolean;
+  isSubmitting: boolean;
+  error: string | null;
+  onUpload: (file: File) => void;
   onClose: () => void;
   onSubmit: (event: React.FormEvent) => void;
 }
@@ -179,16 +270,28 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
   isOpen,
   formData,
   setFormData,
+  torneos,
+  partidos,
+  isUploading,
+  isSubmitting,
+  error,
+  onUpload,
   onClose,
   onSubmit,
 }) => (
   <Modal isOpen={isOpen} onClose={onClose} title="Agregar a la galeria" size="lg">
     <form onSubmit={onSubmit} className="space-y-5">
+      {error && <Alert type="warning" message={error} />}
       <Select
         label="Tipo de archivo"
         value={formData.tipo_archivo}
         onChange={(event) =>
-          setFormData({ ...formData, tipo_archivo: event.target.value })
+          setFormData({
+            ...formData,
+            tipo_archivo: event.target.value,
+            url_archivo: "",
+            archivo_nombre: "",
+          })
         }
         options={[
           { value: "foto", label: "Foto" },
@@ -197,29 +300,32 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
         required
       />
 
-      <div>
-        <label className="mb-2 block text-sm font-semibold text-gray-700">
-          Subir imagen
-        </label>
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-primary-200 bg-white px-4 py-2.5 text-sm font-bold text-primary-700 shadow-sm transition-colors hover:bg-primary-50">
-          <Upload size={18} />
-          Elegir archivo
-          <input
-            type="file"
-            className="hidden"
-            accept="image/*,video/*"
-            onChange={(event) =>
-              setFormData({
-                ...formData,
-                archivo_nombre: event.target.files?.[0]?.name || "",
-              })
-            }
-          />
-        </label>
-        {formData.archivo_nombre && (
-          <p className="mt-2 text-sm text-gray-500">{formData.archivo_nombre}</p>
-        )}
-      </div>
+      {formData.tipo_archivo === "foto" && (
+        <div>
+          <label className="mb-2 block text-sm font-semibold text-gray-700">
+            Subir imagen
+          </label>
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-primary-200 bg-white px-4 py-2.5 text-sm font-bold text-primary-700 shadow-sm transition-colors hover:bg-primary-50">
+            <Upload size={18} />
+            {isUploading ? "Subiendo..." : "Elegir archivo"}
+            <input
+              type="file"
+              className="hidden"
+              accept="image/jpeg,image/png"
+              disabled={isUploading}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) onUpload(file);
+              }}
+            />
+          </label>
+          {formData.archivo_nombre && (
+            <p className="mt-2 text-sm text-green-600">
+              ✓ {formData.archivo_nombre}
+            </p>
+          )}
+        </div>
+      )}
 
       <Input
         label="URL del archivo (o pega una URL)"
@@ -228,38 +334,38 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
         onChange={(event) =>
           setFormData({ ...formData, url_archivo: event.target.value })
         }
+        required={formData.tipo_archivo !== "foto"}
         fullWidth
       />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Select
           label="Torneo relacionado"
-          value={formData.torneo_relacionado}
+          value={formData.id_torneo}
           onChange={(event) =>
             setFormData({
               ...formData,
-              torneo_relacionado: event.target.value,
-              partido_relacionado: "",
+              id_torneo: event.target.value,
+              id_partido: "",
             })
           }
-          options={[
-            { value: "torneo-actual", label: "Torneo actual" },
-            { value: "intercarreras", label: "Intercarreras" },
-            { value: "amistoso", label: "Amistoso" },
-          ]}
+          options={torneos.map((torneo) => ({
+            value: torneo.id_torneo,
+            label: torneo.nombre,
+          }))}
           required
         />
         <Select
           label="Partido relacionado"
-          value={formData.partido_relacionado}
+          value={formData.id_partido}
           onChange={(event) =>
-            setFormData({ ...formData, partido_relacionado: event.target.value })
+            setFormData({ ...formData, id_partido: event.target.value })
           }
-          options={[
-            { value: "partido-1", label: "Partido 1" },
-            { value: "partido-2", label: "Partido 2" },
-            { value: "partido-3", label: "Partido 3" },
-          ]}
+          options={partidos.map((partido) => ({
+            value: partido.id_partido,
+            label: `${partido.equipo_local} vs ${partido.equipo_visitante}`,
+          }))}
+          disabled={!formData.id_torneo}
           required
         />
       </div>
@@ -286,9 +392,10 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
         </button>
         <button
           type="submit"
-          className="rounded-lg bg-[var(--color-yellow)] px-4 py-2 font-semibold text-[var(--color-navy)] hover:brightness-105"
+          disabled={isSubmitting || isUploading}
+          className="rounded-lg bg-[var(--color-yellow)] px-4 py-2 font-semibold text-[var(--color-navy)] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Guardar
+          {isSubmitting ? "Guardando..." : "Guardar"}
         </button>
       </div>
     </form>
