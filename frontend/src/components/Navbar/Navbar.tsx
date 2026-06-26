@@ -1,6 +1,6 @@
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
-import { User, Shield, LogOut, ChevronDown, LayoutDashboard, Newspaper, ShieldCheck, FileText } from 'lucide-react'
+import { User, Shield, LogOut, ChevronDown, Newspaper, ShieldCheck, FileText } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import './Navbar.css'
 
@@ -46,10 +46,7 @@ function Navbar() {
   // El panel de gestión es solo para admin (1), entrenador (2) y delegado (3).
   // Se matchea por nombre_rol primero (contrato estable con el backend) y cae a id_rol.
   const rol = (user?.nombre_rol ?? '').toLowerCase()
-  const canManage =
-    isAdmin ||
-    rol.includes('entrenador') || rol.includes('delegado') ||
-    user?.id_rol === 2 || user?.id_rol === 3
+
 
   // El CMS de noticias es para el rol marketing (5). Ruta /noticiasAdmin
   // (pendiente de habilitar en App.tsx por el equipo dueño del CMS).
@@ -111,16 +108,7 @@ function Navbar() {
                   <p className="nav-user-dropdown-email">{user?.email}</p>
                   <span className="nav-user-dropdown-role">{user?.nombre_rol}</span>
                 </div>
-                {canManage && (
-                  <a
-                    href={`${PANEL_URL}/`}
-                    className="nav-user-dropdown-item"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    <LayoutDashboard size={14} strokeWidth={2.2} />
-                    Panel de gestión
-                  </a>
-                )}
+
                 {canCms && (
                   <Link
                     to="/noticiasAdmin"

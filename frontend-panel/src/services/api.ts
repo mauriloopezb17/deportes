@@ -1,8 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { ApiResponse, PaginatedResponse } from "@types";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "https://test.62344037.xyz/";
+import { API_BASE_URL, withTrailingSlash } from "./apiUrl";
 
 class ApiClient {
   private client: AxiosInstance;
@@ -26,6 +24,7 @@ class ApiClient {
     // Interceptor para agregar token a cada request
     this.client.interceptors.request.use(
       (config) => {
+        config.url = withTrailingSlash(config.url);
         const token = localStorage.getItem("token");
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
@@ -131,6 +130,28 @@ class ApiClient {
   async delete<T>(url: string): Promise<ApiResponse<T>> {
     const response = await this.client.delete(url);
     return this.normalizeResponse<T>(response.data);
+  }
+
+  // Subida de archivos (multipart). Se usa fetch nativo para que el navegador
+  // fije el boundary correcto, igual que en el panel anterior.
+  async uploadFile<T>(
+    url: string,
+    file: File,
+    field = "imagen",
+  ): Promise<ApiResponse<T>> {
+    const formData = new FormData();
+    formData.append(field, file);
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_BASE_URL}${url}`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    if (!response.ok) {
+      throw new Error("Error al subir el archivo.");
+    }
+    const payload = await response.json();
+    return this.normalizeResponse<T>(payload);
   }
 }
 

@@ -43,6 +43,6 @@ export interface NoticiaDetalle {
 }
 
 export const getNoticiasPublicadas = () =>
-  apiGet<Noticia[]>('/api/noticias?publicado=true')
+  apiGet<Noticia[]>('/api/noticias/?publicado=true')
 export const getNoticia = (id: string) =>
   apiGet<NoticiaDetalle>(`/api/noticias/${id}`)

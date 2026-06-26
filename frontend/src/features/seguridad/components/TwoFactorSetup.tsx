@@ -3,17 +3,18 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import '../../login/components/LoginPage.css'
-import { generar2FA } from '../services/twofaService'
+import { generar2FA, confirmar2FA } from '../services/twofaService'
 import { useAuth } from '../../../contexts/AuthContext'
 
-type Step = 'intro' | 'qr' | 'done'
+type Step = 'intro' | 'qr' | 'verify' | 'done'
 
 function TwoFactorSetup() {
-  const { user, isAuthenticated, loading } = useAuth()
+  const { user, isAuthenticated, loading, refreshAuth } = useAuth()
   const navigate = useNavigate()
 
   const [step, setStep]     = useState<Step>('intro')
   const [qrCode, setQrCode] = useState('')
+  const [code, setCode]     = useState('')
   const [busy, setBusy]     = useState(false)
   const [error, setError]   = useState('')
 
@@ -34,9 +35,29 @@ function TwoFactorSetup() {
     }
   }
 
+  // Verifica el código de la app y activa el 2FA en la base de datos.
+  const handleConfirm = async () => {
+    setError('')
+    const codigo = code.replace(/\D/g, '')
+    if (codigo.length !== 6) {
+      setError('El código debe tener 6 dígitos.')
+      return
+    }
+    setBusy(true)
+    try {
+      await confirmar2FA(codigo)
+      refreshAuth()
+      setStep('done')
+    } catch (err: any) {
+      setError(err.message ?? 'No se pudo verificar el código.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   // Indicador de pasos (igual estilo que el de recuperar contraseña)
-  const steps = ['Generar', 'Escanear']
-  const stepIndex = step === 'intro' ? 0 : 1
+  const steps = ['Generar', 'Escanear', 'Confirmar']
+  const stepIndex = step === 'intro' ? 0 : step === 'qr' ? 1 : 2
 
   return (
     <div className="login-page">
@@ -59,6 +80,7 @@ function TwoFactorSetup() {
               <p className="login-subtitle">
                 {step === 'intro' && 'Añadí una capa extra de seguridad a tu cuenta con una app de autenticación.'}
                 {step === 'qr'    && `Escaneá el código QR con tu app de autenticación${user?.email ? ` para ${user.email}` : ''}.`}
+                {step === 'verify' && 'Ingresá el código de 6 dígitos que muestra tu app para confirmar la activación.'}
                 {step === 'done'  && '¡Listo! La verificación en dos pasos quedó configurada.'}
               </p>
             </div>
@@ -111,13 +133,41 @@ function TwoFactorSetup() {
                   <li>Tocá "Escanear código QR" y apuntá a la imagen.</li>
                   <li>Guardá la entrada que aparece para esta cuenta.</li>
                 </ol>
-                <button type="button" className="login-btn" onClick={() => setStep('done')}>
+                <button type="button" className="login-btn" onClick={() => { setError(''); setCode(''); setStep('verify') }}>
                   Ya lo escaneé
                 </button>
               </div>
             )}
 
-            {/* Step 3: Done */}
+            {/* Step 3: Verificar código */}
+            {step === 'verify' && (
+              <form
+                className="login-form"
+                onSubmit={(e) => { e.preventDefault(); handleConfirm() }}
+              >
+                <div className="input-group">
+                  <label htmlFor="twofa-code">Código de verificación</label>
+                  <input
+                    id="twofa-code"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    className="input-field"
+                    placeholder="123456"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    style={{ textAlign: 'center', letterSpacing: 8, fontSize: 20 }}
+                    autoFocus
+                  />
+                </div>
+                <button type="submit" className="login-btn" disabled={busy || code.length !== 6}>
+                  {busy ? 'Verificando...' : 'Activar verificación'}
+                </button>
+              </form>
+            )}
+
+            {/* Step 4: Done */}
             {step === 'done' && (
               <div className="reset-done">
                 <div className="reset-done-icon">

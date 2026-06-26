@@ -130,6 +130,8 @@ export class OracleStorageService {
       .webp({ quality: 80 })
       .toFile(filepath);
 
-    return `/temp/${filename}`;
+    // Servimos la previsualizacion bajo /api para que el proxy la enrute al
+    // backend; subirTempAOCI sigue detectando estas URLs por el segmento /temp/.
+    return `/api/upload/temp/${filename}`;
   }
 }

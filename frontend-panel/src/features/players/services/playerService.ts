@@ -1,4 +1,5 @@
 import { apiClient } from "@/services/api";
+import { authService } from "@/features/auth/services/authService";
 import { Equipo, Jugador, Persona, PaginatedResponse, UserRole } from "@types";
 import { normalizeText } from "@utils/text";
 
@@ -51,6 +52,12 @@ const toPersonaPayload = (data: Partial<Persona> | Partial<Jugador>) => {
     celular: persona.celular ?? persona.telefono ?? "70000000",
   };
 };
+
+const emptyPersonaPage = (): PaginatedResponse<Persona> => ({
+  success: true,
+  data: [],
+  pagination: { total: 0, page: 1, limit: 0, pages: 1 },
+});
 
 export const jugadorService = {
   async obtenerJugadores(params?: any): Promise<PaginatedResponse<Jugador>> {
@@ -142,10 +149,19 @@ export const jugadorService = {
 
 export const personaService = {
   async obtenerPersonas(params?: any): Promise<PaginatedResponse<Persona>> {
-    const response = await apiClient.getPaginated<any>("/persona", params);
+    if (authService.isPreview()) {
+      return emptyPersonaPage();
+    }
+
+    const response = await apiClient.getPaginated<any>(
+      "/admin/deportistas",
+      params,
+    );
     return {
       ...response,
-      data: response.data.map(toPersona),
+      data: response.data.map((deportista) =>
+        toPersona(deportista.persona ?? deportista),
+      ),
     };
   },
 

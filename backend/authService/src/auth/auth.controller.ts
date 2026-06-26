@@ -7,6 +7,7 @@ import {
   Res,
   Body,
   Injectable,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
@@ -85,5 +86,36 @@ export class AuthController {
   async generar2FA(@Req() req: RequestWithUser) {
     const { id_usuario, email } = req.user;
     return this.authService.generarCodigoQR(id_usuario, email);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/confirmar')
+  async confirmar2FA(
+    @Req() req: RequestWithUser,
+    @Body('codigo') codigo: string,
+  ) {
+    const { id_usuario } = req.user;
+    return this.authService.confirmarActivacion2FA(id_usuario, codigo);
+  }
+
+  @Post('2fa/activar')
+  async activar2FA(
+    @Body('email') email: string,
+    @Body('activo') activo: boolean,
+  ) {
+    return this.authService.activarDesactivar2FA(email, activo);
+  }
+
+  @Get('2fa/status')
+  async obtener2FAStatus(@Query('email') email: string) {
+    return this.authService.obtener2FAStatus(email);
+  }
+
+  @Post('2fa/verificar')
+  async verificar2FA(
+    @Body('email') email: string,
+    @Body('codigo') codigo: string,
+  ) {
+    return this.authService.verificar2FA(email, codigo);
   }
 }

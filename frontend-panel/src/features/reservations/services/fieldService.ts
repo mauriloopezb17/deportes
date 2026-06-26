@@ -1,10 +1,17 @@
 import { apiClient } from "@/services/api";
+import { authService } from "@/features/auth/services/authService";
 import { Cancha, Reserva, PaginatedResponse } from "@types";
 
 export type ReservaPayload = Partial<Reserva> & {
   cancha_id?: number;
   equipo_id?: number;
 };
+
+const emptyReservationsPage = (): PaginatedResponse<Reserva> => ({
+  success: true,
+  data: [],
+  pagination: { total: 0, page: 1, limit: 0, pages: 1 },
+});
 
 export const canchaService = {
   async obtenerCanchas(params?: any): Promise<PaginatedResponse<Cancha>> {
@@ -33,7 +40,21 @@ export const canchaService = {
 
 export const reservaService = {
   async obtenerReservas(params?: any): Promise<PaginatedResponse<Reserva>> {
-    return apiClient.getPaginated<Reserva>("/reserva", params);
+    // La vista previa no tiene un JWT del servicio externo. Además, la ruta
+    // heredada /reserva está bloqueada por el proxy público; no debe impedir
+    // que el resto del panel cargue.
+    if (authService.isPreview()) {
+      return emptyReservationsPage();
+    }
+
+    try {
+      return await apiClient.getPaginated<Reserva>("/reserva", params);
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        return emptyReservationsPage();
+      }
+      throw error;
+    }
   },
 
   async obtenerReserva(id: number): Promise<Reserva> {

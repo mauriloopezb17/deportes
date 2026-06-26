@@ -105,7 +105,7 @@ const AdminNoticias: React.FC = () => {
   // ── Cargar lista ──────────────────────────────────────────────────────────
 
   const loadNoticias = () => {
-    apiFetch<NoticiaItem[]>('/api/noticias')
+    apiFetch<NoticiaItem[]>('/api/noticias/')
       .then(setNoticias)
       .catch(console.error);
   };

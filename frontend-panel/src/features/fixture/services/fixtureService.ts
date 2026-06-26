@@ -4,8 +4,7 @@ import {
   FixtureTournament,
   GenerateFixturePayload,
 } from "../types";
-
-const API_BASE_URL = "https://test.62344037.xyz/";
+import { API_BASE_URL, withTrailingSlash } from "@/services/apiUrl";
 
 class FixtureApiClient {
   private client: AxiosInstance;
@@ -19,6 +18,7 @@ class FixtureApiClient {
     });
 
     this.client.interceptors.request.use((config) => {
+      config.url = withTrailingSlash(config.url);
       const token = localStorage.getItem("token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;

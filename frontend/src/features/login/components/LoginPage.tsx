@@ -2,7 +2,7 @@
 import { useState, useRef, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./LoginPage.css";
-import { login, forgotPassword, verifyResetCode, resetPassword, googleAuthUrl, panelPathForUser, panelAppUrlForUser, bridgeSessionToPanel } from "../services/loginService";
+import { login, twofaStatus, verify2FALogin, forgotPassword, verifyResetCode, resetPassword, googleAuthUrl, panelPathForUser, panelAppUrlForUser, bridgeSessionToPanel } from "../services/loginService";
 import { useAuth } from "../../../contexts/AuthContext";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -49,8 +49,14 @@ function LoginPage() {
   const [loading, setLoading]     = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
+  // ── 2FA challenge state (login con verificación en dos pasos)
+  const [twofaEmail, setTwofaEmail]     = useState('')
+  const [twofaCode, setTwofaCode]       = useState('')
+  const [twofaLoading, setTwofaLoading] = useState(false)
+  const [twofaError, setTwofaError]     = useState('')
+
   // ── Forgot-password state
-  const [view, setView]             = useState<'login' | 'forgot'>('login')
+  const [view, setView]             = useState<'login' | 'forgot' | 'twofa'>('login')
   const [resetStep, setResetStep]   = useState<ResetStep>('email')
   const [resetEmail, setResetEmail] = useState('')
   const [resetCode, setResetCode]   = useState('')
@@ -63,6 +69,21 @@ function LoginPage() {
   const [, setResetSuccess]             = useState('')
   const codeRefs = useRef<(HTMLInputElement | null)[]>([])
 
+  // Establece la sesión y redirige según el rol. Compartido por el login normal
+  // y por el login que pasó la verificación en dos pasos.
+  const completeLogin = (data: { token: string; user: any }) => {
+    localStorage.setItem("ucb_token", data.token);
+    refreshAuth();
+    // admin/delegado/entrenador -> panel del grupo 2 (app aparte bajo /gestion).
+    const panelUrl = panelAppUrlForUser(data.user ?? {});
+    if (panelUrl) {
+      bridgeSessionToPanel(data.token, data.user ?? {});
+      window.location.href = panelUrl; // navegación de página completa a la otra app
+      return;
+    }
+    navigate(panelPathForUser(data.user ?? {}), { replace: true });
+  };
+
   // ── Login handler
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -70,21 +91,52 @@ function LoginPage() {
     setLoading(true);
     try {
       const data = await login(email.trim(), password);
-      localStorage.setItem("ucb_token", data.token);
-      refreshAuth();
-      // admin/delegado/entrenador -> panel del grupo 2 (app aparte bajo /gestion).
-      const panelUrl = panelAppUrlForUser(data.user ?? {});
-      if (panelUrl) {
-        bridgeSessionToPanel(data.token, data.user ?? {});
-        window.location.href = panelUrl; // navegación de página completa a la otra app
-        return;
+      // Si la cuenta tiene 2FA activo, no entramos todavía: pedimos el código.
+      // (El estado se consulta sólo tras validar la contraseña.)
+      let needs2fa = false;
+      try {
+        const status = await twofaStatus(email.trim());
+        needs2fa = !!status?.dos_fa_activo;
+      } catch {
+        needs2fa = false; // si el chequeo falla, no bloqueamos el login
       }
-      navigate(panelPathForUser(data.user ?? {}), { replace: true });
+      if (needs2fa) {
+        setTwofaEmail(email.trim());
+        setTwofaCode('');
+        setTwofaError('');
+        setView('twofa');
+        return; // descartamos el token inicial; el válido llega tras verificar
+      }
+      completeLogin(data);
     } catch (err: any) {
       setFormError(err.message ?? "Error al iniciar sesión.");
     } finally {
       setLoading(false);
     }
+  };
+
+  // ── 2FA challenge handler
+  const handleVerify2FA = async (e: FormEvent) => {
+    e.preventDefault();
+    setTwofaError('');
+    const code = twofaCode.replace(/\D/g, '');
+    if (code.length !== 6) { setTwofaError('El código debe tener 6 dígitos.'); return; }
+    setTwofaLoading(true);
+    try {
+      const data = await verify2FALogin(twofaEmail, code);
+      completeLogin(data);
+    } catch (err: any) {
+      setTwofaError(err.message ?? 'Código incorrecto.');
+    } finally {
+      setTwofaLoading(false);
+    }
+  };
+
+  const cancelTwofa = () => {
+    setView('login');
+    setTwofaCode('');
+    setTwofaError('');
+    setPassword('');
   };
 
   // ── Forgot-password handlers
@@ -198,7 +250,7 @@ function LoginPage() {
       </div>
 
       <div className="login-content">
-        <div className={`login-card${view === 'forgot' ? ' login-card--forgot' : ''}`}>
+        <div className={`login-card${view !== 'login' ? ' login-card--forgot' : ''}`}>
 
           {/* ── LOGIN VIEW ────────────────────────────────────────────────── */}
           {view === 'login' && (
@@ -421,6 +473,49 @@ function LoginPage() {
                   </button>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ── 2FA CHALLENGE VIEW ────────────────────────────────────────── */}
+          {view === 'twofa' && (
+            <div className="forgot-panel">
+              <button type="button" className="forgot-back" onClick={cancelTwofa}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                Volver al inicio de sesión
+              </button>
+
+              <div className="login-header" style={{ marginBottom: 24 }}>
+                <h1 className="login-title">Verificación en dos pasos</h1>
+                <p className="login-subtitle">
+                  Ingresá el código de 6 dígitos de tu app de autenticación para {twofaEmail}.
+                </p>
+              </div>
+
+              {twofaError && <div className="login-error" style={{ marginBottom: 16 }}>{twofaError}</div>}
+
+              <form className="login-form" onSubmit={handleVerify2FA}>
+                <div className="input-group">
+                  <label htmlFor="twofa-login-code">Código de verificación</label>
+                  <input
+                    id="twofa-login-code"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    className="input-field"
+                    placeholder="123456"
+                    value={twofaCode}
+                    onChange={e => setTwofaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    style={{ textAlign: 'center', letterSpacing: 8, fontSize: 20 }}
+                    autoFocus
+                  />
+                </div>
+                <button type="submit" className="login-btn" disabled={twofaLoading || twofaCode.length !== 6}>
+                  {twofaLoading ? 'Verificando...' : 'Verificar e ingresar'}
+                </button>
+              </form>
             </div>
           )}
         </div>

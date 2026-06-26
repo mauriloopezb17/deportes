@@ -52,7 +52,7 @@ export interface ProximoPartido {
 }
 
 export const getNoticiasPublicadas = () =>
-  apiGet<Noticia[]>('/api/noticias?publicado=true')
+  apiGet<Noticia[]>('/api/noticias/?publicado=true')
 export const getResultadosRecientes = () =>
   apiGet<Resultado[]>('/api/partidos/recientes')
 export const getProximosPartidos = () =>
