@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from "axios";
 import { ApiResponse, PaginatedResponse } from "@types";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "https://test.62344037.xyz/";
+  import.meta.env.VITE_API_URL || "https://test.62344037.xyz/api";
 
 class ApiClient {
   private client: AxiosInstance;
