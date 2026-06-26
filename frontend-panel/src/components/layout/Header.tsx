@@ -30,7 +30,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, actions }) => {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login");
+    window.location.href = "https://test.62344037.xyz/";
   };
 
   const goToProfile = () => {
@@ -197,7 +197,6 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
         options={[
           { value: "foto", label: "Foto" },
           { value: "video", label: "Video" },
-          { value: "documento", label: "Documento" },
         ]}
         required
       />

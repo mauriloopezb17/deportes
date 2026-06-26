@@ -19,7 +19,7 @@ const ProfilePage: React.FC = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login");
+    window.location.href = "https://test.62344037.xyz/";
   };
 
   const fullName = [usuario?.nombre, usuario?.apellido].filter(Boolean).join(" ");
