@@ -34,6 +34,9 @@ async function bootstrap() {
   SwaggerModule.setup("api/docs", app, swaggerDocument, {
     customSiteTitle: "Torneos Service - API Docs",
   });
+  app.getHttpAdapter().get("/api/torneos/swagger.yaml", (req, res) => {
+    res.sendFile(yamlPath);
+  });
 
   await app.listen(port);
   console.log(`Aplicacion corriendo en: http://localhost:${port}/api`);

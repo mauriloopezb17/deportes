@@ -4,7 +4,7 @@ info:
   description: API documentada solo con los endpoints usados por el frontend de gestion deportiva.
   version: 1.0.0
 servers:
-  - url: http://localhost:3004/api
+  - url: /
     description: Servidor local del microservicio de torneos
 tags:
   - name: Auth
@@ -25,9 +25,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginDto'
+              $ref: "#/components/schemas/LoginDto"
       responses:
-        '200':
+        "200":
           description: Retorna token JWT y datos del usuario
   /auth/register:
     post:
@@ -38,9 +38,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterDto'
+              $ref: "#/components/schemas/RegisterDto"
       responses:
-        '201':
+        "201":
           description: Usuario registrado
   /auth/profile:
     get:
@@ -49,7 +49,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: Perfil del usuario autenticado
 
   /carrera:
@@ -57,28 +57,28 @@ paths:
       tags: [Catalogos]
       summary: Listar carreras
       responses:
-        '200':
+        "200":
           description: Carreras disponibles
   /disciplina:
     get:
       tags: [Catalogos]
       summary: Listar disciplinas
       responses:
-        '200':
+        "200":
           description: Disciplinas disponibles
   /categoria:
     get:
       tags: [Catalogos]
       summary: Listar categorias
       responses:
-        '200':
+        "200":
           description: Categorias disponibles
   /rol:
     get:
       tags: [Catalogos]
       summary: Listar roles
       responses:
-        '200':
+        "200":
           description: Roles disponibles para asignacion
 
   /persona:
@@ -86,7 +86,7 @@ paths:
       tags: [Personas y jugadores]
       summary: Listar personas visibles como jugadores
       responses:
-        '200':
+        "200":
           description: Lista paginada de personas
     post:
       tags: [Personas y jugadores]
@@ -99,40 +99,40 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PersonaInput'
+              $ref: "#/components/schemas/PersonaInput"
       responses:
-        '201':
+        "201":
           description: Persona creada
   /persona/{id}:
     get:
       tags: [Personas y jugadores]
       summary: Obtener persona por ID
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       responses:
-        '200':
+        "200":
           description: Persona encontrada
     patch:
       tags: [Personas y jugadores]
       summary: Actualizar persona
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PersonaInput'
+              $ref: "#/components/schemas/PersonaInput"
       responses:
-        '200':
+        "200":
           description: Persona actualizada
     delete:
       tags: [Personas y jugadores]
       summary: Eliminar persona
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       responses:
-        '200':
+        "200":
           description: Persona eliminada
   /persona-rol:
     post:
@@ -143,9 +143,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PersonaRolInput'
+              $ref: "#/components/schemas/PersonaRolInput"
       responses:
-        '201':
+        "201":
           description: Rol asignado
   /persona-rol/persona/{personaId}:
     get:
@@ -158,7 +158,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Roles de la persona
   /jugador-equipo:
     post:
@@ -169,9 +169,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/JugadorEquipoInput'
+              $ref: "#/components/schemas/JugadorEquipoInput"
       responses:
-        '201':
+        "201":
           description: Jugador inscrito al equipo
   /jugador-equipo/jugador/{jugadorId}:
     get:
@@ -184,7 +184,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Equipos del jugador
   /jugador-equipo/equipo/{equipoId}:
     get:
@@ -197,7 +197,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Jugadores del equipo
   /jugador-equipo/{jugadorId}/{equipoId}:
     delete:
@@ -215,7 +215,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Relacion eliminada
 
   /equipo:
@@ -223,7 +223,7 @@ paths:
       tags: [Equipos]
       summary: Listar equipos
       responses:
-        '200':
+        "200":
           description: Equipos registrados
     post:
       tags: [Equipos]
@@ -233,40 +233,40 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EquipoInput'
+              $ref: "#/components/schemas/EquipoInput"
       responses:
-        '201':
+        "201":
           description: Equipo creado
   /equipo/{id}:
     get:
       tags: [Equipos]
       summary: Obtener equipo por ID
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       responses:
-        '200':
+        "200":
           description: Equipo encontrado
     patch:
       tags: [Equipos]
       summary: Actualizar equipo
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EquipoInput'
+              $ref: "#/components/schemas/EquipoInput"
       responses:
-        '200':
+        "200":
           description: Equipo actualizado
     delete:
       tags: [Equipos]
       summary: Eliminar equipo
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       responses:
-        '200':
+        "200":
           description: Equipo eliminado
 
   /cancha:
@@ -274,7 +274,7 @@ paths:
       tags: [Reservas]
       summary: Listar canchas
       responses:
-        '200':
+        "200":
           description: Canchas disponibles
     post:
       tags: [Reservas]
@@ -284,40 +284,40 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CanchaInput'
+              $ref: "#/components/schemas/CanchaInput"
       responses:
-        '201':
+        "201":
           description: Cancha creada
   /cancha/{id}:
     get:
       tags: [Reservas]
       summary: Obtener cancha por ID
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       responses:
-        '200':
+        "200":
           description: Cancha encontrada
     patch:
       tags: [Reservas]
       summary: Actualizar cancha
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CanchaInput'
+              $ref: "#/components/schemas/CanchaInput"
       responses:
-        '200':
+        "200":
           description: Cancha actualizada
     delete:
       tags: [Reservas]
       summary: Eliminar cancha
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       responses:
-        '200':
+        "200":
           description: Cancha eliminada
   /reserva:
     get:
@@ -336,7 +336,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Reservas registradas
     post:
       tags: [Reservas]
@@ -346,9 +346,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReservaInput'
+              $ref: "#/components/schemas/ReservaInput"
       responses:
-        '201':
+        "201":
           description: Reserva creada
   /reserva/disponibilidad/{canchaId}/{fecha}:
     get:
@@ -367,38 +367,38 @@ paths:
             type: string
             format: date
       responses:
-        '200':
+        "200":
           description: Horarios disponibles
   /reserva/{id}:
     get:
       tags: [Reservas]
       summary: Obtener reserva por ID
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       responses:
-        '200':
+        "200":
           description: Reserva encontrada
     patch:
       tags: [Reservas]
       summary: Actualizar o cancelar reserva
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReservaInput'
+              $ref: "#/components/schemas/ReservaInput"
       responses:
-        '200':
+        "200":
           description: Reserva actualizada
     delete:
       tags: [Reservas]
       summary: Eliminar reserva
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       responses:
-        '200':
+        "200":
           description: Reserva eliminada
 
   /torneo:
@@ -406,7 +406,7 @@ paths:
       tags: [Torneos]
       summary: Listar torneos
       responses:
-        '200':
+        "200":
           description: Torneos registrados
     post:
       tags: [Torneos]
@@ -416,40 +416,40 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TorneoInput'
+              $ref: "#/components/schemas/TorneoInput"
       responses:
-        '201':
+        "201":
           description: Torneo creado
   /torneo/{id}:
     get:
       tags: [Torneos]
       summary: Obtener torneo por ID
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       responses:
-        '200':
+        "200":
           description: Torneo encontrado
     patch:
       tags: [Torneos]
       summary: Actualizar torneo
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TorneoInput'
+              $ref: "#/components/schemas/TorneoInput"
       responses:
-        '200':
+        "200":
           description: Torneo actualizado
     delete:
       tags: [Torneos]
       summary: Eliminar torneo
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       responses:
-        '200':
+        "200":
           description: Torneo eliminado
   /torneo-equipo:
     post:
@@ -460,9 +460,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TorneoEquipoInput'
+              $ref: "#/components/schemas/TorneoEquipoInput"
       responses:
-        '201':
+        "201":
           description: Equipo agregado al torneo
   /torneo-equipo/{torneoId}/{equipoId}:
     delete:
@@ -480,7 +480,7 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Equipo removido del torneo
 
   /fixture:
@@ -488,7 +488,7 @@ paths:
       tags: [Fixture]
       summary: Listar partidos
       responses:
-        '200':
+        "200":
           description: Partidos registrados
     post:
       tags: [Fixture]
@@ -498,9 +498,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FixtureInput'
+              $ref: "#/components/schemas/FixtureInput"
       responses:
-        '201':
+        "201":
           description: Partido creado
   /fixture/generar:
     post:
@@ -511,9 +511,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GenerateFixtureInput'
+              $ref: "#/components/schemas/GenerateFixtureInput"
       responses:
-        '201':
+        "201":
           description: Fixture generado
   /fixture/torneo/{torneoId}:
     get:
@@ -526,38 +526,38 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Partidos del torneo
   /fixture/{id}:
     get:
       tags: [Fixture]
       summary: Obtener partido por ID
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       responses:
-        '200':
+        "200":
           description: Partido encontrado
     patch:
       tags: [Fixture]
       summary: Actualizar partido o registrar resultado
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FixtureInput'
+              $ref: "#/components/schemas/FixtureInput"
       responses:
-        '200':
+        "200":
           description: Partido actualizado
     delete:
       tags: [Fixture]
       summary: Eliminar partido
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       responses:
-        '200':
+        "200":
           description: Partido eliminado
 
   /entrenador-panel/resumen:
@@ -567,7 +567,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: Resumen del entrenador autenticado
   /entrenador-panel/partidos-pendientes:
     get:
@@ -576,7 +576,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: Partidos pendientes del entrenador
   /entrenador-panel/partidos/{id}:
     get:
@@ -585,9 +585,9 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       responses:
-        '200':
+        "200":
           description: Detalle del partido
   /entrenador-panel/partidos/{id}/registro:
     post:
@@ -596,15 +596,15 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/Id'
+        - $ref: "#/components/parameters/Id"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegistroEntrenadorInput'
+              $ref: "#/components/schemas/RegistroEntrenadorInput"
       responses:
-        '201':
+        "201":
           description: Resultado registrado
 
 components:
@@ -635,7 +635,7 @@ components:
           example: Cambiar123
     RegisterDto:
       allOf:
-        - $ref: '#/components/schemas/PersonaInput'
+        - $ref: "#/components/schemas/PersonaInput"
         - type: object
           required: [password, rol]
           properties:
@@ -659,14 +659,14 @@ components:
           example: Perez
         carnet:
           type: string
-          example: '12345678'
+          example: "12345678"
         email:
           type: string
           format: email
           example: juan.perez@ucb.edu.bo
         celular:
           type: string
-          example: '+59170000000'
+          example: "+59170000000"
     PersonaRolInput:
       type: object
       required: [persona_id, rol_id]
@@ -724,13 +724,13 @@ components:
         fecha:
           type: string
           format: date
-          example: '2026-07-05'
+          example: "2026-07-05"
         hora_inicio:
           type: string
-          example: '14:00'
+          example: "14:00"
         hora_fin:
           type: string
-          example: '16:00'
+          example: "16:00"
         estado:
           type: string
           example: confirmada
@@ -755,11 +755,11 @@ components:
         fecha_inicio:
           type: string
           format: date
-          example: '2026-07-01'
+          example: "2026-07-01"
         fecha_fin:
           type: string
           format: date
-          example: '2026-07-30'
+          example: "2026-07-30"
         imagen_url:
           type: string
           example: https://example.com/torneo.jpg
@@ -791,7 +791,7 @@ components:
         fecha_hora:
           type: string
           format: date-time
-          example: '2026-07-10T15:00'
+          example: "2026-07-10T15:00"
         estadio:
           type: string
           example: Cancha principal
@@ -811,7 +811,7 @@ components:
         fecha_inicio:
           type: string
           format: date
-          example: '2026-07-01'
+          example: "2026-07-01"
     RegistroEntrenadorInput:
       type: object
       required: [resultado_local, resultado_visitante]
