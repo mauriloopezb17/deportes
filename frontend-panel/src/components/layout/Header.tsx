@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/features/auth/stores/authStore";
 import { UserRole } from "@types";
-import { ImagePlus, LogOut, Menu, Upload, User } from "lucide-react";
+import { Globe, ImagePlus, Menu, Upload, User } from "lucide-react";
 import { Input, Modal, Select } from "@components/common";
 import logoSrc from "../images/Logo color - azul (1).png";
 
@@ -22,16 +22,11 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick, actions }) => {
   const navigate = useNavigate();
-  const { usuario, logout } = useAuthStore();
+  const { usuario } = useAuthStore();
   const [showDropdown, setShowDropdown] = React.useState(false);
   const [isGalleryModalOpen, setIsGalleryModalOpen] = React.useState(false);
   const [galleryForm, setGalleryForm] = React.useState(emptyGalleryForm);
   const isAdmin = usuario?.roles?.includes(UserRole.ADMIN);
-
-  const handleLogout = async () => {
-    await logout();
-    window.location.href = "https://test.62344037.xyz/";
-  };
 
   const goToProfile = () => {
     setShowDropdown(false);
@@ -143,13 +138,14 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, actions }) => {
                     <User size={16} />
                     Mi Perfil
                   </button>
-                  <button
-                    onClick={handleLogout}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-red-600 hover:bg-red-50"
+                  <a
+                    href="https://test.62344037.xyz/"
+                    onClick={() => setShowDropdown(false)}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-primary-700 hover:bg-primary-50"
                   >
-                    <LogOut size={16} />
-                    Cerrar sesion
-                  </button>
+                    <Globe size={16} />
+                    Volver a página web
+                  </a>
                 </div>
               )}
             </div>

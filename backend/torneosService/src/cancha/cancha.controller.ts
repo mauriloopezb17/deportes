@@ -17,6 +17,11 @@ export class CanchaController {
     return this.canchaService.findAll();
   }
 
+  @Get("rango-horario")
+  getRangoHorario() {
+    return this.canchaService.getRangoHorario();
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.canchaService.findOne(+id);

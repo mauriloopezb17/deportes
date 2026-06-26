@@ -14,6 +14,7 @@ tags:
   - name: Reservas
   - name: Torneos
   - name: Fixture
+  - name: Partidos
   - name: Entrenador
 paths:
   /auth/login:
@@ -288,6 +289,13 @@ paths:
       responses:
         "201":
           description: Cancha creada
+  /cancha/rango-horario:
+    get:
+      tags: [Reservas]
+      summary: Obtener rango horario global de espacios
+      responses:
+        "200":
+          description: Rango horario disponible
   /cancha/{id}:
     get:
       tags: [Reservas]
@@ -559,6 +567,47 @@ paths:
       responses:
         "200":
           description: Partido eliminado
+
+  /partidos/fixture/{idTorneo}:
+    get:
+      tags: [Partidos]
+      summary: Obtener el fixture de un torneo
+      parameters:
+        - name: idTorneo
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Fixture del torneo
+  /partidos/torneos:
+    get:
+      tags: [Partidos]
+      summary: Listar todos los torneos
+      responses:
+        "200":
+          description: Torneos registrados
+  /partidos/disciplinas:
+    get:
+      tags: [Partidos]
+      summary: Listar todas las disciplinas deportivas
+      responses:
+        "200":
+          description: Disciplinas disponibles
+  /partidos/torneo/{idTorneo}:
+    get:
+      tags: [Partidos]
+      summary: Obtener todos los partidos de un torneo
+      parameters:
+        - name: idTorneo
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Partidos del torneo
 
   /entrenador-panel/resumen:
     get:

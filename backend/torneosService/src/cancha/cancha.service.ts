@@ -1,8 +1,20 @@
-import { Injectable } from "@nestjs/common";
+import { BadGatewayException, Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
+
+interface EspacioInfraestructura {
+  id: number;
+  nombre: string;
+  horario_apertura?: string | null;
+  horario_cierre?: string | null;
+  activo: boolean;
+}
 
 @Injectable()
 export class CanchaService {
+  private readonly infraestructuraBaseUrl = (
+    process.env.INFRAESTRUCTURA_SERVICE_URL || "http://localhost:3006/api"
+  ).replace(/\/+$/, "");
+
   constructor(private prisma: PrismaService) {}
 
   async create(data: any) {
@@ -17,16 +29,28 @@ export class CanchaService {
   }
 
   async findAll() {
-    const espacios = await this.prisma.espacios.findMany({
-      orderBy: { id_espacio: "asc" },
-    });
+    const espacios = await this.requestInfraestructura<EspacioInfraestructura[]>(
+      "/espacios",
+    );
+
+    if (!Array.isArray(espacios)) {
+      throw new BadGatewayException(
+        "El servicio de infraestructura devolvio una respuesta invalida",
+      );
+    }
+
     return espacios.map((espacio) => this.toLegacyCancha(espacio));
   }
 
+  async getRangoHorario() {
+    return this.requestInfraestructura("/espacios/rango-horario");
+  }
+
   async findOne(id: number) {
-    const espacio = await this.prisma.espacios.findUnique({
-      where: { id_espacio: id },
-    });
+    const espacio = await this.requestInfraestructura<EspacioInfraestructura>(
+      `/espacios/${id}`,
+      true,
+    );
     return espacio ? this.toLegacyCancha(espacio) : null;
   }
 
@@ -47,14 +71,42 @@ export class CanchaService {
 
   private toLegacyCancha(espacio: any) {
     return {
-      id: espacio.id_espacio,
-      nombre: espacio.nombre_espacio,
+      id: espacio.id ?? espacio.id_espacio,
+      nombre: espacio.nombre ?? espacio.nombre_espacio,
       ubicacion: "",
       capacidad: 0,
       tipo_superficie: "",
       estado: espacio.activo ? "disponible" : "mantenimiento",
-      hora_apertura: espacio.hora_apertura,
+      hora_apertura: espacio.horario_apertura ?? espacio.hora_apertura,
+      hora_cierre: espacio.horario_cierre,
     };
+  }
+
+  private async requestInfraestructura<T>(
+    path: string,
+    returnNullOnNotFound = false,
+  ): Promise<T | null> {
+    let response: Response;
+
+    try {
+      response = await fetch(`${this.infraestructuraBaseUrl}${path}`);
+    } catch {
+      throw new BadGatewayException(
+        "No se pudo conectar con el servicio de infraestructura",
+      );
+    }
+
+    if (response.status === 404 && returnNullOnNotFound) {
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new BadGatewayException(
+        `El servicio de infraestructura respondio con estado ${response.status}`,
+      );
+    }
+
+    return (await response.json()) as T;
   }
 
   private timeToDate(value: string) {

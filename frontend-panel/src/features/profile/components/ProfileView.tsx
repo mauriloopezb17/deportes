@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail, Shield, ShieldCheck, User, ArrowLeft, LogOut } from "lucide-react";
+import { Mail, Shield, ShieldCheck, User, ArrowLeft, Globe } from "lucide-react";
 import { Layout } from "@components/layout";
 import { Button, Card } from "@components/common";
 import { useAuthStore } from "@/features/auth/stores/authStore";
@@ -15,12 +15,7 @@ const roleLabels: Record<string, string> = {
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
-  const { usuario, logout } = useAuthStore();
-
-  const handleLogout = async () => {
-    await logout();
-    window.location.href = "https://test.62344037.xyz/";
-  };
+  const { usuario } = useAuthStore();
 
   const fullName = [usuario?.nombre, usuario?.apellido].filter(Boolean).join(" ");
   const initials = `${usuario?.nombre?.[0] ?? ""}${usuario?.apellido?.[0] ?? ""}`
@@ -142,16 +137,18 @@ const ProfilePage: React.FC = () => {
             <Card>
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">Sesión</h2>
+                  <h2 className="text-xl font-bold text-gray-900">Página web</h2>
                   <p className="text-sm text-gray-600 mt-1">
-                    Puedes cerrar sesión desde aquí cuando termines de usar el
-                    sistema.
+                    Regresa al portal principal de Gestión Deportiva.
                   </p>
                 </div>
-                <Button variant="danger" onClick={handleLogout}>
-                  <LogOut size={18} />
-                  Cerrar sesión
-                </Button>
+                <a
+                  href="https://test.62344037.xyz/"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-600 bg-primary-600 px-4 py-2 font-semibold text-white shadow-sm transition-colors hover:bg-primary-700"
+                >
+                  <Globe size={18} />
+                  Volver a página web
+                </a>
               </div>
             </Card>
           </div>

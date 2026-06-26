@@ -18,6 +18,7 @@ import { TorneoEquipoModule } from "./torneo-equipo/torneo-equipo.module";
 import { CanchaModule } from "./cancha/cancha.module";
 import { ReservaModule } from "./reserva/reserva.module";
 import { EntrenadorPanelModule } from "./entrenador-panel/entrenador-panel.module";
+import { PartidosModule } from "./partidos/partidos.module";
 import { PrismaModule } from "./prisma/prisma.module";
 
 @Module({
@@ -40,6 +41,7 @@ import { PrismaModule } from "./prisma/prisma.module";
     CanchaModule,
     ReservaModule,
     EntrenadorPanelModule,
+    PartidosModule,
   ],
   controllers: [],
   providers: [],
