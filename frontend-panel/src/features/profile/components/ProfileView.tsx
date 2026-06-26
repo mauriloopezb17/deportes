@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail, Shield, User, ArrowLeft, LogOut } from "lucide-react";
+import { Mail, Shield, ShieldCheck, User, ArrowLeft, LogOut } from "lucide-react";
 import { Layout } from "@components/layout";
 import { Button, Card } from "@components/common";
 import { useAuthStore } from "@/features/auth/stores/authStore";
@@ -63,6 +63,15 @@ const ProfilePage: React.FC = () => {
                   </span>
                 ))}
               </div>
+              <Button
+                type="button"
+                variant="secondary"
+                fullWidth
+                className="mt-6"
+              >
+                <ShieldCheck size={18} />
+                Activar doble autenticación
+              </Button>
             </div>
           </Card>
 

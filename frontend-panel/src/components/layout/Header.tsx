@@ -62,20 +62,29 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, actions }) => {
               >
                 <Menu size={24} />
               </button>
-              <div className="flex items-center gap-3">
-                <img
-                  src={logoSrc}
-                  alt="Gestion Deportiva"
-                  className="h-11 w-11 rounded-lg bg-white object-contain p-1"
-                />
-                <div>
+              <div className="group flex items-center gap-3">
+                <a
+                  href="https://test.62344037.xyz/"
+                  aria-label="Ir al portal de Gestion Deportiva"
+                  className="shrink-0 focus:outline-none"
+                >
+                  <img
+                    src={logoSrc}
+                    alt="Gestion Deportiva"
+                    className="h-11 w-11 object-contain transition-transform duration-200 group-hover:scale-105 group-focus-within:scale-105"
+                  />
+                </a>
+                <a
+                  href="https://test.62344037.xyz/"
+                  className="focus:outline-none"
+                >
                   <h1 className="text-xl font-bold text-white">
                     Gestion Deportiva
                   </h1>
                   <p className="hidden text-xs font-medium text-white/85 sm:block">
                     Panel universitario
                   </p>
-                </div>
+                </a>
               </div>
             </div>
 

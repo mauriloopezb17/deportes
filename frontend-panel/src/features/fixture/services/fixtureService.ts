@@ -5,8 +5,7 @@ import {
   GenerateFixturePayload,
 } from "../types";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3004/api";
+const API_BASE_URL = "https://test.62344037.xyz/";
 
 class FixtureApiClient {
   private client: AxiosInstance;
