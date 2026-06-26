@@ -3,6 +3,7 @@ import {
   ConflictException,
   NotFoundException,
   InternalServerErrorException,
+  BadRequestException,
   Inject,
 } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -148,19 +149,48 @@ export class AdminService {
     }
   }
   async registrarUsuarioSistema(data: CrearUsuarioDto) {
+    // 1. Validación estricta temprana para delegados
+    if (data.id_rol === 3 && (!data.id_carrera || !data.gestion)) {
+      throw new BadRequestException(
+        'Para registrar un delegado, id_carrera y gestion son campos obligatorios.',
+      );
+    }
+
     try {
       return await this.prisma.$transaction(async (tx) => {
-        const persona = await tx.persona.create({
-          data: {
-            nombres: data.nombres,
-            ape_paterno: data.ape_paterno,
-            ape_materno: data.ape_materno || '',
-            fecha_nacimiento: new Date(data.fecha_nacimiento),
-            celular: data.celular,
-            ci: parseInt(data.ci, 10),
-          },
+        const ciParsed = parseInt(data.ci, 10);
+
+        // 2. Comprobar si el correo ya está en uso antes de hacer nada
+        const emailExistente = await tx.usuario.findFirst({
+          where: { email: data.email },
         });
 
+        if (emailExistente) {
+          throw new ConflictException(
+            'El correo electrónico ya está registrado en el sistema.',
+          );
+        }
+
+        // 3. Buscar si la persona ya existe por su CI
+        let persona = await tx.persona.findFirst({
+          where: { ci: ciParsed },
+        });
+
+        // Si la persona no existe, la creamos
+        if (!persona) {
+          persona = await tx.persona.create({
+            data: {
+              nombres: data.nombres,
+              ape_paterno: data.ape_paterno,
+              ape_materno: data.ape_materno || '',
+              fecha_nacimiento: new Date(data.fecha_nacimiento),
+              celular: data.celular,
+              ci: ciParsed,
+            },
+          });
+        }
+
+        // 4. Crear el usuario encriptando el CI como contraseña por defecto
         const hashPassword = await bcrypt.hash(data.ci.toString(), 10);
 
         const usuario = await tx.usuario.create({
@@ -172,12 +202,14 @@ export class AdminService {
             activo: true,
           },
         });
+
+        // 5. Asignar perfil de delegado si corresponde
         if (data.id_rol === 3) {
           await tx.delegadoCarrera.create({
             data: {
               id_usuario: usuario.id_usuario,
-              id_carrera: data.id_carrera!,
-              gestion: data.gestion!,
+              id_carrera: data.id_carrera as number,
+              gestion: data.gestion as number,
               activo: true,
             },
           });
@@ -190,11 +222,22 @@ export class AdminService {
         };
       });
     } catch (error: any) {
+      // Dejar pasar los errores HTTP controlados (BadRequest y Conflict)
+      if (
+        error instanceof BadRequestException ||
+        error instanceof ConflictException
+      ) {
+        throw error;
+      }
+
+      // Manejar la restricción única de Prisma por si hay carrera/concurrencia
       if (error.code === 'P2002') {
         throw new ConflictException(
           'El correo electrónico o Carnet de Identidad ya está registrado.',
         );
       }
+
+      console.error('[AdminService] registrarUsuarioSistema Error:', error);
       throw new InternalServerErrorException(
         'Error interno del servidor al registrar el usuario',
       );

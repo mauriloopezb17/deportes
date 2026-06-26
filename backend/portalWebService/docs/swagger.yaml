@@ -1,11 +1,11 @@
 openapi: 3.0.3
 info:
   title: Portal Web Service - Deportes UCB
-  description: API microservice for managing news, categories, and portal configurations.
+  description: API microservice for managing news, categories, portal configurations, info, and media uploads.
   version: 1.0.0
 servers:
-  - url: http://localhost:3002
-    description: Local development server
+  - url: /api
+    description: Base path (managed by NestJS global prefix)
 paths:
   /:
     get:
@@ -30,7 +30,7 @@ paths:
           required: false
           schema:
             type: string
-            enum: [ 'true', 'false' ]
+            enum: ['true', 'false']
       responses:
         '200':
           description: List of news items retrieved successfully
@@ -54,23 +54,6 @@ paths:
       responses:
         '201':
           description: News item created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Noticia creada con éxito
-                  id_noticia:
-                    type: integer
-                    example: 1
-                  contenido:
-                    type: object
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden (Admin role required)
   /noticias/categorias:
     get:
       summary: List all news categories
@@ -87,33 +70,23 @@ paths:
   /noticias/{id}:
     get:
       summary: Get a news item by ID
-      description: Retrieves details of a specific news item.
       parameters:
         - name: id
           in: path
           required: true
-          description: News ID
           schema:
             type: integer
       responses:
         '200':
           description: News item retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NoticiaDetailResponse'
-        '404':
-          description: News item not found
     put:
       summary: Update a news item by ID
-      description: Updates an existing news item. Requires Admin permissions.
       security:
         - BearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
-          description: News ID
           schema:
             type: integer
       requestBody:
@@ -125,71 +98,214 @@ paths:
       responses:
         '200':
           description: News item updated successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Noticia actualizada con éxito
-                  contenido:
-                    type: object
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden (Admin role required)
-        '404':
-          description: News item not found
     delete:
       summary: Delete a news item by ID
-      description: Deletes an existing news item and its associated images. Requires Admin permissions.
       security:
         - BearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
-          description: News ID
           schema:
             type: integer
       responses:
         '200':
           description: News item deleted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Noticia eliminada con éxito
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden (Admin role required)
-        '404':
-          description: News item not found
   /noticias/usuario/{id_usuario}:
     get:
       summary: Get news items by user author ID
-      description: Retrieves a list of news items written by a specific user.
       parameters:
         - name: id_usuario
           in: path
           required: true
-          description: Author's user ID
           schema:
             type: integer
       responses:
         '200':
           description: List of news items retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/NoticiaResponse'
+
+  # --- NUEVOS ENDPOINTS DE INFO PÚBLICA ---
+  /info/entrenadores:
+    get:
+      summary: Obtener lista de entrenadores
+      description: Retorna la información pública de los entrenadores del club.
+      tags:
+        - Info Pública
+      responses:
+        '200':
+          description: Lista de entrenadores recuperada exitosamente.
+  /info/horarios:
+    get:
+      summary: Obtener horarios generales
+      description: Retorna los horarios fijos de entrenamientos por disciplina y espacio.
+      tags:
+        - Info Pública
+      responses:
+        '200':
+          description: Horarios recuperados exitosamente.
+  /info/galeria-eventos:
+    get:
+      summary: Obtener galería de eventos del club
+      description: Retorna las imágenes y videos públicos de la galería.
+      tags:
+        - Info Pública
+      responses:
+        '200':
+          description: Galería de eventos recuperada exitosamente.
+  /info/espacios:
+    get:
+      summary: Obtener espacios deportivos disponibles
+      description: Retorna la información de las canchas y espacios activos.
+      tags:
+        - Info Pública
+      responses:
+        '200':
+          description: Lista de espacios recuperada exitosamente.
+
+  # --- NUEVOS ENDPOINTS DE GALERÍA ---
+  /galeria:
+    get:
+      summary: Obtener la galería multimedia
+      description: Retorna los elementos de la galería multimedia. Puede filtrar por estado de publicación.
+      tags:
+        - Galeria
+      parameters:
+        - name: publicado
+          in: query
+          description: Filtrar por elementos publicados ('true')
+          required: false
+          schema:
+            type: string
+            enum: ['true', 'false']
+      responses:
+        '200':
+          description: Galería recuperada exitosamente.
+    post:
+      summary: Crear un elemento en la galería
+      description: Crea un nuevo registro multimedia. Requiere rol 'admin'.
+      tags:
+        - Galeria
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - url_archivo
+                - tipo_archivo
+              properties:
+                url_archivo:
+                  type: string
+                tipo_archivo:
+                  type: string
+                publicado:
+                  type: boolean
+                id_torneo:
+                  type: integer
+                id_partido:
+                  type: integer
+                id_espacio:
+                  type: integer
+                id_carrera:
+                  type: integer
+      responses:
+        '201':
+          description: Elemento creado con éxito.
+  /galeria/{id}:
+    put:
+      summary: Actualizar un elemento de la galería
+      description: Actualiza un registro multimedia existente. Requiere rol 'admin'.
+      tags:
+        - Galeria
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                publicado:
+                  type: boolean
+                id_torneo:
+                  type: integer
+                id_partido:
+                  type: integer
+                id_espacio:
+                  type: integer
+                id_carrera:
+                  type: integer
+      responses:
+        '200':
+          description: Elemento actualizado.
+    delete:
+      summary: Eliminar un elemento de la galería
+      description: Elimina un registro multimedia. Requiere rol 'admin'.
+      tags:
+        - Galeria
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Elemento eliminado correctamente.
+
+  # --- NUEVOS ENDPOINTS DE UPLOAD ---
+  /upload:
+    post:
+      summary: Subir imagen directo a OCI (portada)
+      description: Sube una imagen redimensionada y convertida a WebP directamente al bucket de Oracle Cloud.
+      tags:
+        - Upload
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                imagen:
+                  type: string
+                  format: binary
+                  description: Archivo de imagen o video a subir.
+      responses:
+        '201':
+          description: Imagen subida a OCI exitosamente. Devuelve la URL pública.
+  /upload/temp:
+    post:
+      summary: Subir imagen temporal (mientras se redacta en el editor)
+      description: Sube una imagen a una carpeta temporal local del servidor.
+      tags:
+        - Upload
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                imagen:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Imagen guardada temporalmente. Devuelve ruta local (/temp/...).
+
 components:
   securitySchemes:
     BearerAuth:
@@ -216,26 +332,17 @@ components:
         - titulo
         - contenido
       properties:
-        id_usuario_autor:
-          type: integer
-          description: Automatically inferred from JWT, but can be passed
-          example: 1
         id_categoria_noticia:
           type: integer
           example: 2
         titulo:
           type: string
-          example: Gran partido de fútbol este fin de semana
         contenido:
           type: object
-          description: JSON content (e.g. Editor.js format)
-          example: { "blocks": [] }
         resumen:
           type: string
-          example: Resumen de la noticia...
         publicado:
           type: boolean
-          example: true
         imagenes:
           type: array
           items:
@@ -243,8 +350,6 @@ components:
     UpdateNoticiaDto:
       type: object
       properties:
-        id_usuario_autor:
-          type: integer
         id_categoria_noticia:
           type: integer
         titulo:
@@ -264,93 +369,16 @@ components:
       properties:
         id_categoria_noticia:
           type: integer
-          example: 2
         nombre:
           type: string
-          example: Deportes de Campo
     NoticiaResponse:
       type: object
       properties:
         id_noticia:
           type: integer
-          example: 1
         id_usuario_autor:
           type: integer
-          example: 1
         id_categoria_noticia:
           type: integer
-          example: 2
         titulo:
           type: string
-          example: Gran partido de fútbol este fin de semana
-        contenido:
-          type: object
-        resumen:
-          type: string
-          example: Resumen de la noticia...
-        publicado:
-          type: boolean
-          example: true
-        fecha_creacion:
-          type: string
-          format: date-time
-        fecha_publicacion:
-          type: string
-          format: date-time
-          nullable: true
-        categoria_nombre:
-          type: string
-          example: Deportes de Campo
-        autor_nombre:
-          type: string
-          example: Juan
-        autor_apellido:
-          type: string
-          example: Pérez
-        imagen_portada:
-          type: string
-          nullable: true
-          example: https://imagenes.62344037.xyz/n/namespace/b/bucket/o/image.webp
-    NoticiaDetailResponse:
-      type: object
-      properties:
-        id_noticia:
-          type: integer
-          example: 1
-        id_usuario_autor:
-          type: integer
-          example: 1
-        id_categoria_noticia:
-          type: integer
-          example: 2
-        titulo:
-          type: string
-          example: Gran partido de fútbol este fin de semana
-        contenido:
-          type: object
-        resumen:
-          type: string
-          example: Resumen de la noticia...
-        publicado:
-          type: boolean
-          example: true
-        fecha_creacion:
-          type: string
-          format: date-time
-        fecha_publicacion:
-          type: string
-          format: date-time
-          nullable: true
-        categoria_nombre:
-          type: string
-          example: Deportes de Campo
-        autor_nombre:
-          type: string
-          example: Juan
-        autor_apellido:
-          type: string
-          example: Pérez
-        imagenes:
-          type: array
-          items:
-            $ref: '#/components/schemas/NoticiaImageDto'

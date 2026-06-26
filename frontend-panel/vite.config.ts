@@ -19,13 +19,14 @@ export default defineConfig({
     },
   },
   server: {
-    host: "0.0.0.0",
+    host: true,
     // 5174 para no chocar con el portal (5173) cuando se corren ambos en local.
     port: 5174,
     strictPort: true,
+    allowedHosts: [".62344037.xyz"],
     proxy: {
       "/api": {
-        target: "http://localhost:3004",
+        target: "https://test.62344037.xyz",
         changeOrigin: true,
       },
     },
@@ -34,5 +35,6 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 5174,
     strictPort: true,
+    allowedHosts: [".62344037.xyz"],
   },
 });

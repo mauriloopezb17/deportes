@@ -5,6 +5,7 @@ import { redisStore } from 'cache-manager-redis-yet';
 import { PrismaModule } from './prisma/prisma.module';
 import { AdminModule } from './admin/admin.module';
 import { DeportistasModule } from './deportistas/deportistas.module';
+import { PartidosModule } from './partidos/partidos.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { DeportistasModule } from './deportistas/deportistas.module';
     PrismaModule,
     AdminModule,
     DeportistasModule,
+    PartidosModule,
   ],
 })
 export class AppModule {}

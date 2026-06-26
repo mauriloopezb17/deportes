@@ -59,6 +59,10 @@ model Deportista {
   inscripciones      Inscripcion[]
   experiencias       HistorialExperienciaDeportiva[]
   registros_federados RegistroFederacion[]
+  
+  // Relaciones añadidas para Partidos/Equipos
+  equipo_jugadores    EquipoJugador[]
+  estadisticas        EstadisticaPartidoJugador[]
 
   @@map("deportistas")
 }
@@ -94,6 +98,7 @@ model Disciplina {
 
   inscripciones        Inscripcion[]
   registros_federacion RegistroFederacion[]
+  torneos              Torneo[]
 
   @@map("disciplinas")
 }
@@ -164,8 +169,8 @@ model RegistroFederacion {
   id_deportista           Int
   id_disciplina           Int
   id_categoria            Int?
-  nro_registro_federacion String?    @db.VarChar(100)
   nro_registro_asociacion String?    @db.VarChar(100)
+  nro_registro_federacion String?    @db.VarChar(100)
   orc_nro                 String?    @db.VarChar(50)
   libro                   String?    @db.VarChar(50)
   partida                 String?    @db.VarChar(50)
@@ -201,4 +206,90 @@ model Usuario {
   delegados     DelegadoCarrera[]
 
   @@map("usuarios")
+}
+
+// ==========================================
+// NUEVOS MODELOS DE TORNEOS Y PARTIDOS
+// ==========================================
+
+model Espacio {
+  id_espacio     Int       @id @default(autoincrement())
+  nombre_espacio String    @db.VarChar(100)
+  partidos       Partido[]
+
+  @@map("espacios")
+}
+
+model Torneo {
+  id_torneo     Int        @id @default(autoincrement())
+  nombre        String     @db.VarChar(100)
+  id_disciplina Int
+  estado        String     @db.VarChar(20)
+
+  disciplina    Disciplina @relation(fields: [id_disciplina], references: [id_disciplina])
+  partidos      Partido[]
+  equipos       Equipo[]
+
+  @@map("torneos")
+}
+
+model Equipo {
+  id_equipo     Int             @id @default(autoincrement())
+  nombre_equipo String          @db.VarChar(100)
+  id_torneo     Int
+
+  torneo        Torneo          @relation(fields: [id_torneo], references: [id_torneo])
+  partidos_local   Partido[]    @relation("EquipoLocal")
+  partidos_visitante Partido[]  @relation("EquipoVisitante")
+  jugadores     EquipoJugador[]
+
+  @@map("equipos")
+}
+
+model Partido {
+  id_partido          Int       @id @default(autoincrement())
+  fecha               DateTime  @db.Date
+  hora_inicio         DateTime  @db.Time
+  hora_fin            DateTime? @db.Time
+  goles_local         Int?
+  goles_visitante     Int?
+  estado              String    @db.VarChar(20)
+  fase_torneo         String    @db.VarChar(50)
+  id_equipo_local     Int
+  id_equipo_visitante Int
+  id_torneo           Int
+  id_espacio          Int?
+
+  equipo_local        Equipo    @relation("EquipoLocal", fields: [id_equipo_local], references: [id_equipo])
+  equipo_visitante    Equipo    @relation("EquipoVisitante", fields: [id_equipo_visitante], references: [id_equipo])
+  torneo              Torneo    @relation(fields: [id_torneo], references: [id_torneo])
+  espacio             Espacio?  @relation(fields: [id_espacio], references: [id_espacio])
+  estadisticas        EstadisticaPartidoJugador[]
+
+  @@map("partidos")
+}
+
+model EquipoJugador {
+  id_equipo_jugador Int        @id @default(autoincrement())
+  id_equipo         Int
+  id_deportista     Int
+
+  equipo            Equipo     @relation(fields: [id_equipo], references: [id_equipo])
+  deportista        Deportista @relation(fields: [id_deportista], references: [id_deportista])
+
+  @@map("equipo_jugadores")
+}
+
+model EstadisticaPartidoJugador {
+  id_estadistica            Int        @id @default(autoincrement())
+  id_partido                Int
+  id_deportista             Int
+  puntos_goles              Int        @default(0)
+  faltas_tarjetas_amarillas Int        @default(0)
+  faltas_tarjetas_rojas     Int        @default(0)
+
+  partido                   Partido    @relation(fields: [id_partido], references: [id_partido])
+  deportista                Deportista @relation(fields: [id_deportista], references: [id_deportista])
+
+  @@map("estadisticas_partido_jugador")
 }
