@@ -126,6 +126,17 @@ components:
           type: boolean
           example: true
 
+    Verify2faBody:
+      type: object
+      required: [email, codigo]
+      properties:
+        email:
+          type: string
+          example: juan.perez@ucb.edu.bo
+        codigo:
+          type: string
+          example: "123456"
+
 tags:
   - name: Auth
     description: Autenticación, registro y recuperación de contraseñas
@@ -298,6 +309,47 @@ paths:
                     example: true
         400:
           description: Usuario no encontrado
+
+  /api/auth/2fa/verificar:
+    post:
+      tags: [Auth]
+      summary: Verificar código 2FA para iniciar sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Verify2faBody'
+      responses:
+        200:
+          description: Verificación exitosa, devuelve token JWT
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Inicio de sesión exitoso
+                  token:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id_usuario:
+                        type: integer
+                      email:
+                        type: string
+                      id_rol:
+                        type: integer
+                      nombre_rol:
+                        type: string
+                      nombres:
+                        type: string
+                      ape_paterno:
+                        type: string
+        400:
+          description: Código incorrecto, usuario no encontrado, o 2FA desactivado
 
   /api/admin/roles:
     get:

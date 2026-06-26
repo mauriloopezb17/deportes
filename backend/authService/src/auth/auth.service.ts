@@ -5,7 +5,7 @@ import { RedisService } from '../redis/redis.service';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import * as nodemailer from 'nodemailer';
-import { generateSecret, generateURI } from 'otplib';
+import { generateSecret, generateURI, verify } from 'otplib';
 import * as qrcode from 'qrcode';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -193,6 +193,37 @@ export class AuthService {
       email: user.email,
       dos_fa_activo: user.dos_fa_activo,
     };
+  }
+
+  async verificar2FA(email: string, codigo: string) {
+    const user = await this.prisma.usuario.findUnique({
+      where: { email },
+      include: {
+        persona: true,
+        rol: true,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Usuario no encontrado');
+    }
+
+    if (!user.dos_fa_activo || !user.dos_fa_secret) {
+      throw new BadRequestException(
+        'El usuario no tiene la autenticación de dos factores (2FA) activa.',
+      );
+    }
+
+    const result = await verify({
+      token: codigo,
+      secret: user.dos_fa_secret,
+    });
+
+    if (!result.valid) {
+      throw new BadRequestException('Código de verificación incorrecto.');
+    }
+
+    return this.login(user);
   }
 }
 

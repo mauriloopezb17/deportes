@@ -100,4 +100,12 @@ export class AuthController {
   async obtener2FAStatus(@Query('email') email: string) {
     return this.authService.obtener2FAStatus(email);
   }
+
+  @Post('2fa/verificar')
+  async verificar2FA(
+    @Body('email') email: string,
+    @Body('codigo') codigo: string,
+  ) {
+    return this.authService.verificar2FA(email, codigo);
+  }
 }
