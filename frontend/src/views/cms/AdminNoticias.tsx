@@ -7,7 +7,7 @@ import type { PublishPayload } from '../../features/cms/components/PublishModal'
 import * as noticiaApi from '../../features/cms/services/noticiaApi';
 import { apiFetch } from '../../utils/api';
 import { useAuth } from '../../contexts/AuthContext';
-import 'AdminNoticias.css';
+import './AdminNoticias.css';
 
 interface NoticiaItem {
   id_noticia: number;

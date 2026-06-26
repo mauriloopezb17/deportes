@@ -25,7 +25,7 @@ import Table from '@editorjs/table';
 // @ts-ignore
 import Delimiter from '@editorjs/delimiter';
 
-import 'CSS/EditorNoticias.css';
+import './CSS/EditorNoticias.css';
 import ModalAyuda from './ModalAyuda';
 import PreviewNoticia from '../components/PreviewNoticia';
 import type { SaveStatus } from '../components/Navbar';

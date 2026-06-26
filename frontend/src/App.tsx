@@ -11,22 +11,17 @@ import Inscribete from './features/inscribete/components/Inscribete'
 import LoginPage from './features/login/components/LoginPage'
 import AuthCallback from './features/login/components/AuthCallback'
 import TwoFactorSetup from './features/seguridad/components/TwoFactorSetup'
-import AdminHub from './features/admin/components/AdminHub'
-import RegistrarUsuario from './features/admin/components/RegistrarUsuario'
-import AdminDeportistas from './features/admin/components/AdminDeportistas'
-import AdminGaleria from './features/admin/components/AdminGaleria'
-import AdminEntrenadores from './features/admin/components/AdminEntrenadores'
-import AdminHorarios from './features/admin/components/AdminHorarios'
-import AdminPartidos from './features/admin/components/AdminPartidos'
-import AdminTorneo from './features/admin/components/AdminTorneo'
 import FinanzasPanel from './features/finanzas/components/FinanzasPanel'
-import DelegadoPanel from './features/delegado/components/DelegadoPanel'
-import EntrenadorPanel from './features/entrenador/components/EntrenadorPanel'
+import AdminNoticias from './views/cms/AdminNoticias'
 import ApiDocsView from './views/Documentacion/ApiDocsView'
-// News editor / CMS module — pending migration by the team (src/pages not yet in repo).
-// TODO: restore these imports and the two routes below once the CMS is added.
-// import AdminNoticias from './pages/AdminNoticias'
-// import MisNoticias from './pages/admin/MisNoticias'
+
+// Los antiguos paneles de gestión del portal (admin, delegado, entrenador y sus
+// sub-herramientas /admin/*) quedaron fuera de ruta: los reemplaza el panel del
+// grupo 2 servido bajo /gestion. Sólo siguen en el portal lo que el panel no cubre:
+//   - /panel-finanzas  -> pagos del rol jugador
+//   - /noticiasAdmin   -> CMS de noticias del rol marketing
+// Los componentes viejos siguen en src/features/admin|delegado|entrenador por si se
+// necesitan, pero ya no son accesibles desde el portal.
 
 function App() {
   return (
@@ -44,22 +39,10 @@ function App() {
             <Route path="/noticias" element={<Noticias />} />
             <Route path="/noticias/:id" element={<NoticiaDetalle />} />
             <Route path="/inscribete" element={<Inscribete />} />
-            <Route path="/admin" element={<AdminHub />} />
             <Route path="/docs" element={<ApiDocsView />} />
             <Route path="/panel-finanzas" element={<FinanzasPanel />} />
-            <Route path="/panel-delegado" element={<DelegadoPanel />} />
-            <Route path="/panel-entrenador" element={<EntrenadorPanel />} />
-            {/* TODO: restore once CMS migrated — <Route path="/admin/mis-noticias" element={<MisNoticias />} /> */}
-            <Route path="/admin/registrar-usuario" element={<RegistrarUsuario />} />
-            <Route path="/admin/deportistas" element={<AdminDeportistas />} />
-            <Route path="/admin/galeria" element={<AdminGaleria />} />
-            <Route path="/admin/galeria/:tipo" element={<AdminGaleria />} />
-            <Route path="/admin/entrenadores" element={<AdminEntrenadores />} />
-            <Route path="/admin/horarios" element={<AdminHorarios />} />
-            <Route path="/admin/partidos" element={<AdminPartidos />} />
-            <Route path="/admin/torneo" element={<AdminTorneo />} />
+            <Route path="/noticiasAdmin" element={<AdminNoticias />} />
           </Route>
-          {/* TODO: restore once CMS migrated — <Route path="/noticiasAdmin" element={<AdminNoticias />} /> */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
