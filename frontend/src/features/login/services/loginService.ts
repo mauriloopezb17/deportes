@@ -22,8 +22,36 @@ async function apiPost<T>(path: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>
 }
 
+async function apiGet<T>(path: string): Promise<T> {
+  const token = localStorage.getItem('ucb_token')
+  const headers: Record<string, string> = {}
+  if (token) headers['Authorization'] = `Bearer ${token}`
+  const res = await fetch(`${API_BASE}${path}`, { headers })
+  if (!res.ok) {
+    let message = res.statusText
+    try {
+      const errBody = await res.json()
+      message = errBody.error ?? errBody.message ?? message
+    } catch {}
+    throw new Error(message)
+  }
+  return res.json() as Promise<T>
+}
+
 export const login = (email: string, password: string) =>
   apiPost<{ token: string; user: any }>('/api/auth/login', { email, password })
+
+/* Estado del 2FA de una cuenta. Se consulta tras validar la contraseña para
+   saber si hay que pedir el código antes de dejar entrar. */
+export const twofaStatus = (email: string) =>
+  apiGet<{ email: string; dos_fa_activo: boolean }>(
+    `/api/auth/2fa/status?email=${encodeURIComponent(email)}`,
+  )
+
+/* Verifica el código TOTP en el login. Si es válido, el backend devuelve un
+   token de sesión nuevo (mismo shape que /auth/login). */
+export const verify2FALogin = (email: string, codigo: string) =>
+  apiPost<{ token: string; user: any }>('/api/auth/2fa/verificar', { email, codigo })
 
 export const forgotPassword = (email: string) =>
   apiPost('/api/auth/forgot-password', { email })

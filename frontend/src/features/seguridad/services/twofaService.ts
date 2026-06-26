@@ -33,3 +33,14 @@ export interface Generar2FAResponse {
    Devuelve el QR para escanear con una app de autenticación. */
 export const generar2FA = () =>
   apiPost<Generar2FAResponse>('/api/auth/2fa/generar', {})
+
+export interface Confirmar2FAResponse {
+  success: boolean
+  message: string
+  dos_fa_activo: boolean
+}
+
+/* POST /api/auth/2fa/confirmar — protegido por JWT. Verifica el código de la
+   app contra el secreto generado y, si es válido, activa el 2FA (dos_fa_activo). */
+export const confirmar2FA = (codigo: string) =>
+  apiPost<Confirmar2FAResponse>('/api/auth/2fa/confirmar', { codigo })

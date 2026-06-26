@@ -88,6 +88,16 @@ export class AuthController {
     return this.authService.generarCodigoQR(id_usuario, email);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/confirmar')
+  async confirmar2FA(
+    @Req() req: RequestWithUser,
+    @Body('codigo') codigo: string,
+  ) {
+    const { id_usuario } = req.user;
+    return this.authService.confirmarActivacion2FA(id_usuario, codigo);
+  }
+
   @Post('2fa/activar')
   async activar2FA(
     @Body('email') email: string,

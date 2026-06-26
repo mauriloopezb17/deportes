@@ -151,6 +151,44 @@ export class AuthService {
     };
   }
 
+  async confirmarActivacion2FA(id_usuario: number, codigo: string) {
+    const user = await this.prisma.usuario.findUnique({
+      where: { id_usuario },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Usuario no encontrado');
+    }
+
+    if (!user.dos_fa_secret) {
+      throw new BadRequestException(
+        'Debe generar el código QR de 2FA antes de confirmarlo.',
+      );
+    }
+
+    // Verifica el código de la app contra el secreto recién generado.
+    const result = await verify({
+      token: codigo,
+      secret: user.dos_fa_secret,
+    });
+
+    if (!result.valid) {
+      throw new BadRequestException('Código de verificación incorrecto.');
+    }
+
+    // Sólo ahora activamos el 2FA en la base de datos.
+    await this.prisma.usuario.update({
+      where: { id_usuario },
+      data: { dos_fa_activo: true },
+    });
+
+    return {
+      success: true,
+      message: 'Verificación en dos pasos activada con éxito',
+      dos_fa_activo: true,
+    };
+  }
+
   async activarDesactivar2FA(email: string, activo: boolean) {
     const user = await this.prisma.usuario.findUnique({
       where: { email },
