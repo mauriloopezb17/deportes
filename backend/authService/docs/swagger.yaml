@@ -115,6 +115,17 @@ components:
           type: integer
           description: Obligatorio si id_rol = 3 (Delegado)
 
+    Activar2faBody:
+      type: object
+      required: [email, activo]
+      properties:
+        email:
+          type: string
+          example: juan.perez@ucb.edu.bo
+        activo:
+          type: boolean
+          example: true
+
 tags:
   - name: Auth
     description: Autenticación, registro y recuperación de contraseñas
@@ -228,6 +239,65 @@ paths:
           description: El usuario es una cuenta externa (Google OAuth) o no existe
         401:
           description: Token no provisto o inválido
+
+  /api/auth/2fa/activar:
+    post:
+      tags: [Auth]
+      summary: Activar o desactivar la Autenticación de Dos Pasos (2FA)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Activar2faBody'
+      responses:
+        200:
+          description: Estado 2FA actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Autenticación de dos factores activada con éxito
+                  dos_fa_activo:
+                    type: boolean
+                    example: true
+        400:
+          description: El usuario no existe o no tiene configurado un secreto 2FA
+
+  /api/auth/2fa/status:
+    get:
+      tags: [Auth]
+      summary: Obtener el estado de activación de 2FA para un correo
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+          required: true
+          description: Correo electrónico del usuario
+          example: juan.perez@ucb.edu.bo
+      responses:
+        200:
+          description: Estado de 2FA recuperado con éxito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                    example: juan.perez@ucb.edu.bo
+                  dos_fa_activo:
+                    type: boolean
+                    example: true
+        400:
+          description: Usuario no encontrado
 
   /api/admin/roles:
     get:

@@ -150,4 +150,49 @@ export class AuthService {
       qrCode: qrCodeImage,
     };
   }
+
+  async activarDesactivar2FA(email: string, activo: boolean) {
+    const user = await this.prisma.usuario.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Usuario no encontrado');
+    }
+
+    if (activo && !user.dos_fa_secret) {
+      throw new BadRequestException(
+        'Debe generar el código QR de 2FA antes de activarlo.',
+      );
+    }
+
+    const updatedUser = await this.prisma.usuario.update({
+      where: { email },
+      data: { dos_fa_activo: activo },
+    });
+
+    return {
+      success: true,
+      message: activo
+        ? 'Autenticación de dos factores activada con éxito'
+        : 'Autenticación de dos factores desactivada con éxito',
+      dos_fa_activo: updatedUser.dos_fa_activo,
+    };
+  }
+
+  async obtener2FAStatus(email: string) {
+    const user = await this.prisma.usuario.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Usuario no encontrado');
+    }
+
+    return {
+      email: user.email,
+      dos_fa_activo: user.dos_fa_activo,
+    };
+  }
 }
+
