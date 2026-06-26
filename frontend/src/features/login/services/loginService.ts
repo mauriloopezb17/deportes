@@ -44,10 +44,44 @@ export const googleAuthUrl = () => `${API_BASE}/api/auth/google`
    to id_rol, so it keeps working even if ids shift. */
 export function panelPathForUser(u: { id_rol?: number; nombre_rol?: string | null }): string {
   const rol = (u.nombre_rol ?? '').toLowerCase()
-  if (rol.includes('admin') || u.id_rol === 1) return '/panel-admin'
-  if (rol.includes('entrenador') || u.id_rol === 2) return '/panel-entrenador'
-  if (rol.includes('delegado') || u.id_rol === 3) return '/panel-delegado'
   if (rol.includes('jugador') || u.id_rol === 4) return '/panel-finanzas'
   if (rol.includes('marketing') || u.id_rol === 5) return '/noticiasAdmin' // CMS (pendiente de migración)
   return '/'
+}
+
+/* El panel de gestión (grupo 2) es una app aparte servida bajo /gestion. Para
+   admin/delegado/entrenador el back-office es ese panel, no el del portal (que
+   quedó obsoleto). Devuelve la URL del panel, o null si el rol se queda en el portal. */
+const PANEL_URL = (import.meta.env.VITE_PANEL_URL || '/gestion').replace(/\/+$/, '')
+
+export function panelAppUrlForUser(u: { id_rol?: number; nombre_rol?: string | null }): string | null {
+  const rol = (u.nombre_rol ?? '').toLowerCase()
+  if (rol.includes('admin') || u.id_rol === 1) return `${PANEL_URL}/panel-admin`
+  if (rol.includes('entrenador') || u.id_rol === 2) return `${PANEL_URL}/panel-entrenador`
+  if (rol.includes('delegado') || u.id_rol === 3) return `${PANEL_URL}/panel-delegado`
+  return null // jugador/marketing siguen en el portal
+}
+
+/* SSO best-effort hacia el panel: el panel lee 'token' y 'usuario' de localStorage
+   (compartido cuando portal y panel están en el mismo origin del despliegue). Si su
+   backend acepta el token, entra sin re-login; si no, el panel cae a su propio login. */
+export function bridgeSessionToPanel(
+  token: string,
+  u: { id_usuario?: number; nombres?: string; ape_paterno?: string; email?: string; nombre_rol?: string | null },
+): void {
+  try {
+    localStorage.setItem('token', token)
+    localStorage.setItem(
+      'usuario',
+      JSON.stringify({
+        id: u.id_usuario,
+        nombre: u.nombres ?? '',
+        apellido: u.ape_paterno ?? '',
+        email: u.email ?? '',
+        roles: [u.nombre_rol ?? ''],
+      }),
+    )
+  } catch {
+    /* localStorage no disponible */
+  }
 }

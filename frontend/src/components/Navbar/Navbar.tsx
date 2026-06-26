@@ -14,7 +14,8 @@ const links = [
 ]
 
 // Panel de gestión del grupo 2 (app aparte servida bajo /gestion). Configurable por entorno.
-const PANEL_URL = import.meta.env.VITE_PANEL_URL || '/gestion'
+// Se le quita la barra final para no duplicarla al concatenar rutas (.../gestion/panel-admin).
+const PANEL_URL = (import.meta.env.VITE_PANEL_URL || '/gestion').replace(/\/+$/, '')
 
 function Navbar() {
   const { user, isAuthenticated, isAdmin, logout, loading } = useAuth()
@@ -77,13 +78,10 @@ function Navbar() {
         ))}
 
         {isAdmin && (
-          <NavLink
-            to="/admin"
-            className={({ isActive }) => `nav-admin-link${isActive ? ' active' : ''}`}
-          >
+          <a href={`${PANEL_URL}/panel-admin`} className="nav-admin-link">
             <Shield size={15} strokeWidth={2.5} />
             Panel admin
-          </NavLink>
+          </a>
         )}
 
         {!loading && !isAuthenticated && (
@@ -113,19 +111,9 @@ function Navbar() {
                   <p className="nav-user-dropdown-email">{user?.email}</p>
                   <span className="nav-user-dropdown-role">{user?.nombre_rol}</span>
                 </div>
-                {isAdmin && (
-                  <Link
-                    to="/admin"
-                    className="nav-user-dropdown-item"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    <Shield size={14} strokeWidth={2.2} />
-                    Panel de administración
-                  </Link>
-                )}
                 {canManage && (
                   <a
-                    href={PANEL_URL}
+                    href={`${PANEL_URL}/`}
                     className="nav-user-dropdown-item"
                     onClick={() => setMenuOpen(false)}
                   >

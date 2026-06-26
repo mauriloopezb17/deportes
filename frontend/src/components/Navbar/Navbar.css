@@ -55,7 +55,7 @@
   align-items: center;
 }
 
-.ucb-nav .nav-links a {
+.ucb-nav .nav-links > a {
   color: #ffffff;
   text-decoration: none;
   margin-left: 24px;
@@ -69,7 +69,7 @@
 }
 
 /* Animated underline for plain nav links only */
-.ucb-nav .nav-links a:not(.btn-login):not(.nav-admin-link)::after {
+.ucb-nav .nav-links > a:not(.btn-login):not(.nav-admin-link)::after {
   content: '';
   position: absolute;
   bottom: -3px;
@@ -81,17 +81,17 @@
   transition: width 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.ucb-nav .nav-links a:not(.btn-login):not(.nav-admin-link):hover::after,
-.ucb-nav .nav-links a:not(.btn-login):not(.nav-admin-link).active::after {
+.ucb-nav .nav-links > a:not(.btn-login):not(.nav-admin-link):hover::after,
+.ucb-nav .nav-links > a:not(.btn-login):not(.nav-admin-link).active::after {
   width: 100%;
 }
 
-.ucb-nav .nav-links a.active,
-.ucb-nav .nav-links a:hover {
+.ucb-nav .nav-links > a.active,
+.ucb-nav .nav-links > a:hover {
   color: var(--ucb-yellow);
 }
 
-.ucb-nav .nav-links a.btn-login {
+.ucb-nav .nav-links > a.btn-login {
   background-color: var(--ucb-yellow);
   color: var(--ucb-blue) !important;
   padding: 9px 18px;
@@ -104,16 +104,16 @@
   transition: background-color 0.2s, transform 0.2s;
 }
 
-.ucb-nav .nav-links a.btn-login:hover {
+.ucb-nav .nav-links > a.btn-login:hover {
   transform: translateY(-1px);
 }
 
-.ucb-nav .nav-links a.btn-login:hover {
+.ucb-nav .nav-links > a.btn-login:hover {
   background-color: var(--ucb-yellow-dark);
 }
 
 /* ── Admin panel link ── */
-.ucb-nav .nav-links a.nav-admin-link {
+.ucb-nav .nav-links > a.nav-admin-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -127,8 +127,8 @@
   margin-left: 24px;
 }
 
-.ucb-nav .nav-links a.nav-admin-link:hover,
-.ucb-nav .nav-links a.nav-admin-link.active {
+.ucb-nav .nav-links > a.nav-admin-link:hover,
+.ucb-nav .nav-links > a.nav-admin-link.active {
   background: var(--ucb-yellow);
   color: var(--ucb-blue) !important;
 }
@@ -268,7 +268,7 @@
     justify-content: center;
     width: 100%;
   }
-  .ucb-nav .nav-links a {
+  .ucb-nav .nav-links > a {
     margin-left: 10px;
     margin-right: 10px;
   }
