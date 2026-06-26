@@ -2,18 +2,29 @@ import { useState } from "react"
 import SwaggerUI from "swagger-ui-react"
 import "swagger-ui-react/swagger-ui.css"
 
-/* Documentación unificada: un solo lugar para ver el Swagger de todos los
-   microservicios. Los specs viven en public/docs/ (copiados de cada
-   backend/<svc>/docs/swagger.yaml) y se eligen con el selector de arriba.
-   swagger-ui-react no trae el dropdown nativo de multi-spec (es parte del
-   topbar que no incluye), por eso usamos un <select> propio. */
+/* Documentación unificada: un solo /docs para ver el Swagger de todos los
+   microservicios, elegidos con el selector de arriba.
+
+   Cada servicio usa su endpoint EN VIVO si su URL está configurada en el .env
+   (VITE_API_*_URL -> `${url}/api/docs-json`), así los cambios del backend se
+   reflejan al instante. Si esa URL no está seteada, cae al yaml estático en
+   public/docs/ (copia de backend/<svc>/docs/swagger.yaml) para que /docs nunca
+   quede roto. swagger-ui-react no trae el dropdown nativo multi-spec, por eso
+   usamos un <select> propio. */
+const env = import.meta.env
+
+function specUrl(liveBase: string | undefined, fallback: string): string {
+  const base = (liveBase ?? "").trim().replace(/\/+$/, "")
+  return base ? `${base}/api/docs-json` : fallback
+}
+
 const SERVICES = [
-  { name: "Identidad y Usuarios (auth)", url: "/docs/auth.yaml" },
-  { name: "Portal Web", url: "/docs/portal-web.yaml" },
-  { name: "Deportistas e Inscripciones", url: "/docs/deportistas.yaml" },
-  { name: "Torneos", url: "/docs/torneos.yaml" },
-  { name: "Finanzas", url: "/docs/finanzas.yaml" },
-  { name: "Infraestructura", url: "/docs/infraestructura.yaml" },
+  { name: "Identidad y Usuarios (auth)", url: specUrl(env.VITE_API_AUTH_URL, "/docs/auth.yaml") },
+  { name: "Portal Web", url: specUrl(env.VITE_API_PORTAL_WEB_URL, "/docs/portal-web.yaml") },
+  { name: "Deportistas e Inscripciones", url: specUrl(env.VITE_API_DEPORTISTAS_URL, "/docs/deportistas.yaml") },
+  { name: "Torneos", url: specUrl(env.VITE_API_TORNEOS_URL, "/docs/torneos.yaml") },
+  { name: "Finanzas", url: specUrl(env.VITE_API_FINANZAS_URL, "/docs/finanzas.yaml") },
+  { name: "Infraestructura", url: specUrl(env.VITE_API_INFRAESTRUCTURA_URL, "/docs/infraestructura.yaml") },
 ] as const
 
 function SwaggerViewer() {
