@@ -612,7 +612,6 @@ const Dashboard: React.FC = () => {
         <Hero
           eyebrow="Panel principal"
           title={`Bienvenido, ${usuario?.nombre ?? "usuario"}`}
-          description="Datos reales de equipos, torneos, fixture, resultados y reservas cargados desde el backend."
           aside={
             <div className="space-y-3">
               <MiniMetric
@@ -773,7 +772,7 @@ const Dashboard: React.FC = () => {
 interface HeroProps {
   eyebrow: string;
   title: string;
-  description: string;
+  description?: string;
   aside: React.ReactNode;
 }
 
@@ -786,9 +785,11 @@ const Hero: React.FC<HeroProps> = ({ eyebrow, title, description, aside }) => (
           {eyebrow}
         </p>
         <h1 className="mt-2 text-4xl font-bold text-white">{title}</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/80">
-          {description}
-        </p>
+        {description && (
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/80">
+            {description}
+          </p>
+        )}
       </div>
       <div className="rounded-lg border border-white/20 bg-white/95 p-4 text-gray-950">
         {aside}

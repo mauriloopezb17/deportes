@@ -65,6 +65,29 @@ const getTournamentName = (partido: Partido) =>
 const getTeamName = (team: any, fallback: string) =>
   team?.nombre || team?.nombre_equipo || fallback;
 
+const getUniqueFixtureMatches = (partidos: Partido[]) => {
+  const seenPairs = new Set<string>();
+
+  return partidos.filter((partido) => {
+    const localId = String(
+      (partido as any).equipo_local_id ??
+        partido.equipo_local?.id ??
+        getTeamName(partido.equipo_local, "local"),
+    );
+    const visitanteId = String(
+      (partido as any).equipo_visitante_id ??
+        partido.equipo_visitante?.id ??
+        getTeamName(partido.equipo_visitante, "visitante"),
+    );
+    const pairKey = [localId, visitanteId].sort().join(":");
+    const key = `${getTournamentId(partido)}:${pairKey}`;
+
+    if (seenPairs.has(key)) return false;
+    seenPairs.add(key);
+    return true;
+  });
+};
+
 const matchHasCarrera = (partido: Partido, carreraId?: number) => {
   if (!carreraId) return true;
 
@@ -270,7 +293,7 @@ const createPrintFrame = () => {
 };
 
 const exportFixturePdf = (partidos: Partido[]) => {
-  const sortedPartidos = [...partidos].sort((a, b) =>
+  const sortedPartidos = getUniqueFixtureMatches(partidos).sort((a, b) =>
     `${a.fecha || "9999-12-31"} ${a.hora || ""}`.localeCompare(
       `${b.fecha || "9999-12-31"} ${b.hora || ""}`,
     ),
@@ -334,12 +357,11 @@ const exportFixturePdf = (partidos: Partido[]) => {
           }
 
           .brand img {
-            width: 70px;
-            height: 70px;
+            width: 44px;
+            height: 44px;
             object-fit: contain;
-            border-radius: 12px;
-            background: var(--color-white);
-            padding: 5px;
+            background: transparent;
+            padding: 0;
           }
 
           .eyebrow {
@@ -529,7 +551,7 @@ const exportFixturePdf = (partidos: Partido[]) => {
       <body>
         <section class="header">
           <div class="brand">
-            <img src="${logoSrc}" alt="Logo universidad" />
+            <img src="${logoSrc}" alt="Logo Gestion Deportiva" />
             <div>
               <p class="eyebrow">Universidad Catolica Boliviana</p>
               <h1>Fixture deportivo</h1>
@@ -757,6 +779,11 @@ export const FixtureList: React.FC = () => {
     toDateKey(new Date()),
   );
 
+  const uniquePartidos = useMemo(
+    () => getUniqueFixtureMatches(partidos),
+    [partidos],
+  );
+
   useEffect(() => {
     obtenerPartidos();
   }, [obtenerPartidos]);
@@ -764,21 +791,21 @@ export const FixtureList: React.FC = () => {
   const tournamentOptions = useMemo(() => {
     const options = new Map<string, string>();
 
-    partidos.forEach((partido) => {
+    uniquePartidos.forEach((partido) => {
       options.set(getTournamentId(partido), getTournamentName(partido));
     });
 
     return [...options.entries()].map(([id, name]) => ({ id, name }));
-  }, [partidos]);
+  }, [uniquePartidos]);
 
   const selectedTournamentPartidos = useMemo(
     () =>
       selectedTournamentId === "all"
-        ? partidos
-        : partidos.filter(
+        ? uniquePartidos
+        : uniquePartidos.filter(
             (partido) => getTournamentId(partido) === selectedTournamentId,
           ),
-    [partidos, selectedTournamentId],
+    [selectedTournamentId, uniquePartidos],
   );
 
   const standings = useMemo(
@@ -928,8 +955,8 @@ export const FixtureList: React.FC = () => {
           <Button
             variant="secondary"
             className="gap-2"
-            onClick={() => exportFixturePdf(partidos)}
-            disabled={isLoading || partidos.length === 0}
+            onClick={() => exportFixturePdf(uniquePartidos)}
+            disabled={isLoading || uniquePartidos.length === 0}
           >
             <Download size={20} />
             Exportar PDF
@@ -950,7 +977,7 @@ export const FixtureList: React.FC = () => {
       </div>
 
       <Card>
-        <Table columns={columns} data={partidos} isLoading={isLoading} />
+        <Table columns={columns} data={uniquePartidos} isLoading={isLoading} />
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_360px]">

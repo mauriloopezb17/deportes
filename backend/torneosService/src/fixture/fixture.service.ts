@@ -12,6 +12,16 @@ export class FixtureService {
 
   @ApiOperation({ summary: "Crear un nuevo partido" })
   async create(createFixtureDto: CreateFixtureDto) {
+    if (!createFixtureDto.equipo_local_id || !createFixtureDto.equipo_visitante_id) {
+      throw new BadRequestException("Selecciona ambos equipos para crear el partido");
+    }
+
+    await this.ensureUniqueMatch(
+      createFixtureDto.torneo_id,
+      createFixtureDto.equipo_local_id,
+      createFixtureDto.equipo_visitante_id,
+    );
+
     const date = createFixtureDto.fecha_hora
       ? new Date(createFixtureDto.fecha_hora)
       : new Date();
@@ -182,6 +192,21 @@ export class FixtureService {
 
   @ApiOperation({ summary: "Actualizar un partido" })
   async update(id: number, updateFixtureDto: UpdateFixtureDto) {
+    const current = await this.prisma.partidos.findUnique({
+      where: { id_partido: id },
+    });
+
+    if (!current) {
+      throw new NotFoundException("Partido no encontrado");
+    }
+
+    await this.ensureUniqueMatch(
+      updateFixtureDto.torneo_id ?? current.id_torneo,
+      updateFixtureDto.equipo_local_id ?? current.id_equipo_local,
+      updateFixtureDto.equipo_visitante_id ?? current.id_equipo_visitante,
+      id,
+    );
+
     const date = updateFixtureDto.fecha_hora
       ? new Date(updateFixtureDto.fecha_hora)
       : undefined;
@@ -561,6 +586,42 @@ export class FixtureService {
 
   private pairKey(firstTeamId: number, secondTeamId: number) {
     return [firstTeamId, secondTeamId].sort((a, b) => a - b).join(":");
+  }
+
+  private async ensureUniqueMatch(
+    tournamentId: number,
+    localTeamId: number,
+    visitorTeamId: number,
+    excludeMatchId?: number,
+  ) {
+    if (localTeamId === visitorTeamId) {
+      throw new BadRequestException("Un equipo no puede jugar contra sí mismo");
+    }
+
+    const existing = await this.prisma.partidos.findFirst({
+      where: {
+        id_torneo: tournamentId,
+        ...(excludeMatchId
+          ? { id_partido: { not: excludeMatchId } }
+          : {}),
+        OR: [
+          {
+            id_equipo_local: localTeamId,
+            id_equipo_visitante: visitorTeamId,
+          },
+          {
+            id_equipo_local: visitorTeamId,
+            id_equipo_visitante: localTeamId,
+          },
+        ],
+      },
+    });
+
+    if (existing) {
+      throw new BadRequestException(
+        "Estos equipos ya tienen un partido registrado en el torneo",
+      );
+    }
   }
 
   private normalizeText(value: string) {

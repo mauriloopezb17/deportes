@@ -355,16 +355,10 @@ const createMatch = (
 export const demoPartidos: Partido[] = [
   createMatch(1, 0, 0, 2, "2026-06-24", "16:00", 0, "finalizado"),
   createMatch(2, 1, 1, 3, "2026-06-25", "18:00", 0, "finalizado"),
-  createMatch(3, 0, 2, 0, "2026-06-28", "16:30", 0),
-  createMatch(4, 1, 3, 1, "2026-06-29", "18:00", 0),
   createMatch(5, 2, 4, 6, "2026-06-26", "17:00", 1, "finalizado"),
   createMatch(6, 3, 5, 7, "2026-06-27", "19:00", 1),
-  createMatch(7, 2, 6, 4, "2026-07-02", "18:00", 1),
-  createMatch(8, 3, 7, 5, "2026-07-04", "10:00", 1),
   createMatch(9, 4, 8, 11, "2026-06-23", "20:00", 1, "finalizado"),
   createMatch(10, 5, 9, 10, "2026-06-28", "20:00", 1),
-  createMatch(11, 4, 11, 8, "2026-07-03", "19:00", 1),
-  createMatch(12, 5, 10, 9, "2026-07-05", "16:00", 1),
 ];
 
 const createReservation = (
