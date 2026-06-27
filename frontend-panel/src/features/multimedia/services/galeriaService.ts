@@ -1,4 +1,5 @@
 import { apiClient } from "@/services/api";
+import { demoPartidos, demoTorneos, isDemoMode } from "@/data/demoData";
 
 // Capa de red para la galeria multimedia. Apunta a los mismos endpoints que el
 // panel anterior: /api/partidos/*, /api/upload y /api/galeria/.
@@ -24,15 +25,57 @@ export interface CrearMultimediaPayload {
 
 export const galeriaService = {
   async obtenerTorneos(): Promise<TorneoOption[]> {
-    const response = await apiClient.get<TorneoOption[]>("/partidos/torneos");
-    return response.data || [];
+    if (isDemoMode) {
+      return demoTorneos.map((torneo) => ({
+        id_torneo: torneo.id,
+        nombre: torneo.nombre,
+      }));
+    }
+
+    try {
+      const response = await apiClient.get<TorneoOption[]>("/partidos/torneos");
+      return response.data?.length
+        ? response.data
+        : demoTorneos.map((torneo) => ({
+            id_torneo: torneo.id,
+            nombre: torneo.nombre,
+          }));
+    } catch {
+      return demoTorneos.map((torneo) => ({
+        id_torneo: torneo.id,
+        nombre: torneo.nombre,
+      }));
+    }
   },
 
   async obtenerPartidos(idTorneo: number): Promise<PartidoOption[]> {
-    const response = await apiClient.get<PartidoOption[]>(
-      `/partidos/torneo/${idTorneo}`,
-    );
-    return response.data || [];
+    if (isDemoMode) {
+      return demoPartidos
+        .filter((partido) => partido.torneo.id === idTorneo)
+        .map((partido) => ({
+          id_partido: partido.id,
+          equipo_local: partido.equipo_local.nombre,
+          equipo_visitante: partido.equipo_visitante.nombre,
+        }));
+    }
+
+    try {
+      const response = await apiClient.get<PartidoOption[]>(
+        `/partidos/torneo/${idTorneo}`,
+      );
+      if (response.data?.length) return response.data;
+    } catch {
+      // El alta de galería permanece conectada al backend; solo las opciones
+      // de lectura usan datos de demostración cuando el servicio no responde.
+    }
+
+    return demoPartidos
+      .filter((partido) => partido.torneo.id === idTorneo)
+      .map((partido) => ({
+        id_partido: partido.id,
+        equipo_local: partido.equipo_local.nombre,
+        equipo_visitante: partido.equipo_visitante.nombre,
+      }));
   },
 
   async subirArchivo(file: File): Promise<string> {

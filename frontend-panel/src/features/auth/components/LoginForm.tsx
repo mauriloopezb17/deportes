@@ -25,9 +25,9 @@ const previewLinks = [
     roles: [UserRole.ADMIN],
   },
   {
-    label: "Panel delegado",
-    path: "/panel-delegado",
-    icon: BarChart3,
+    label: "Equipos del delegado",
+    path: "/equipos",
+    icon: Users,
     roles: [UserRole.DELEGADO],
   },
   {
@@ -105,7 +105,7 @@ const LoginForm: React.FC = () => {
 
   const goToDefaultPanel = () => {
     if (hasRole(UserRole.ADMIN)) return navigate("/panel-admin");
-    if (hasRole(UserRole.DELEGADO)) return navigate("/panel-delegado");
+    if (hasRole(UserRole.DELEGADO)) return navigate("/equipos");
     if (hasRole(UserRole.ENTRENADOR)) return navigate("/panel-entrenador");
     return navigate("/dashboard");
   };

@@ -6,6 +6,13 @@ import {
   PaginatedResponse,
 } from "@types";
 import { apiClient } from "@/services/api";
+import {
+  demoCarreras,
+  demoCategorias,
+  demoDisciplinas,
+  demoRoles,
+  isDemoMode,
+} from "@/data/demoData";
 
 export interface SystemRole {
   id: number;
@@ -21,6 +28,22 @@ const normalizarRol = (rol: any): SystemRole => ({
   id: rol.id ?? rol.id_rol,
   nombre: rol.nombre ?? rol.nombre_rol,
 });
+
+const fallbackRoles: SystemRole[] = demoRoles.map(({ id, nombre }) => ({
+  id,
+  nombre,
+}));
+
+const fallbackCatalogos: CatalogosInscripcion = {
+  disciplinas: demoDisciplinas.map((disciplina) => ({
+    id_disciplina: disciplina.id,
+    nombre_disciplina: disciplina.nombre,
+  })),
+  categorias: demoCategorias.map((categoria) => ({
+    id_categoria: categoria.id,
+    nombre_categoria: categoria.nombre,
+  })),
+};
 
 const emptyPage = <T>(): PaginatedResponse<T> => ({
   success: true,
@@ -127,18 +150,26 @@ export const historialService = {
 
 export const deportistaAdminService = {
   async obtenerRolesSistema(): Promise<SystemRole[]> {
+    if (isDemoMode) return fallbackRoles;
+
     try {
       const response = await apiClient.getPaginated<any>("/rol");
 
       return response.data.map(normalizarRol);
     } catch {
-      const response = await apiClient.get<any[]>("/admin/roles");
-      const roles = Array.isArray(response.data) ? response.data : [];
-      return roles.map(normalizarRol);
+      try {
+        const response = await apiClient.get<any[]>("/admin/roles");
+        const roles = Array.isArray(response.data) ? response.data : [];
+        return roles.length ? roles.map(normalizarRol) : fallbackRoles;
+      } catch {
+        return fallbackRoles;
+      }
     }
   },
 
   async obtenerCatalogosInscripcion(): Promise<CatalogosInscripcion> {
+    if (isDemoMode) return fallbackCatalogos;
+
     try {
       const [disciplinasResponse, categoriasResponse] = await Promise.all([
         apiClient.getPaginated<any>("/disciplina"),
@@ -157,8 +188,12 @@ export const deportistaAdminService = {
         })),
       };
     } catch {
-      const response = await apiClient.get<any>("/admin/catalogos/inscripcion");
-      return response.data || { disciplinas: [], categorias: [] };
+      try {
+        const response = await apiClient.get<any>("/admin/catalogos/inscripcion");
+        return response.data || fallbackCatalogos;
+      } catch {
+        return fallbackCatalogos;
+      }
     }
   },
 
@@ -201,13 +236,43 @@ export interface RegistrarUsuarioPayload {
 
 export const usuarioAdminService = {
   async obtenerRoles(): Promise<RolSistema[]> {
-    const response = await apiClient.get<RolSistema[]>("/admin/roles");
-    return response.data || [];
+    if (isDemoMode) {
+      return demoRoles.map(({ id_rol, nombre_rol }) => ({
+        id_rol,
+        nombre_rol,
+      }));
+    }
+
+    try {
+      const response = await apiClient.get<RolSistema[]>("/admin/roles");
+      return response.data || [];
+    } catch {
+      return fallbackRoles.map((rol) => ({
+        id_rol: rol.id,
+        nombre_rol: rol.nombre,
+      }));
+    }
   },
 
   async obtenerCarreras(): Promise<CarreraAdmin[]> {
-    const response = await apiClient.get<CarreraAdmin[]>("/admin/carreras");
-    return response.data || [];
+    if (isDemoMode) {
+      return demoCarreras.map(({ id_carrera, nombre, sigla }) => ({
+        id_carrera,
+        nombre,
+        sigla,
+      }));
+    }
+
+    try {
+      const response = await apiClient.get<CarreraAdmin[]>("/admin/carreras");
+      return response.data || [];
+    } catch {
+      return demoCarreras.map(({ id_carrera, nombre, sigla }) => ({
+        id_carrera,
+        nombre,
+        sigla,
+      }));
+    }
   },
 
   async registrarUsuario(payload: RegistrarUsuarioPayload): Promise<any> {

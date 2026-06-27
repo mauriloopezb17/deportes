@@ -41,7 +41,7 @@ const EquipoList: React.FC = () => {
     },
     {
       key: "categoria",
-      title: "Categoria",
+      title: "Género",
     },
     {
       key: "estado",
@@ -109,22 +109,20 @@ const EquipoList: React.FC = () => {
               Equipos registrados
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80">
-              Administra equipos por carrera, disciplina y estado de registro.
+              Administra equipos intercarreras por carrera, disciplina y género.
             </p>
           </div>
-          {!isDelegado && (
-            <Button
-              variant="primary"
-              onClick={() => {
-                setEditingId(null);
-                setIsModalOpen(true);
-              }}
-              className="gap-2"
-            >
-              <Plus size={20} />
-              Nuevo Equipo
-            </Button>
-          )}
+          <Button
+            variant="primary"
+            onClick={() => {
+              setEditingId(null);
+              setIsModalOpen(true);
+            }}
+            className="gap-2"
+          >
+            <Plus size={20} />
+            Nuevo equipo intercarreras
+          </Button>
         </div>
       </div>
 
@@ -289,10 +287,14 @@ const EquipoFormModal: React.FC<EquipoFormModalProps> = ({
           required
         />
 
-        <Input
-          label="Categoria"
+        <Select
+          label="Género"
           value={categoria}
           onChange={(e) => setCategoria(e.target.value)}
+          options={[
+            { value: "Damas", label: "Damas" },
+            { value: "Varones", label: "Varones" },
+          ]}
           fullWidth
           required
         />

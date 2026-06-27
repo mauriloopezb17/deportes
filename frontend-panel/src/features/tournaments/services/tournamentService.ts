@@ -1,5 +1,11 @@
 import { apiClient } from "@/services/api";
 import { Torneo, Partido, ResultadoPartido, PaginatedResponse } from "@types";
+import {
+  demoPage,
+  demoPartidos,
+  demoTorneos,
+  isDemoMode,
+} from "@/data/demoData";
 
 const toTorneo = (torneo: any): Torneo => ({
   ...torneo,
@@ -84,16 +90,28 @@ const toFixturePayload = (data: Partial<Partido> | any) => ({
 
 export const torneoService = {
   async obtenerTorneos(params?: any): Promise<PaginatedResponse<Torneo>> {
-    const response = await apiClient.getPaginated<any>("/torneo", params);
-    return {
-      ...response,
-      data: response.data.map(toTorneo),
-    };
+    if (isDemoMode) return demoPage(demoTorneos);
+
+    try {
+      const response = await apiClient.getPaginated<any>("/torneo", params);
+      if (!response.data.length) return demoPage(demoTorneos);
+      return { ...response, data: response.data.map(toTorneo) };
+    } catch {
+      return demoPage(demoTorneos);
+    }
   },
 
   async obtenerTorneo(id: number): Promise<Torneo> {
-    const response = await apiClient.get<any>(`/torneo/${id}`);
-    return toTorneo(response.data);
+    if (isDemoMode) {
+      return demoTorneos.find((torneo) => torneo.id === id) ?? demoTorneos[0];
+    }
+
+    try {
+      const response = await apiClient.get<any>(`/torneo/${id}`);
+      return toTorneo(response.data);
+    } catch {
+      return demoTorneos.find((torneo) => torneo.id === id) ?? demoTorneos[0];
+    }
   },
 
   async crearTorneo(data: Partial<Torneo>): Promise<Torneo> {
@@ -133,16 +151,28 @@ export const torneoService = {
 
 export const partidoService = {
   async obtenerPartidos(params?: any): Promise<PaginatedResponse<Partido>> {
-    const response = await apiClient.getPaginated<any>("/fixture", params);
-    return {
-      ...response,
-      data: response.data.map(toPartido),
-    };
+    if (isDemoMode) return demoPage(demoPartidos);
+
+    try {
+      const response = await apiClient.getPaginated<any>("/fixture", params);
+      if (!response.data.length) return demoPage(demoPartidos);
+      return { ...response, data: response.data.map(toPartido) };
+    } catch {
+      return demoPage(demoPartidos);
+    }
   },
 
   async obtenerPartido(id: number): Promise<Partido> {
-    const response = await apiClient.get<any>(`/fixture/${id}`);
-    return toPartido(response.data);
+    if (isDemoMode) {
+      return demoPartidos.find((partido) => partido.id === id) ?? demoPartidos[0];
+    }
+
+    try {
+      const response = await apiClient.get<any>(`/fixture/${id}`);
+      return toPartido(response.data);
+    } catch {
+      return demoPartidos.find((partido) => partido.id === id) ?? demoPartidos[0];
+    }
   },
 
   async crearPartido(data: Partial<Partido>): Promise<Partido> {
@@ -178,8 +208,19 @@ export const partidoService = {
   },
 
   async obtenerPartidosPorTorneo(torneoId: number): Promise<Partido[]> {
-    const response = await apiClient.get<any[]>(`/fixture/torneo/${torneoId}`);
-    return (response.data || []).map(toPartido);
+    if (isDemoMode) {
+      return demoPartidos.filter((partido) => partido.torneo.id === torneoId);
+    }
+
+    try {
+      const response = await apiClient.get<any[]>(`/fixture/torneo/${torneoId}`);
+      const partidos = (response.data || []).map(toPartido);
+      return partidos.length
+        ? partidos
+        : demoPartidos.filter((partido) => partido.torneo.id === torneoId);
+    } catch {
+      return demoPartidos.filter((partido) => partido.torneo.id === torneoId);
+    }
   },
 
   async generarFixture(data: any): Promise<Partido[]> {

@@ -1,6 +1,12 @@
 import { apiClient } from "@/services/api";
 import { Disciplina, PaginatedResponse } from "@types";
 import { normalizeText } from "@utils/text";
+import {
+  demoCarreras,
+  demoDisciplinas,
+  demoPage,
+  isDemoMode,
+} from "@/data/demoData";
 
 export interface Carrera {
   id: number;
@@ -18,19 +24,32 @@ export const disciplinaService = {
   async obtenerDisciplinas(
     params?: any,
   ): Promise<PaginatedResponse<Disciplina>> {
-    const response = await apiClient.getPaginated<Disciplina>(
-      "/disciplina",
-      params,
-    );
-    return {
-      ...response,
-      data: response.data.map(toDisciplina),
-    };
+    if (isDemoMode) return demoPage(demoDisciplinas);
+
+    try {
+      const response = await apiClient.getPaginated<Disciplina>(
+        "/disciplina",
+        params,
+      );
+      return response.data.length
+        ? { ...response, data: response.data.map(toDisciplina) }
+        : demoPage(demoDisciplinas);
+    } catch {
+      return demoPage(demoDisciplinas);
+    }
   },
 
   async obtenerDisciplina(id: number): Promise<Disciplina> {
-    const response = await apiClient.get<Disciplina>(`/disciplina/${id}`);
-    return toDisciplina(response.data!);
+    if (isDemoMode) {
+      return demoDisciplinas.find((item) => item.id === id) ?? demoDisciplinas[0];
+    }
+
+    try {
+      const response = await apiClient.get<Disciplina>(`/disciplina/${id}`);
+      return toDisciplina(response.data!);
+    } catch {
+      return demoDisciplinas.find((item) => item.id === id) ?? demoDisciplinas[0];
+    }
   },
 
   async crearDisciplina(data: Partial<Disciplina>): Promise<Disciplina> {
@@ -56,13 +75,21 @@ export const disciplinaService = {
 
 export const carreraService = {
   async obtenerCarreras(params?: any): Promise<PaginatedResponse<Carrera>> {
-    const response = await apiClient.getPaginated<Carrera>("/carrera", params);
-    return {
-      ...response,
-      data: response.data.map((carrera) => ({
-        ...carrera,
-        nombre: normalizeText(carrera.nombre),
-      })),
-    };
+    if (isDemoMode) return demoPage(demoCarreras);
+
+    try {
+      const response = await apiClient.getPaginated<Carrera>("/carrera", params);
+      return response.data.length
+        ? {
+            ...response,
+            data: response.data.map((carrera) => ({
+              ...carrera,
+              nombre: normalizeText(carrera.nombre),
+            })),
+          }
+        : demoPage(demoCarreras);
+    } catch {
+      return demoPage(demoCarreras);
+    }
   },
 };

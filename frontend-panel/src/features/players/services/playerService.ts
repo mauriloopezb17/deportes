@@ -2,6 +2,13 @@ import { apiClient } from "@/services/api";
 import { authService } from "@/features/auth/services/authService";
 import { Equipo, Jugador, Persona, PaginatedResponse, UserRole } from "@types";
 import { normalizeText } from "@utils/text";
+import {
+  demoEquiposPorJugador,
+  demoJugadores,
+  demoPage,
+  demoPersonas,
+  isDemoMode,
+} from "@/data/demoData";
 
 const normalizeRole = (role: string): UserRole | string => {
   const roles: Record<string, UserRole> = {
@@ -17,16 +24,45 @@ const normalizeRole = (role: string): UserRole | string => {
   return roles[role] || role.toUpperCase();
 };
 
-const toPersona = (persona: any): Persona => ({
-  ...persona,
-  cedula: persona.cedula ?? persona.carnet ?? "",
-  telefono: persona.telefono ?? persona.celular ?? "",
-  roles: (persona.roles || [])
-    .map((personaRol: any) =>
-      normalizeRole(personaRol.rol?.nombre ?? personaRol.nombre ?? personaRol),
-    )
-    .filter(Boolean),
-});
+const toPersona = (persona: any): Persona => {
+  const categoriaNombre =
+    persona.nombre_categoria ?? persona.categoria?.nombre ?? persona.categorias?.nombre;
+  const tipo = String(persona.tipo_deportista ?? "").toLowerCase();
+
+  return {
+    ...persona,
+    id: persona.id ?? persona.id_persona ?? persona.id_deportista,
+    nombre: persona.nombre ?? persona.nombres ?? "",
+    apellido:
+      persona.apellido ??
+      [persona.ape_paterno, persona.ape_materno].filter(Boolean).join(" "),
+    cedula: String(persona.cedula ?? persona.carnet ?? persona.ci ?? ""),
+    telefono: persona.telefono ?? persona.celular ?? "",
+    tipo_deportista:
+      tipo === "externo" || tipo === "club"
+        ? "club"
+        : tipo === "ucb"
+          ? "ucb"
+          : persona.tipo_deportista,
+    categoria_id:
+      persona.categoria_id ?? persona.id_categoria ?? persona.categoria?.id,
+    categoria: categoriaNombre
+      ? {
+          id:
+            persona.categoria_id ??
+            persona.id_categoria ??
+            persona.categoria?.id ??
+            0,
+          nombre: categoriaNombre,
+        }
+      : persona.categoria,
+    roles: (persona.roles || [])
+      .map((personaRol: any) =>
+        normalizeRole(personaRol.rol?.nombre ?? personaRol.nombre ?? personaRol),
+      )
+      .filter(Boolean),
+  };
+};
 
 const toJugador = (item: any): Jugador => {
   const persona = item.persona ?? item.jugador ?? item;
@@ -53,24 +89,31 @@ const toPersonaPayload = (data: Partial<Persona> | Partial<Jugador>) => {
   };
 };
 
-const emptyPersonaPage = (): PaginatedResponse<Persona> => ({
-  success: true,
-  data: [],
-  pagination: { total: 0, page: 1, limit: 0, pages: 1 },
-});
-
 export const jugadorService = {
   async obtenerJugadores(params?: any): Promise<PaginatedResponse<Jugador>> {
-    const response = await apiClient.getPaginated<any>("/persona", params);
-    return {
-      ...response,
-      data: response.data.map(toJugador),
-    };
+    if (isDemoMode) return demoPage(demoJugadores);
+
+    try {
+      const response = await apiClient.getPaginated<any>("/persona", params);
+      return response.data.length
+        ? { ...response, data: response.data.map(toJugador) }
+        : demoPage(demoJugadores);
+    } catch {
+      return demoPage(demoJugadores);
+    }
   },
 
   async obtenerJugador(id: number): Promise<Jugador> {
-    const response = await apiClient.get<any>(`/persona/${id}`);
-    return toJugador(response.data);
+    if (isDemoMode) {
+      return demoJugadores.find((jugador) => jugador.id === id) ?? demoJugadores[0];
+    }
+
+    try {
+      const response = await apiClient.get<any>(`/persona/${id}`);
+      return toJugador(response.data);
+    } catch {
+      return demoJugadores.find((jugador) => jugador.id === id) ?? demoJugadores[0];
+    }
   },
 
   async crearJugador(data: Partial<Jugador>): Promise<Jugador> {
@@ -94,26 +137,49 @@ export const jugadorService = {
   },
 
   async obtenerJugadoresPorEquipo(equipoId: number): Promise<Jugador[]> {
-    const response = await apiClient.get<Jugador[]>(
-      `/jugador-equipo/equipo/${equipoId}`,
-    );
-    return (response.data || []).map(toJugador);
+    if (isDemoMode) {
+      return demoJugadores.filter(
+        (jugador) => demoEquiposPorJugador[jugador.id]?.[0]?.id === equipoId,
+      );
+    }
+
+    try {
+      const response = await apiClient.get<Jugador[]>(
+        `/jugador-equipo/equipo/${equipoId}`,
+      );
+      const jugadores = (response.data || []).map(toJugador);
+      return jugadores.length
+        ? jugadores
+        : demoJugadores.filter(
+            (jugador) => demoEquiposPorJugador[jugador.id]?.[0]?.id === equipoId,
+          );
+    } catch {
+      return demoJugadores.filter(
+        (jugador) => demoEquiposPorJugador[jugador.id]?.[0]?.id === equipoId,
+      );
+    }
   },
 
   async obtenerEquiposPorJugador(jugadorId: number): Promise<Equipo[]> {
-    const response = await apiClient.get<any[]>(
-      `/jugador-equipo/jugador/${jugadorId}`,
-    );
+    if (isDemoMode) return demoEquiposPorJugador[jugadorId] ?? [];
 
-    return (response.data || []).map((relacion) => ({
-      ...relacion.equipo,
-      nombre: normalizeText(
-        relacion.equipo?.nombre ?? relacion.equipo?.nombre_equipo,
-      ),
-      categoria: normalizeText(relacion.equipo?.disciplina?.nombre ?? "General"),
-      cantidad_jugadores: relacion.equipo?.jugadores?.length ?? 0,
-      estado: relacion.equipo?.estado ?? "registrado",
-    }) as Equipo);
+    try {
+      const response = await apiClient.get<any[]>(
+        `/jugador-equipo/jugador/${jugadorId}`,
+      );
+
+      return (response.data || []).map((relacion) => ({
+        ...relacion.equipo,
+        nombre: normalizeText(
+          relacion.equipo?.nombre ?? relacion.equipo?.nombre_equipo,
+        ),
+        categoria: normalizeText(relacion.equipo?.disciplina?.nombre ?? "General"),
+        cantidad_jugadores: relacion.equipo?.jugadores?.length ?? 0,
+        estado: relacion.equipo?.estado ?? "registrado",
+      }) as Equipo);
+    } catch {
+      return demoEquiposPorJugador[jugadorId] ?? [];
+    }
   },
 
   async agregarJugadorAEquipo(
@@ -149,25 +215,41 @@ export const jugadorService = {
 
 export const personaService = {
   async obtenerPersonas(params?: any): Promise<PaginatedResponse<Persona>> {
-    if (authService.isPreview()) {
-      return emptyPersonaPage();
+    if (isDemoMode || authService.isPreview()) {
+      return demoPage(demoPersonas);
     }
 
-    const response = await apiClient.getPaginated<any>(
-      "/admin/deportistas",
-      params,
-    );
-    return {
-      ...response,
-      data: response.data.map((deportista) =>
-        toPersona(deportista.persona ?? deportista),
-      ),
-    };
+    try {
+      const response = await apiClient.getPaginated<any>("/admin/deportistas", params);
+      if (!response.data.length) return demoPage(demoPersonas);
+      return {
+        ...response,
+        data: response.data.map((deportista) =>
+          toPersona({
+            ...(deportista.persona ?? deportista),
+            tipo_deportista: deportista.tipo_deportista,
+            id_deportista: deportista.id_deportista,
+            id_categoria: deportista.id_categoria,
+            nombre_categoria: deportista.nombre_categoria,
+          }),
+        ),
+      };
+    } catch {
+      return demoPage(demoPersonas);
+    }
   },
 
   async obtenerPersona(id: number): Promise<Persona> {
-    const response = await apiClient.get<any>(`/persona/${id}`);
-    return toPersona(response.data);
+    if (isDemoMode) {
+      return demoPersonas.find((persona) => persona.id === id) ?? demoPersonas[0];
+    }
+
+    try {
+      const response = await apiClient.get<any>(`/persona/${id}`);
+      return toPersona(response.data);
+    } catch {
+      return demoPersonas.find((persona) => persona.id === id) ?? demoPersonas[0];
+    }
   },
 
   async crearPersona(data: Partial<Persona>): Promise<Persona> {

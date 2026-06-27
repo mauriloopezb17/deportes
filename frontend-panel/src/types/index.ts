@@ -74,6 +74,12 @@ export interface Persona {
     id: number;
     nombre: string;
   };
+  tipo_deportista?: "ucb" | "club";
+  categoria_id?: number;
+  categoria?: {
+    id: number;
+    nombre: string;
+  };
   roles?: UserRole[];
 }
 

@@ -28,6 +28,14 @@ import {
   NotFoundPage,
 } from "@pages/index";
 
+const DashboardByRole: React.FC = () => {
+  const { hasRole } = useAuthStore();
+  const isDelegateOnly =
+    hasRole(UserRole.DELEGADO) && !hasRole(UserRole.ADMIN);
+
+  return isDelegateOnly ? <Navigate to="/equipos" replace /> : <Dashboard />;
+};
+
 const App: React.FC = () => {
   const { checkAuth } = useAuthStore();
 
@@ -57,7 +65,7 @@ const App: React.FC = () => {
           path="/panel-delegado"
           element={
             <ProtectedRoute requiredRoles={[UserRole.DELEGADO]}>
-              <Dashboard />
+              <Navigate to="/equipos" replace />
             </ProtectedRoute>
           }
         />
@@ -75,7 +83,7 @@ const App: React.FC = () => {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <DashboardByRole />
             </ProtectedRoute>
           }
         />

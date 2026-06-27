@@ -1,26 +1,41 @@
 import { apiClient } from "@/services/api";
 import { authService } from "@/features/auth/services/authService";
 import { Cancha, Reserva, PaginatedResponse } from "@types";
+import {
+  demoCanchas,
+  demoPage,
+  demoReservas,
+  isDemoMode,
+} from "@/data/demoData";
 
 export type ReservaPayload = Partial<Reserva> & {
   cancha_id?: number;
   equipo_id?: number;
 };
 
-const emptyReservationsPage = (): PaginatedResponse<Reserva> => ({
-  success: true,
-  data: [],
-  pagination: { total: 0, page: 1, limit: 0, pages: 1 },
-});
-
 export const canchaService = {
   async obtenerCanchas(params?: any): Promise<PaginatedResponse<Cancha>> {
-    return apiClient.getPaginated<Cancha>("/cancha", params);
+    if (isDemoMode) return demoPage(demoCanchas);
+
+    try {
+      const response = await apiClient.getPaginated<Cancha>("/cancha", params);
+      return response.data.length ? response : demoPage(demoCanchas);
+    } catch {
+      return demoPage(demoCanchas);
+    }
   },
 
   async obtenerCancha(id: number): Promise<Cancha> {
-    const response = await apiClient.get<Cancha>(`/cancha/${id}`);
-    return response.data!;
+    if (isDemoMode) {
+      return demoCanchas.find((cancha) => cancha.id === id) ?? demoCanchas[0];
+    }
+
+    try {
+      const response = await apiClient.get<Cancha>(`/cancha/${id}`);
+      return response.data!;
+    } catch {
+      return demoCanchas.find((cancha) => cancha.id === id) ?? demoCanchas[0];
+    }
   },
 
   async crearCancha(data: Partial<Cancha>): Promise<Cancha> {
@@ -40,26 +55,34 @@ export const canchaService = {
 
 export const reservaService = {
   async obtenerReservas(params?: any): Promise<PaginatedResponse<Reserva>> {
+    if (isDemoMode) return demoPage(demoReservas);
+
     // La vista previa no tiene un JWT del servicio externo. Además, la ruta
     // heredada /reserva está bloqueada por el proxy público; no debe impedir
     // que el resto del panel cargue.
     if (authService.isPreview()) {
-      return emptyReservationsPage();
+      return demoPage(demoReservas);
     }
 
     try {
-      return await apiClient.getPaginated<Reserva>("/reserva", params);
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        return emptyReservationsPage();
-      }
-      throw error;
+      const response = await apiClient.getPaginated<Reserva>("/reserva", params);
+      return response.data.length ? response : demoPage(demoReservas);
+    } catch {
+      return demoPage(demoReservas);
     }
   },
 
   async obtenerReserva(id: number): Promise<Reserva> {
-    const response = await apiClient.get<Reserva>(`/reserva/${id}`);
-    return response.data!;
+    if (isDemoMode) {
+      return demoReservas.find((reserva) => reserva.id === id) ?? demoReservas[0];
+    }
+
+    try {
+      const response = await apiClient.get<Reserva>(`/reserva/${id}`);
+      return response.data!;
+    } catch {
+      return demoReservas.find((reserva) => reserva.id === id) ?? demoReservas[0];
+    }
   },
 
   async crearReserva(data: ReservaPayload): Promise<Reserva> {

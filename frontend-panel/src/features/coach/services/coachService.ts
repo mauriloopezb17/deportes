@@ -1,5 +1,12 @@
 import { apiClient } from "@/services/api";
 import { authService } from "@/features/auth/services/authService";
+import {
+  demoCategorias,
+  demoEquiposPorJugador,
+  demoJugadores,
+  demoPartidos,
+  isDemoMode,
+} from "@/data/demoData";
 
 export interface CoachCategoria {
   id: number;
@@ -68,100 +75,93 @@ const previewResumen: CoachResumen = {
   entrenador_id: 1,
   disciplina: {
     id: 1,
-    nombre: "Futsal/Futbol",
+    nombre: "Futsal",
   },
-  categorias: [
-    { id: 1, nombre: "Mayor cualquier edad" },
-    { id: 2, nombre: "Sub 25" },
-    { id: 3, nombre: "Juvenil de 19 para abajo" },
-    { id: 4, nombre: "Menor de 17 para abajo" },
-    { id: 5, nombre: "Infantil menoreso de 15 años" },
-    { id: 6, nombre: "Mini Voleibol menores de 13" },
-    { id: 7, nombre: "Sub 10" },
-  ],
+  categorias: demoCategorias,
 };
 
-const previewMatches: CoachPartidoDetalle[] = [
-  {
-    id: 1,
-    torneo_id: 1,
-    disciplina: previewResumen.disciplina ?? undefined,
-    equipo_local: { id: 1, nombre: "Ingenieria" },
-    equipo_visitante: { id: 2, nombre: "Sistemas" },
-    fecha: new Date().toISOString(),
-    hora: "18:00",
-    cancha: { id: 1, nombre: "Cancha futsal/futbol" },
-    estado: "Pendiente",
-    resultado_local: 0,
-    resultado_visitante: 0,
-    permite_anotadores: true,
-    jugadores_local: [
-      {
-        id_deportista: 1,
-        nombre: "Jugador Local 1",
-        puntos_goles: 0,
-        faltas_tarjetas_amarillas: 0,
-        faltas_tarjetas_rojas: 0,
-      },
-      {
-        id_deportista: 2,
-        nombre: "Jugador Local 2",
-        puntos_goles: 0,
-        faltas_tarjetas_amarillas: 0,
-        faltas_tarjetas_rojas: 0,
-      },
-    ],
-    jugadores_visitante: [
-      {
-        id_deportista: 3,
-        nombre: "Jugador Visitante 1",
-        puntos_goles: 0,
-        faltas_tarjetas_amarillas: 0,
-        faltas_tarjetas_rojas: 0,
-      },
-      {
-        id_deportista: 4,
-        nombre: "Jugador Visitante 2",
-        puntos_goles: 0,
-        faltas_tarjetas_amarillas: 0,
-        faltas_tarjetas_rojas: 0,
-      },
-    ],
+const jugadoresDeEquipo = (equipoId: number): CoachJugadorEstadistica[] =>
+  demoJugadores
+    .filter((jugador) =>
+      demoEquiposPorJugador[jugador.id]?.some((equipo) => equipo.id === equipoId),
+    )
+    .map((jugador) => ({
+      id_deportista: jugador.id,
+      nombre: `${jugador.persona.nombre} ${jugador.persona.apellido}`,
+      puntos_goles: 0,
+      faltas_tarjetas_amarillas: 0,
+      faltas_tarjetas_rojas: 0,
+    }));
+
+const previewMatches: CoachPartidoDetalle[] = demoPartidos.map((partido) => ({
+  id: partido.id,
+  torneo_id: partido.torneo.id,
+  disciplina: partido.torneo.disciplina,
+  equipo_local: {
+    id: partido.equipo_local.id,
+    nombre: partido.equipo_local.nombre,
   },
-];
+  equipo_visitante: {
+    id: partido.equipo_visitante.id,
+    nombre: partido.equipo_visitante.nombre,
+  },
+  fecha: partido.fecha,
+  hora: partido.hora,
+  cancha: { id: partido.cancha.id, nombre: partido.cancha.nombre },
+  estado: partido.estado,
+  resultado_local: partido.resultado?.goles_local ?? null,
+  resultado_visitante: partido.resultado?.goles_visitante ?? null,
+  permite_anotadores: true,
+  jugadores_local: jugadoresDeEquipo(partido.equipo_local.id),
+  jugadores_visitante: jugadoresDeEquipo(partido.equipo_visitante.id),
+}));
 
 export const coachService = {
   async obtenerResumen(): Promise<CoachResumen> {
-    if (authService.isPreview()) {
+    if (isDemoMode || authService.isPreview()) {
       return previewResumen;
     }
 
-    const response = await apiClient.get<CoachResumen>("/entrenador-panel/resumen");
-    return response.data as CoachResumen;
+    try {
+      const response = await apiClient.get<CoachResumen>(
+        "/entrenador-panel/resumen",
+      );
+      return response.data ?? previewResumen;
+    } catch {
+      return previewResumen;
+    }
   },
 
   async obtenerPartidosPendientes(): Promise<CoachPartido[]> {
-    if (authService.isPreview()) {
+    if (isDemoMode || authService.isPreview()) {
       return previewMatches;
     }
 
-    const response = await apiClient.get<CoachPartido[]>(
-      "/entrenador-panel/partidos-pendientes",
-    );
-    return response.data ?? [];
+    try {
+      const response = await apiClient.get<CoachPartido[]>(
+        "/entrenador-panel/partidos-pendientes",
+      );
+      return response.data?.length ? response.data : previewMatches;
+    } catch {
+      return previewMatches;
+    }
   },
 
   async obtenerPartido(id: number): Promise<CoachPartidoDetalle> {
-    if (authService.isPreview()) {
+    if (isDemoMode || authService.isPreview()) {
       return (
         previewMatches.find((match) => match.id === id) ?? previewMatches[0]
       );
     }
 
-    const response = await apiClient.get<CoachPartidoDetalle>(
-      `/entrenador-panel/partidos/${id}`,
-    );
-    return response.data as CoachPartidoDetalle;
+    try {
+      const response = await apiClient.get<CoachPartidoDetalle>(
+        `/entrenador-panel/partidos/${id}`,
+      );
+      return response.data ?? previewMatches[0];
+    } catch {
+      return previewMatches.find((match) => match.id === id) ?? previewMatches[0];
+    }
   },
 
   async registrarPartido(

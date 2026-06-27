@@ -8,7 +8,7 @@ export const useRequireRole = (requiredRoles: UserRole[]) => {
 
   if (!hasRole(requiredRoles)) {
     if (hasRole(UserRole.ADMIN)) navigate("/panel-admin");
-    else if (hasRole(UserRole.DELEGADO)) navigate("/panel-delegado");
+    else if (hasRole(UserRole.DELEGADO)) navigate("/equipos");
     else if (hasRole(UserRole.ENTRENADOR)) navigate("/panel-entrenador");
     else navigate("/dashboard");
     return false;

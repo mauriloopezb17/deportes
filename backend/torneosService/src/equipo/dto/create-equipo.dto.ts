@@ -2,6 +2,8 @@ import {
   IsString,
   IsNotEmpty,
   IsInt,
+  IsIn,
+  IsOptional,
   MaxLength,
   Min,
   MinLength,
@@ -25,4 +27,14 @@ export class CreateEquipoDto {
   @IsInt()
   @Min(1)
   disciplina_id: number;
+
+  @ApiProperty({
+    description: "Género del equipo intercarreras",
+    enum: ["Damas", "Varones"],
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @IsIn(["Damas", "Varones"])
+  genero?: string;
 }

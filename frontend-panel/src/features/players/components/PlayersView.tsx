@@ -156,7 +156,10 @@ const PlayersPage: React.FC = () => {
           const equiposJugador = await jugadorService.obtenerEquiposPorJugador(
             persona.id,
           );
-          return [persona.id, equiposJugador[0]?.nombre ?? "-"] as const;
+          return [
+            persona.id,
+            equiposJugador[0]?.nombre ?? persona.categoria?.nombre ?? "-",
+          ] as const;
         }),
       );
       const equiposPorPersona = Object.fromEntries(relaciones);
@@ -259,9 +262,13 @@ const PlayersPage: React.FC = () => {
   }, [equiposPorJugador, personas]);
 
   const playersWithTeam = personas.filter(
-    (persona) => (equiposPorJugador[persona.id] ?? "-") !== "-",
+    (persona) =>
+      persona.tipo_deportista !== "club" &&
+      (equiposPorJugador[persona.id] ?? "-") !== "-",
   ).length;
-  const playersWithoutTeam = Math.max(personas.length - playersWithTeam, 0);
+  const clubPlayers = personas.filter(
+    (persona) => persona.tipo_deportista === "club" || Boolean(persona.categoria),
+  ).length;
 
   const openCreate = () => {
     setEditingId(null);
@@ -443,8 +450,17 @@ const PlayersPage: React.FC = () => {
     );
   };
 
-  const renderTeamBadge = (teamName: string) =>
-    teamName !== "-" ? (
+  const renderTeamBadge = (record: Persona, teamName: string) => {
+    if (record.tipo_deportista === "club" || record.categoria) {
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">
+          <BadgeCheck size={14} />
+          {record.categoria?.nombre ?? "Categoría pendiente"}
+        </span>
+      );
+    }
+
+    return teamName !== "-" ? (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
         <BadgeCheck size={14} />
         {teamName}
@@ -454,6 +470,7 @@ const PlayersPage: React.FC = () => {
         Sin equipo
       </span>
     );
+  };
 
   const columns = [
     {
@@ -479,9 +496,9 @@ const PlayersPage: React.FC = () => {
     },
     {
       key: "equipo",
-      title: "Equipo",
+      title: "Equipo / Categoría",
       render: (_value: unknown, record: Persona) =>
-        renderTeamBadge(equiposPorJugador[record.id] ?? "-"),
+        renderTeamBadge(record, equiposPorJugador[record.id] ?? "-"),
     },
     ...(!isDelegado
       ? [
@@ -683,12 +700,12 @@ const PlayersPage: React.FC = () => {
                   Gestion de Jugadores
                 </p>
                 <h1 className="mt-2 text-3xl font-bold text-white">
-                  {isDelegado ? "Nuevo deportista UCB" : "Nuevo jugador"}
+                  {isDelegado ? "Nuevo deportista UCB" : "Nuevo jugador del club"}
                 </h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80">
                   {isDelegado
                     ? "Registra un deportista UCB con datos completos. El correo debe terminar en @ucb.edu.bo."
-                    : "Registra un deportista externo y vincula su inscripcion con torneo, disciplina y categoria correspondiente."}
+                    : "Registra un jugador del club con correo personal y asígnale disciplina y categoría por edad. No pertenece a un equipo intercarreras."}
                 </p>
               </div>
               <Button
@@ -756,7 +773,7 @@ const PlayersPage: React.FC = () => {
             )}
             <Button variant="primary" onClick={openCreate} className="gap-2">
               <Plus size={20} />
-              {isDelegado ? "Nuevo deportista UCB" : "Nuevo Jugador"}
+              {isDelegado ? "Nuevo deportista UCB" : "Nuevo jugador del club"}
             </Button>
           </div>
           </div>
@@ -792,7 +809,7 @@ const PlayersPage: React.FC = () => {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold text-gray-500">
-                  Con equipo
+                  Deportistas UCB con equipo
                 </p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">
                   {playersWithTeam}
@@ -808,10 +825,10 @@ const PlayersPage: React.FC = () => {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold text-gray-500">
-                  Sin asignar
+                  Jugadores del club
                 </p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">
-                  {playersWithoutTeam}
+                  {clubPlayers}
                 </p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
@@ -831,7 +848,7 @@ const PlayersPage: React.FC = () => {
               <Input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Buscar por nombre, carnet, email o equipo"
+                placeholder="Buscar por nombre, carnet, email, equipo o categoría"
                 className="pl-10"
                 aria-label="Buscar jugadores"
                 fullWidth
@@ -841,7 +858,7 @@ const PlayersPage: React.FC = () => {
               value={teamFilter}
               onChange={(event) => setTeamFilter(event.target.value)}
               options={teamOptions}
-              aria-label="Filtrar por equipo"
+              aria-label="Filtrar por equipo o categoría"
               fullWidth
             />
           </div>
@@ -856,7 +873,7 @@ const PlayersPage: React.FC = () => {
               No se encontraron jugadores
             </h2>
             <p className="mt-2 text-sm text-gray-500">
-              Ajusta la busqueda o limpia el filtro de equipo para ver mas
+              Ajusta la búsqueda o limpia el filtro de equipo/categoría para ver más
               resultados.
             </p>
           </div>
@@ -908,7 +925,7 @@ const PlayersPage: React.FC = () => {
                     </div>
 
                     <div className="mt-5 border-t border-gray-100 pt-4">
-                      {renderTeamBadge(teamName)}
+                      {renderTeamBadge(persona, teamName)}
                     </div>
                   </Card>
                 );

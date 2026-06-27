@@ -35,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const homeHref = hasRole(UserRole.ADMIN)
     ? "/panel-admin"
     : hasRole(UserRole.DELEGADO)
-      ? "/panel-delegado"
+      ? "/equipos"
       : hasRole(UserRole.ENTRENADOR)
         ? "/panel-entrenador"
         : "/dashboard";

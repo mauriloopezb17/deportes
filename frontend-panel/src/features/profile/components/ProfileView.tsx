@@ -14,6 +14,7 @@ import { Alert, Button, Card, Modal } from "@components/common";
 import { useAuthStore } from "@/features/auth/stores/authStore";
 import { authService } from "@/features/auth/services/authService";
 import { twoFactorService } from "@/features/auth/services/twoFactorService";
+import { UserRole } from "@types";
 
 const roleLabels: Record<string, string> = {
   ADMIN: "Administrador",
@@ -114,7 +115,17 @@ const ProfilePage: React.FC = () => {
               Información de tu cuenta y permisos dentro del sistema.
             </p>
           </div>
-          <Button variant="secondary" onClick={() => navigate("/panel-admin")}>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              navigate(
+                usuario?.roles.includes(UserRole.DELEGADO) &&
+                  !usuario.roles.includes(UserRole.ADMIN)
+                  ? "/equipos"
+                  : "/panel-admin",
+              )
+            }
+          >
             <ArrowLeft size={18} />
             Volver al inicio
           </Button>

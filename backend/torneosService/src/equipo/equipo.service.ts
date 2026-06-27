@@ -12,7 +12,13 @@ export class EquipoService {
   @ApiOperation({ summary: "Crear un nuevo equipo" })
   async create(createEquipoDto: CreateEquipoDto, currentUser?: any) {
     const carreraId = this.resolveCarreraId(createEquipoDto.carrera_id, currentUser);
-    await this.ensureEquipoDisponible(carreraId, createEquipoDto.disciplina_id);
+    const genero =
+      createEquipoDto.genero ?? this.extractGenero(createEquipoDto.nombre_equipo);
+    await this.ensureEquipoDisponible(
+      carreraId,
+      createEquipoDto.disciplina_id,
+      genero,
+    );
 
     const torneo = await this.findTorneoForEquipo(createEquipoDto.disciplina_id);
     const responsable = await this.prisma.personas.findFirst({
@@ -31,6 +37,7 @@ export class EquipoService {
         id_persona: responsable.id_persona,
         id_carrera: carreraId,
         nombre_equipo: createEquipoDto.nombre_equipo,
+        grupo: genero,
       },
       include: this.includeRelations(),
     });
@@ -88,9 +95,16 @@ export class EquipoService {
       updateEquipoDto.carrera_id ?? currentEquipo.id_carrera,
       currentUser,
     );
+    const genero =
+      updateEquipoDto.genero ??
+      (updateEquipoDto.nombre_equipo
+        ? this.extractGenero(updateEquipoDto.nombre_equipo)
+        : undefined) ??
+      currentEquipo.grupo ??
+      undefined;
 
     if (disciplinaId) {
-      await this.ensureEquipoDisponible(carreraId, disciplinaId, id);
+      await this.ensureEquipoDisponible(carreraId, disciplinaId, genero, id);
     }
 
     const torneo = updateEquipoDto.disciplina_id
@@ -103,6 +117,7 @@ export class EquipoService {
         ...(updateEquipoDto.nombre_equipo
           ? { nombre_equipo: updateEquipoDto.nombre_equipo }
           : {}),
+        ...(genero ? { grupo: genero } : {}),
         id_carrera: carreraId,
         ...(torneo ? { id_torneo: torneo.id_torneo } : {}),
       },
@@ -135,21 +150,30 @@ export class EquipoService {
   private async ensureEquipoDisponible(
     carreraId: number,
     disciplinaId: number,
+    genero?: string,
     excludeEquipoId?: number,
   ) {
     const existing = await this.prisma.equipos.findFirst({
       where: {
         id_carrera: carreraId,
         torneos: { id_disciplina: disciplinaId },
+        grupo: genero ?? null,
         ...(excludeEquipoId ? { id_equipo: { not: excludeEquipoId } } : {}),
       },
     });
 
     if (existing) {
       throw new BadRequestException(
-        "Ya existe un equipo para esta carrera y disciplina",
+        "Ya existe un equipo para esta carrera, disciplina y género",
       );
     }
+  }
+
+  private extractGenero(nombreEquipo: string): string | undefined {
+    const match = nombreEquipo.match(/\b(Damas|Varones)\b/i);
+    if (!match) return undefined;
+
+    return match[1].toLowerCase() === "damas" ? "Damas" : "Varones";
   }
 
   @ApiOperation({ summary: "Eliminar un equipo" })
@@ -207,6 +231,7 @@ export class EquipoService {
       torneo_id: equipo.id_torneo,
       persona_id: equipo.id_persona,
       grupo: equipo.grupo,
+      genero: equipo.grupo,
       carrera: equipo.carreras
         ? { id: equipo.carreras.id_carrera, nombre: equipo.carreras.nombre }
         : undefined,

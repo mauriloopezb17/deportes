@@ -19,7 +19,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   const defaultPanelPath = () => {
     if (hasRole(UserRole.ADMIN)) return "/panel-admin";
-    if (hasRole(UserRole.DELEGADO)) return "/panel-delegado";
+    if (hasRole(UserRole.DELEGADO)) return "/equipos";
     if (hasRole(UserRole.ENTRENADOR)) return "/panel-entrenador";
     return "/dashboard";
   };

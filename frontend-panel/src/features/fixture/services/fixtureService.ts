@@ -5,6 +5,7 @@ import {
   GenerateFixturePayload,
 } from "../types";
 import { API_BASE_URL, withTrailingSlash } from "@/services/apiUrl";
+import { demoPartidos, demoTorneos, isDemoMode } from "@/data/demoData";
 
 class FixtureApiClient {
   private client: AxiosInstance;
@@ -52,6 +53,29 @@ class FixtureApiClient {
 
 const apiClient = new FixtureApiClient();
 
+const demoFixtureTournaments: FixtureTournament[] = demoTorneos.map((torneo) => ({
+  id: torneo.id,
+  nombre: torneo.nombre,
+  fecha_inicio: torneo.fecha_inicio,
+  disciplina: torneo.disciplina,
+}));
+
+const demoFixtureMatches: FixtureMatch[] = demoPartidos.map((partido, index) => ({
+  id: partido.id,
+  torneo_id: partido.torneo.id,
+  ronda: index + 1,
+  equipo_local_id: partido.equipo_local.id,
+  equipo_visitante_id: partido.equipo_visitante.id,
+  equipo_local: partido.equipo_local,
+  equipo_visitante: partido.equipo_visitante,
+  fecha: partido.fecha,
+  hora: partido.hora,
+  fecha_hora: `${partido.fecha}T${partido.hora}:00`,
+  estadio: partido.cancha.nombre,
+  cancha: partido.cancha,
+  estado: partido.estado,
+}));
+
 const normalizeMatch = (match: FixtureMatch): FixtureMatch => {
   const fechaHora = match.fecha_hora ? String(match.fecha_hora) : "";
   const [fecha = match.fecha ?? "", time = ""] = fechaHora.split("T");
@@ -71,13 +95,28 @@ const normalizeMatch = (match: FixtureMatch): FixtureMatch => {
 
 export const fixtureService = {
   async getTournaments() {
-    const response = await apiClient.get<FixtureTournament[]>("/torneo");
-    return Array.isArray(response) ? response : [];
+    if (isDemoMode) return demoFixtureTournaments;
+
+    try {
+      const response = await apiClient.get<FixtureTournament[]>("/torneo");
+      return Array.isArray(response) && response.length
+        ? response
+        : demoFixtureTournaments;
+    } catch {
+      return demoFixtureTournaments;
+    }
   },
 
   async getMatches() {
-    const response = await apiClient.get<FixtureMatch[]>("/fixture");
-    return (Array.isArray(response) ? response : []).map(normalizeMatch);
+    if (isDemoMode) return demoFixtureMatches;
+
+    try {
+      const response = await apiClient.get<FixtureMatch[]>("/fixture");
+      const matches = (Array.isArray(response) ? response : []).map(normalizeMatch);
+      return matches.length ? matches : demoFixtureMatches;
+    } catch {
+      return demoFixtureMatches;
+    }
   },
 
   async generateFixture(payload: GenerateFixturePayload) {
