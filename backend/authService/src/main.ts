@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { SwaggerModule } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,6 +26,13 @@ async function bootstrap() {
   console.log(`[API] Servidor corriendo en: http://localhost:${port}/api`);
   console.log(
     `[DOCS] Swagger disponible en: http://localhost:${port}/api/docs`,
+  );
+  // Activa la validación global
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Ignora campos que no estén en el DTO
+      forbidNonWhitelisted: true, // Lanza error si envían campos extra
+    }),
   );
 }
 bootstrap();

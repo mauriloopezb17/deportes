@@ -18,6 +18,10 @@ export class UsersService {
   }
 
   async create(data: CreateUserDto) {
+    console.log('--- DATOS RECIBIDOS EN EL SERVICIO ---');
+    console.log(data);
+    console.log('Tipo de fecha_nacimiento:', typeof data.fecha_nacimiento);
+    console.log('Valor de fecha_nacimiento:', data.fecha_nacimiento);
     const {
       nombres,
       ape_paterno,

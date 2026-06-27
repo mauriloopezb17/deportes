@@ -189,7 +189,7 @@ function FinanzasPanel() {
       .then((data) => setPagos(data.map(mapPago)))
       .catch((err) => {
         console.warn("Usando pagos mock hasta que el microservicio de finanzas exponga /api/pagos", err)
-        setError("Mostrando datos de ejemplo hasta conectar el microservicio de finanzas.")
+        //setError("Mostrando datos de ejemplo hasta conectar el microservicio de finanzas.")
         setPagos(pagosMock)
       })
       .finally(() => setLoadingPagos(false))
