@@ -227,11 +227,10 @@ export interface RegistrarUsuarioPayload {
   fecha_nacimiento: string;
   celular: string;
   ci: string;
-  complemento: string | null;
   email: string;
   id_rol: number;
   id_carrera?: number;
-  gestion?: string;
+  gestion?: number;
 }
 
 export const usuarioAdminService = {

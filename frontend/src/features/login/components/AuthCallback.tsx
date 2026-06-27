@@ -1,7 +1,11 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthContext'
-import { panelPathForUser } from '../services/loginService'
+import {
+  panelPathForUser,
+  panelAppUrlForUser,
+  bridgeSessionToPanel,
+} from '../services/loginService'
 
 function AuthCallback() {
   const navigate = useNavigate()
@@ -16,11 +20,18 @@ function AuthCallback() {
     if (token) {
       try {
         localStorage.setItem('ucb_token', token)
-        console.log("JWT Token:", token);
         refreshAuth()
         const payload = JSON.parse(
           atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')),
         )
+        // admin/delegado/entrenador -> panel del grupo 2 (app aparte bajo
+        // /gestion). Puenteamos la sesion igual que el login con password.
+        const panelUrl = panelAppUrlForUser(payload ?? {})
+        if (panelUrl) {
+          bridgeSessionToPanel(token, payload ?? {})
+          window.location.href = panelUrl
+          return
+        }
         destination = panelPathForUser(payload ?? {})
       } catch {
         // ignore decode / storage failures

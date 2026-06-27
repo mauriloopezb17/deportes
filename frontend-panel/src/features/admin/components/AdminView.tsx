@@ -7,6 +7,7 @@ import {
   RolSistema,
   usuarioAdminService,
 } from "@/features/admin/services/adminService";
+import { authService } from "@/features/auth/services/authService";
 
 const emptyUserForm = {
   nombres: "",
@@ -14,7 +15,6 @@ const emptyUserForm = {
   ape_materno: "",
   fecha_nacimiento: "",
   ci: "",
-  complemento: "",
   celular: "",
   email: "",
   id_rol: "",
@@ -66,6 +66,15 @@ const AdminPage: React.FC = () => {
     setError(null);
     setMessage(null);
 
+    // En modo vista previa no hay una sesion real (token = "preview-token"),
+    // por lo que el backend rechaza cualquier escritura con 401.
+    if (authService.isPreview()) {
+      setError(
+        "Estas en modo vista previa. Inicia sesion con una cuenta de administrador para registrar usuarios.",
+      );
+      return;
+    }
+
     if (!userForm.id_rol) {
       setError("Selecciona un rol para el usuario.");
       return;
@@ -84,12 +93,14 @@ const AdminPage: React.FC = () => {
         fecha_nacimiento: userForm.fecha_nacimiento,
         celular: userForm.celular.trim(),
         ci: userForm.ci.trim(),
-        complemento: userForm.complemento.trim() || null,
+        // El endpoint de registro (deportistasService) no acepta complemento:
+        // su DTO usa forbidNonWhitelisted y rechaza cualquier campo extra.
         email: userForm.email.trim(),
         id_rol: Number(userForm.id_rol),
         ...(isDelegado && {
           id_carrera: Number(userForm.id_carrera),
-          gestion: userForm.gestion.trim(),
+          // El backend valida gestion como entero (@IsInt).
+          gestion: Number(userForm.gestion),
         }),
       });
       setMessage(
@@ -301,7 +312,6 @@ const PersonFields = ({ formData, setFormData }: any) => (
     <Input label="Apellido materno" value={formData.ape_materno} onChange={(event) => setFormData({ ...formData, ape_materno: event.target.value })} />
     <Input label="Fecha de nacimiento" type="date" value={formData.fecha_nacimiento} onChange={(event) => setFormData({ ...formData, fecha_nacimiento: event.target.value })} required />
     <Input label="CI" value={formData.ci} onChange={(event) => setFormData({ ...formData, ci: event.target.value })} required />
-    <Input label="Complemento CI" placeholder="Ej: 1A" value={formData.complemento} onChange={(event) => setFormData({ ...formData, complemento: event.target.value })} />
     <Input label="Celular" value={formData.celular} onChange={(event) => setFormData({ ...formData, celular: event.target.value })} required />
     <Input label="Correo electronico" type="email" value={formData.email} onChange={(event) => setFormData({ ...formData, email: event.target.value })} required />
   </div>

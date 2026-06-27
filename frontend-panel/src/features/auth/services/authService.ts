@@ -99,11 +99,13 @@ export const authService = {
   },
 
   getToken(): string | null {
-    return localStorage.getItem("token");
+    // "token" lo escribe el propio panel; "ucb_token" llega puenteado desde el
+    // portal (mismo origin). Aceptamos cualquiera de los dos.
+    return localStorage.getItem("token") ?? localStorage.getItem("ucb_token");
   },
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem("token");
+    return !!this.getToken();
   },
 
   isPreview(): boolean {
