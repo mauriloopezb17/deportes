@@ -14,8 +14,11 @@ class ApiClient {
       },
     });
 
-    // Recuperar token del localStorage si existe
-    this.token = localStorage.getItem("token");
+    // Recuperar token del localStorage si existe. El portal (frontend) guarda el
+    // JWT bajo "ucb_token"; el panel lo persiste como "token". Como comparten
+    // origin, leemos ambos para aceptar la sesion puenteada desde el portal.
+    this.token =
+      localStorage.getItem("token") ?? localStorage.getItem("ucb_token");
     if (this.token) {
       this.client.defaults.headers.common["Authorization"] =
         `Bearer ${this.token}`;
@@ -25,7 +28,8 @@ class ApiClient {
     this.client.interceptors.request.use(
       (config) => {
         config.url = withTrailingSlash(config.url);
-        const token = localStorage.getItem("token");
+        const token =
+          localStorage.getItem("token") ?? localStorage.getItem("ucb_token");
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -141,8 +145,10 @@ class ApiClient {
   ): Promise<ApiResponse<T>> {
     const formData = new FormData();
     formData.append(field, file);
-    const token = localStorage.getItem("token");
-    const response = await fetch(`${API_BASE_URL}${url}`, {
+    const token =
+      localStorage.getItem("token") ?? localStorage.getItem("ucb_token");
+    const finalUrl = url.endsWith('/') ? url : `${url}/`;
+    const response = await fetch(`${API_BASE_URL}${finalUrl}`, {
       method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,

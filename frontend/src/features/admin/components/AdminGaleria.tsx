@@ -90,7 +90,7 @@ function AdminGaleria() {
       const token = getToken()
       const formData = new FormData()
       formData.append('imagen', file)
-      const res = await fetch(`${API_BASE}/api/upload`, {
+      const res = await fetch(`${API_BASE}/api/upload/`, {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,

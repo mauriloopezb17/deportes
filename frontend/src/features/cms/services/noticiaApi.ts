@@ -65,7 +65,7 @@ export async function uploadImagenPortada(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("imagen", file);
 
-  const res = await fetch(`/api/upload`, {
+  const res = await fetch(`/api/upload/`, {
     method: "POST",
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: formData,
