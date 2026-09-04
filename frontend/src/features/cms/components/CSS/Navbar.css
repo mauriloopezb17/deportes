@@ -30,6 +30,11 @@
   box-sizing: border-box;
   
   border-bottom: 2px solid var(--butter-yellow);
+  /* La pagina tiene un scroll externo ademas del interno del editor; sin fijar
+     la cabecera esta se iba hacia arriba al desplazarse. Sticky la mantiene
+     visible sin necesidad de compensar con padding en el body. */
+  position: sticky;
+  top: 0;
   z-index: 1000;
 }
 

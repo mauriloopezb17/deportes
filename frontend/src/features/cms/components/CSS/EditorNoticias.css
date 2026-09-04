@@ -50,7 +50,9 @@
   width: 100%;
   box-sizing: border-box;
   position: sticky;
-  top: 10px;
+  /* Justo debajo de .navbar-cms (65px); con top:10px la barra se solapaba con
+     la cabecera y dejaba ver el contenido colandose por el hueco. */
+  top: 65px;
   max-height: 130px;
   z-index: 999;
   box-shadow: 0 2px 8px rgba(1, 63, 98, 0.08);

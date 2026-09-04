@@ -7,7 +7,7 @@ import "swagger-ui-react/swagger-ui.css"
 
    Híbrido vivo/estático (como pidió CoBiNe17):
    - Cada microservicio libera su spec en `${VITE_API_BASE}/api/<slug>/swagger.yaml`
-     (el gateway de test.62344037.xyz enruta solo por el slug).
+     (el gateway de NGINX enruta solo por el slug).
    - Si ese endpoint responde, se usa EN VIVO -> los cambios del backend salen al
      instante, sin drift.
    - Si no responde (o no hay VITE_API_BASE), cae al .yaml estático de public/docs/

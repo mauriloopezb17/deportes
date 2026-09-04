@@ -18,7 +18,7 @@ export default defineConfig({
     allowedHosts: ['.62344037.xyz'],
     proxy: {
       // /api relativo (p.ej. el CMS) sale al gateway remoto que maneja NGINX.
-      '/api': { target: 'https://test.62344037.xyz', changeOrigin: true },
+      '/api': { target: 'https://deportes.62344037.xyz', changeOrigin: true },
       '/uploads': 'http://localhost:3000',
       '/temp': 'http://localhost:3001'
     }
