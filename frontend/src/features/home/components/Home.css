@@ -380,6 +380,7 @@
     gap: 10px;
     font-weight: 600;
     width: 40%;
+    min-width: 0;
   }
 
   .team-info.away {
@@ -395,6 +396,13 @@
     font-weight: bold;
     font-size: 1.2rem;
     text-align: center;
+    /* Los marcadores de basquet son de dos cifras: como flex item la caja se
+       encogia (los .team-info ya ocupan 40% cada uno) y "78 - 65" se partia en
+       dos lineas. nowrap + sin shrink lo impiden; el min-width deja todas las
+       cajas del mismo ancho para que la columna quede alineada. */
+    white-space: nowrap;
+    flex: 0 0 auto;
+    min-width: 4.5em;
   }
 
   .time-box {
