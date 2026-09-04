@@ -15,6 +15,7 @@ import { useAuthStore } from "@/features/auth/stores/authStore";
 import { authService } from "@/features/auth/services/authService";
 import { twoFactorService } from "@/features/auth/services/twoFactorService";
 import { UserRole } from "@types";
+import { portalUrl } from "@/services/portalUrl";
 
 const roleLabels: Record<string, string> = {
   ADMIN: "Administrador",
@@ -289,7 +290,7 @@ const ProfilePage: React.FC = () => {
                   </p>
                 </div>
                 <a
-                  href="https://test.62344037.xyz/"
+                  href={portalUrl()}
                   className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-600 bg-primary-600 px-4 py-2 font-semibold text-white shadow-sm transition-colors hover:bg-primary-700"
                 >
                   <Globe size={18} />

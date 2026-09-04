@@ -4,6 +4,7 @@ import { UserRole } from "@types";
 import { useAuthStore } from "@/features/auth/stores/authStore";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
+import { portalUrl } from "@/services/portalUrl";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -37,7 +38,7 @@ const Layout: React.FC<LayoutProps> = ({ children, headerActions }) => {
       </div>
       {isAdmin && (
         <a
-          href="https://test.62344037.xyz/noticiasAdmin"
+          href={portalUrl("/noticiasAdmin")}
           className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full bg-primary-600 px-5 py-3 font-bold text-white shadow-lg transition hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
         >
           <Newspaper size={20} />

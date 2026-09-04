@@ -10,6 +10,7 @@ import {
   TorneoOption,
 } from "@/features/multimedia/services/galeriaService";
 import logoSrc from "../images/Logo color - azul (1).png";
+import { portalUrl } from "@/services/portalUrl";
 
 const emptyGalleryForm = {
   tipo_archivo: "foto",
@@ -141,7 +142,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, actions }) => {
               </button>
               <div className="group flex items-center gap-3">
                 <a
-                  href="https://test.62344037.xyz/"
+                  href={portalUrl()}
                   aria-label="Ir al portal de Gestion Deportiva"
                   className="shrink-0 focus:outline-none"
                 >
@@ -152,7 +153,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, actions }) => {
                   />
                 </a>
                 <a
-                  href="https://test.62344037.xyz/"
+                  href={portalUrl()}
                   className="focus:outline-none"
                 >
                   <h1 className="text-xl font-bold text-white">
@@ -221,7 +222,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, actions }) => {
                     Mi Perfil
                   </button>
                   <a
-                    href="https://test.62344037.xyz/"
+                    href={portalUrl()}
                     onClick={() => setShowDropdown(false)}
                     className="flex w-full items-center gap-2 px-4 py-2 text-left text-primary-700 hover:bg-primary-50"
                   >

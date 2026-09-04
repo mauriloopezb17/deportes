@@ -57,15 +57,14 @@ export const reservaService = {
   async obtenerReservas(params?: any): Promise<PaginatedResponse<Reserva>> {
     if (isDemoMode) return demoPage(demoReservas);
 
-    // La vista previa no tiene un JWT del servicio externo. Además, la ruta
-    // heredada /reserva está bloqueada por el proxy público; no debe impedir
-    // que el resto del panel cargue.
+    // La vista previa no tiene un JWT del servicio externo; sin él la llamada
+    // falla y no debe impedir que el resto del panel cargue.
     if (authService.isPreview()) {
       return demoPage(demoReservas);
     }
 
     try {
-      const response = await apiClient.getPaginated<Reserva>("/reserva", params);
+      const response = await apiClient.getPaginated<Reserva>("/reservas", params);
       return response.data.length ? response : demoPage(demoReservas);
     } catch {
       return demoPage(demoReservas);
@@ -78,7 +77,7 @@ export const reservaService = {
     }
 
     try {
-      const response = await apiClient.get<Reserva>(`/reserva/${id}`);
+      const response = await apiClient.get<Reserva>(`/reservas/${id}`);
       return response.data!;
     } catch {
       return demoReservas.find((reserva) => reserva.id === id) ?? demoReservas[0];
@@ -86,7 +85,7 @@ export const reservaService = {
   },
 
   async crearReserva(data: ReservaPayload): Promise<Reserva> {
-    const response = await apiClient.post<Reserva>("/reserva", data);
+    const response = await apiClient.post<Reserva>("/reservas", data);
     return response.data!;
   },
 
@@ -94,24 +93,25 @@ export const reservaService = {
     id: number,
     data: ReservaPayload,
   ): Promise<Reserva> {
-    const response = await apiClient.patch<Reserva>(`/reserva/${id}`, data);
+    const response = await apiClient.patch<Reserva>(`/reservas/${id}`, data);
     return response.data!;
   },
 
   async cancelarReserva(id: number, motivo: string): Promise<void> {
-    await apiClient.patch(`/reserva/${id}`, {
+    await apiClient.patch(`/reservas/${id}`, {
       estado: "cancelada",
       observaciones: motivo,
     });
   },
 
   async eliminarReserva(id: number): Promise<void> {
-    await apiClient.delete(`/reserva/${id}`);
+    await apiClient.delete(`/reservas/${id}`);
   },
 
   async obtenerDisponibilidad(canchaId: number, fecha: string): Promise<any[]> {
     const response = await apiClient.get<any[]>(
-      `/reserva/disponibilidad/${canchaId}/${fecha}`,
+      `/horarios-disponibles/${canchaId}`,
+      { fecha },
     );
     return response.data || [];
   },
