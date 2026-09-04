@@ -3,11 +3,16 @@ import {
   Post,
   Get,
   UseGuards,
+  UseFilters,
   Req,
   Res,
   Body,
   Injectable,
   Query,
+  Catch,
+  UnauthorizedException,
+  type ArgumentsHost,
+  type ExceptionFilter,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
@@ -21,6 +26,34 @@ export class JwtAuthGuard extends AuthGuard('jwt') {}
 
 interface RequestWithUser extends Request {
   user: any;
+}
+
+/* FRONTEND_URL suele venir con barra final en los .env del despliegue. Sin
+   limpiarla los redirects quedan como https://host//auth/callback y el router
+   del portal no matchea esa ruta: el usuario cae en el catch-all y termina en
+   el home sin sesión. */
+function frontendUrl(): string {
+  return (process.env.FRONTEND_URL ?? 'http://localhost:5173').replace(
+    /\/+$/,
+    '',
+  );
+}
+
+/* El guard de Google rechaza antes de entrar al handler (cuenta no registrada,
+   error de Google), así que el try/catch del controlador nunca lo ve. Este
+   filtro convierte ese fallo en una vuelta al login con el código de error que
+   LoginPage sabe mostrar. */
+@Catch()
+class GoogleAuthFilter implements ExceptionFilter {
+  catch(exception: unknown, host: ArgumentsHost) {
+    const res = host.switchToHttp().getResponse<Response>();
+    const code =
+      exception instanceof UnauthorizedException
+        ? 'no_registrado'
+        : 'server_error';
+    console.error('[AUTH] Fallo en OAuth de Google:', exception);
+    res.redirect(`${frontendUrl()}/login?error=${code}`);
+  }
 }
 
 @Controller('auth')
@@ -41,23 +74,19 @@ export class AuthController {
     return this.authService.login(req.user);
   }
 
+  @UseFilters(GoogleAuthFilter)
   @UseGuards(AuthGuard('google'))
   @Get('google')
   googleAuth() {}
 
+  @UseFilters(GoogleAuthFilter)
   @UseGuards(AuthGuard('google'))
   @Get('google/callback')
   googleAuthRedirect(@Req() req: RequestWithUser, @Res() res: Response) {
-    try {
-      const { token } = this.authService.login(req.user);
-      const frontendURL = process.env.FRONTEND_URL ?? 'http://localhost:5173';
-
-      return res.redirect(`${frontendURL}/auth/callback?token=${token}`);
-    } catch (error) {
-      console.error('Error en callback:', error);
-      const frontendURL = process.env.FRONTEND_URL ?? 'http://localhost:5173';
-      return res.redirect(`${frontendURL}/login?error=server_error`);
-    }
+    const { token } = this.authService.login(req.user);
+    return res.redirect(
+      `${frontendUrl()}/auth/callback?token=${encodeURIComponent(token)}`,
+    );
   }
 
   @Post('forgot-password')

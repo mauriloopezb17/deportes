@@ -26,7 +26,7 @@ export default defineConfig({
     allowedHosts: [".62344037.xyz"],
     proxy: {
       "/api": {
-        target: "https://test.62344037.xyz",
+        target: "https://deportes.62344037.xyz",
         changeOrigin: true,
       },
     },

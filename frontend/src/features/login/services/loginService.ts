@@ -1,6 +1,8 @@
 /* Login feature — own isolated network layer. No imports from other modules.
    Auth *state* is shared (contexts/AuthContext); the network calls are not. */
-export const API_BASE = import.meta.env.VITE_API_BASE ?? ''
+/* Sin recortar la barra final de VITE_API_BASE cada URL sale con doble slash
+   (https://host//api/auth/google), y el redirect de vuelta cae fuera del router. */
+export const API_BASE = (import.meta.env.VITE_API_BASE ?? '').trim().replace(/\/+$/, '')
 
 async function apiPost<T>(path: string, body: unknown): Promise<T> {
   const token = localStorage.getItem('ucb_token')
